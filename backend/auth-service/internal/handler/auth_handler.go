@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -175,7 +176,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	// Set cookies untuk access token dan refresh token
-	utils.SetCookie(c, "access_token", tokenResponse.AccessToken, 60*60*24, "/", c.Request.TLS != nil, true) // 1 day
+	utils.SetCookie(c, "access_token", tokenResponse.AccessToken, 60*60*24, "/", c.Request.TLS != nil, true)     // 1 day
 	utils.SetCookie(c, "refresh_token", tokenResponse.RefreshToken, 60*60*24*7, "/", c.Request.TLS != nil, true) // 7 days
 
 	response := model.Success200(tokenResponse, "Login successful")
@@ -237,7 +238,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	}
 
 	// Update cookies untuk access token dan refresh token
-	utils.SetCookie(c, "access_token", tokenResponse.AccessToken, 60*60*24, "/", c.Request.TLS != nil, true) // 1 day
+	utils.SetCookie(c, "access_token", tokenResponse.AccessToken, 60*60*24, "/", c.Request.TLS != nil, true)     // 1 day
 	utils.SetCookie(c, "refresh_token", tokenResponse.RefreshToken, 60*60*24*7, "/", c.Request.TLS != nil, true) // 7 days
 
 	response := model.Success200(tokenResponse, "Token refreshed successfully")
@@ -286,6 +287,8 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	// Proses logout
 	err := h.authService.Logout(c.Request.Context(), userID.(uuid.UUID), req.RefreshToken)
 	if err != nil {
+		// Log error untuk debugging
+		log.Printf("Logout failed for user %s: %v", userID.(uuid.UUID).String(), err)
 		response := model.Error500("Failed to logout")
 		c.JSON(http.StatusInternalServerError, response)
 		return
@@ -426,7 +429,7 @@ func (h *AuthHandler) GoogleCallback(c *gin.Context) {
 	}
 
 	// Set cookies untuk access token dan refresh token
-	utils.SetCookie(c, "access_token", tokenResponse.AccessToken, 60*60*24, "/", c.Request.TLS != nil, true) // 1 day
+	utils.SetCookie(c, "access_token", tokenResponse.AccessToken, 60*60*24, "/", c.Request.TLS != nil, true)     // 1 day
 	utils.SetCookie(c, "refresh_token", tokenResponse.RefreshToken, 60*60*24*7, "/", c.Request.TLS != nil, true) // 7 days
 
 	// Dapatkan redirect URL dari state jika ada
@@ -501,7 +504,7 @@ func (h *AuthHandler) RegisterRoutes(router *gin.Engine, authMiddleware gin.Hand
 		public.POST("/register", h.Register)
 		public.POST("/login", h.Login)
 		public.POST("/refresh", h.RefreshToken)
-		public.GET("/google", h.GoogleLogin)
+		public.GET("/google/login", h.GoogleLogin)
 		public.GET("/google/callback", h.GoogleCallback)
 	}
 

@@ -48,7 +48,10 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = userData
         
         // Store token and user data
-        localStorage.setItem('auth_token', token)
+        localStorage.setItem('auth_token', response.data.accessToken || token)
+        if (response.data.refreshToken) {
+          localStorage.setItem('refresh_token', response.data.refreshToken)
+        }
         localStorage.setItem('auth_user', JSON.stringify(userData))
         
         console.log('Login successful, user data:', userData)
@@ -129,10 +132,16 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const logout = async () => {
+  const logout = async (router?: any) => {
+    let logoutResponse = null
     try {
-      // Call API logout endpoint
-      await authService.logout()
+      // Only call API logout if we have a refresh token
+      const refreshToken = localStorage.getItem('refresh_token')
+      if (refreshToken) {
+        logoutResponse = await authService.logout()
+      } else {
+        console.log('No refresh token found, skipping API logout call')
+      }
     } catch (err) {
       console.error('Logout API error:', err)
       // Continue with local logout even if API call fails
@@ -141,7 +150,27 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = null
       localStorage.removeItem('auth_user')
       localStorage.removeItem('auth_token')
+      localStorage.removeItem('refresh_token')
       console.log('User logged out')
+      
+      // Show success notification with backend message if available
+      const { useNotificationStore } = await import('@/stores/notifications')
+      const notificationStore = useNotificationStore()
+      
+      const message = logoutResponse?.message || 'You have been successfully logged out'
+      notificationStore.addNotification({
+        type: 'success',
+        title: 'Logout Successful',
+        message: message
+      })
+      
+      // Redirect to login page if router is provided
+      if (router) {
+        router.push('/auth/login')
+      } else {
+        // Fallback: reload to login page
+        window.location.href = '/auth/login'
+      }
     }
   }
 
@@ -185,6 +214,31 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
   
+  const refreshToken = async () => {
+    const storedRefreshToken = localStorage.getItem('refresh_token')
+    
+    if (!storedRefreshToken) {
+      throw new Error('No refresh token available')
+    }
+    
+    try {
+      const response = await authService.refreshToken(storedRefreshToken)
+      
+      if (response.success && response.data) {
+        localStorage.setItem('auth_token', response.data.accessToken)
+        localStorage.setItem('refresh_token', response.data.refreshToken)
+        return response.data.accessToken
+      } else {
+        throw new Error(response.message || 'Token refresh failed')
+      }
+    } catch (err: any) {
+      console.error('Token refresh error:', err)
+      // Clear invalid tokens and logout
+      logout()
+      throw err
+    }
+  }
+
   const updateProfile = async (profileData: Partial<User>) => {
     loading.value = true
     error.value = null
@@ -227,6 +281,30 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const setGoogleAuth = (userData: User, accessToken: string, refreshToken: string) => {
+    try {
+      // Set user data
+      user.value = userData
+      
+      // Store tokens
+      localStorage.setItem('auth_token', accessToken)
+      localStorage.setItem('refresh_token', refreshToken)
+      localStorage.setItem('auth_user', JSON.stringify(userData))
+      
+      // Clear any errors
+      error.value = null
+      loading.value = false
+      
+      console.log('Google OAuth authentication set successfully')
+      return true
+    } catch (err) {
+      console.error('Error setting Google auth:', err)
+      error.value = 'Failed to set authentication data'
+      loading.value = false
+      return false
+    }
+  }
+
   return {
     user,
     loading,
@@ -236,7 +314,9 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     register,
     logout,
+    refreshToken,
     checkStoredAuth,
-    updateProfile
+    updateProfile,
+    setGoogleAuth
   }
 })

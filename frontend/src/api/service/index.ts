@@ -1,6 +1,7 @@
 import { ApiClient } from '../endpoint/axios'
 import { AuthService } from './authService'
 import { FileService } from './fileService'
+import UserService from './userService'
 import {
   BaseAuth,
   BaseFile,
@@ -15,7 +16,8 @@ import {
 } from '../endpoint/base'
 
 // Create service instances
-export const authService = new AuthService(new ApiClient(BaseAuth() || 'http://localhost:8080/api/auth'))
+export const authService = new AuthService(new ApiClient(BaseAuth() || 'http://localhost:8080'))
+export const userService = new UserService(new ApiClient(BaseAuth() || 'http://localhost:8080'))
 export const fileService = new FileService(new ApiClient(BaseFile() || 'http://localhost:8081/api/file'))
 export const providerService = new ApiClient(BaseProvider() || 'http://localhost:8082/api/provider')
 export const managementService = new ApiClient(BaseManagement() || 'http://localhost:8083/api/management')
@@ -29,6 +31,7 @@ export const financeService = new ApiClient(BaseFinance() || 'http://localhost:8
 // Export all services as default
 export default {
   auth: authService,
+  user: userService,
   file: fileService,
   provider: providerService,
   management: managementService,

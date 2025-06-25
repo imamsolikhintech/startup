@@ -199,8 +199,7 @@ const menuItems = [
 ]
 
 const handleLogout = () => {
-  authStore.logout()
-  router.push('/auth/login')
+  authStore.logout(router)
 }
 
 const toggleTheme = () => {

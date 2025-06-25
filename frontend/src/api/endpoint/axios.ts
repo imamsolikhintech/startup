@@ -40,16 +40,25 @@ export const createApiInstance = (baseURL: string): AxiosInstance => {
     (response: AxiosResponse) => {
       return response
     },
-    (error) => {
+    async (error) => {
       const notificationStore = useNotificationStore()
       const authStore = useAuthStore()
       
       if (error.response) {
         const { status, data } = error.response
         
-        switch (status) {
-          case 401:
-            // Unauthorized - redirect to login
+        // Handle token expiration
+        if (status === 401 && error.config && !error.config.__isRetryRequest) {
+          try {
+            // Try to refresh the token
+            const newToken = await authStore.refreshToken()
+            
+            // Retry the original request with new token
+            error.config.headers.Authorization = `Bearer ${newToken}`
+            error.config.__isRetryRequest = true
+            return axios(error.config)
+          } catch (refreshError) {
+            // If refresh token fails, logout and redirect to login
             authStore.logout()
             notificationStore.addNotification({
               id: Date.now().toString(),
@@ -58,6 +67,22 @@ export const createApiInstance = (baseURL: string): AxiosInstance => {
               message: 'Please login again',
               timestamp: new Date()
             })
+          }
+        }
+        
+        switch (status) {
+          case 401:
+            // Only handle 401 here if token refresh failed or wasn't attempted
+            if (!error.config || error.config.__isRetryRequest) {
+              authStore.logout()
+              notificationStore.addNotification({
+                id: Date.now().toString(),
+                type: 'error',
+                title: 'Session Expired',
+                message: 'Please login again',
+                timestamp: new Date()
+              })
+            }
             break
           case 403:
             notificationStore.addNotification({

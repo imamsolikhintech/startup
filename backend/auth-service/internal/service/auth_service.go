@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/auth-service/config"
@@ -255,19 +256,29 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*m
 
 // Logout mengeluarkan pengguna
 func (s *authService) Logout(ctx context.Context, userID uuid.UUID, refreshToken string) error {
-	// Parse token
+	// Parse token - jika invalid, tetap lanjutkan dengan cleanup
 	claims, err := utils.ParseRefreshToken(refreshToken, s.config.JWT.SecretKey)
 	if err != nil {
-		return ErrInvalidRefreshToken
+		// Log warning tapi tetap lanjutkan cleanup
+		log.Printf("Invalid refresh token during logout, proceeding with cleanup: %v", err)
+		// Tetap hapus sesi pengguna meskipun token invalid
+		s.tokenRepo.DeleteUserSession(ctx, userID)
+		return nil
 	}
 
-	// Cabut token
+	// Cabut token - abaikan jika token tidak ditemukan
 	err = s.tokenRepo.RevokeRefreshToken(ctx, userID, claims.TokenID)
 	if err != nil {
-		return err
+		// Jika token tidak ditemukan, itu bukan error fatal
+		if errors.Is(err, repository.ErrTokenNotFound) {
+			log.Printf("Token not found during logout, continuing cleanup: %v", err)
+		} else {
+			log.Printf("Failed to revoke refresh token: %v", err)
+			// Tetap lanjutkan dengan cleanup meskipun gagal revoke
+		}
 	}
 
-	// Hapus sesi pengguna
+	// Selalu hapus sesi pengguna
 	s.tokenRepo.DeleteUserSession(ctx, userID)
 
 	return nil

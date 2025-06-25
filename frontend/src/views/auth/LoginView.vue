@@ -188,8 +188,19 @@ const handleLogin = async () => {
 }
 
 const handleSocialLogin = (provider: string) => {
-  console.log(`Social login with ${provider} - Feature coming soon`)
-  // Placeholder for social login functionality
+  if (provider === 'google') {
+    // Get current URL for redirect after authentication
+    const redirectUrl = `${window.location.origin}/auth/google/callback`
+    
+    // Redirect to backend Google OAuth endpoint
+    const authServiceUrl = import.meta.env.VITE_API_SERVICE_AUTH
+    const googleAuthUrl = `${authServiceUrl}/api/v1/auth/google/login?redirect_url=${encodeURIComponent(redirectUrl)}`
+    
+    console.log('Redirecting to Google OAuth:', googleAuthUrl)
+    window.location.href = googleAuthUrl
+  } else {
+    console.log(`Social login with ${provider} - Feature coming soon`)
+  }
 }
 
 const fillDemoCredentials = () => {
