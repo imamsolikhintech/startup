@@ -1,0 +1,10 @@
+export const BaseAuth = () => import.meta.env.VITE_API_SERVICE_AUTH
+export const BaseFile = () => import.meta.env.VITE_API_SERVICE_FILE
+export const BaseProvider = () => import.meta.env.VITE_API_SERVICE_PROVIDER
+export const BaseManagement = () => import.meta.env.VITE_API_SERVICE_MANAGEMENT
+export const BaseMaster = () => import.meta.env.VITE_API_SERVICE_MASTER
+export const BaseClinic = () => import.meta.env.VITE_API_SERVICE_CLINIC
+export const BasePurchase = () => import.meta.env.VITE_API_SERVICE_PURCHASE
+export const BaseSales = () => import.meta.env.VITE_API_SERVICE_SALES
+export const BaseWarehouse = () => import.meta.env.VITE_API_SERVICE_WAREHOUSE
+export const BaseFinance = () => import.meta.env.VITE_API_SERVICE_FINANCE
