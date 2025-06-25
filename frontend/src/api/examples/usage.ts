@@ -48,6 +48,62 @@ export const createUser = async (userData: any) => {
   }
 }
 
+// Example 3: Request Deduplication Demo
+export const demonstrateRequestDeduplication = async () => {
+  console.log('Starting request deduplication demo...')
+  
+  // These requests will be deduplicated automatically
+  const startTime = Date.now()
+  
+  // Make multiple identical requests simultaneously
+  const promises = [
+    apiClient.get('/users'),
+    apiClient.get('/users'),
+    apiClient.get('/users')
+  ]
+  
+  try {
+    const results = await Promise.all(promises)
+    const endTime = Date.now()
+    
+    console.log(`Completed ${promises.length} requests in ${endTime - startTime}ms`)
+    console.log('All results are identical:', results.every(r => JSON.stringify(r) === JSON.stringify(results[0])))
+    console.log('Pending requests count:', apiClient.getPendingRequestsCount())
+    
+    return results[0] // All results are the same due to deduplication
+  } catch (error) {
+    console.error('Request deduplication demo failed:', error)
+    throw error
+  }
+}
+
+// Example 4: Different requests (not deduplicated)
+export const demonstrateDifferentRequests = async () => {
+  console.log('Making different requests (will not be deduplicated)...')
+  
+  const promises = [
+    apiClient.get('/users', { params: { page: 1 } }),
+    apiClient.get('/users', { params: { page: 2 } }),
+    apiClient.get('/users', { params: { active: true } })
+  ]
+  
+  try {
+    const results = await Promise.all(promises)
+    console.log('Different requests completed:', results.length)
+    return results
+  } catch (error) {
+    console.error('Different requests demo failed:', error)
+    throw error
+  }
+}
+
+// Example 5: Cleanup pending requests
+export const cleanupExample = () => {
+  console.log('Pending requests before cleanup:', apiClient.getPendingRequestsCount())
+  apiClient.clearPendingRequests()
+  console.log('Pending requests after cleanup:', apiClient.getPendingRequestsCount())
+}
+
 // Example 3: File upload with progress
 export const uploadFile = async (
   file: File,

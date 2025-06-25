@@ -59,17 +59,26 @@ export interface User {
   id: string
   name: string
   email: string
-  role: UserRole
+  role: string
+  role_id: string
+  profile_picture?: string
+  provider?: string
+  verified: boolean
+  active: boolean
+  last_login?: string
+  created_at: string
+  updated_at: string
+  // Legacy fields for backward compatibility
   avatar?: string
   phone?: string
   address?: Address
-  preferences: UserPreferences
-  emailVerified: boolean
-  phoneVerified: boolean
-  twoFactorEnabled: boolean
+  preferences?: UserPreferences
+  emailVerified?: boolean
+  phoneVerified?: boolean
+  twoFactorEnabled?: boolean
   lastLoginAt?: string
-  createdAt: string
-  updatedAt: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface UserRole {
@@ -102,6 +111,68 @@ export interface UserPreferences {
     push: boolean
     sms: boolean
   }
+}
+
+// User Activity Types
+export interface LoginHistory {
+  id: number
+  user_id: string
+  ip: string
+  user_agent: string
+  device_info: string
+  browser: string
+  os: string
+  city: string
+  country: string
+  success: boolean
+  failure_reason?: string
+  login_time: string
+  created_at: string
+  updated_at: string
+}
+
+export interface LoginSession {
+  id: number
+  timestamp: string
+  ip_address: string
+  user_agent: string
+  device_info: string
+  browser: string
+  os: string
+  location: string
+  success: boolean
+}
+
+export interface UserActivity {
+  date: string
+  login_count: number
+  unique_ips: number
+}
+
+
+
+export interface ActivityStats {
+  total_logins: number
+  total_days: number
+  unique_ips: number
+  last_login?: string
+  most_active_day: string
+  average_per_day: number
+}
+
+export interface UserActivityResponse {
+  activity_log: UserActivity[]
+  login_sessions: LoginSession[]
+  statistics: ActivityStats
+}
+
+export interface UserStats {
+  total_users: number
+  active_users: number
+  verified_users: number
+  new_users_today: number
+  new_users_this_week: number
+  new_users_this_month: number
 }
 
 // File Management Types

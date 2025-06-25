@@ -2,6 +2,12 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 
+// Request deduplication interface
+interface PendingRequest {
+  promise: Promise<any>
+  timestamp: number
+}
+
 // Base configuration
 const baseConfig: AxiosRequestConfig = {
   timeout: 30000,
@@ -150,39 +156,102 @@ export const createApiInstance = (baseURL: string): AxiosInstance => {
 // API Helper class
 export class ApiClient {
   private instance: AxiosInstance
+  private pendingRequests: Map<string, PendingRequest> = new Map()
+  private readonly REQUEST_TIMEOUT = 30000 // 30 seconds
 
   constructor(baseURL: string) {
     this.instance = createApiInstance(baseURL)
   }
 
+  // Generate unique key for request deduplication
+  private generateRequestKey(method: string, url: string, data?: any): string {
+    const dataHash = data ? JSON.stringify(data) : ''
+    return `${method.toUpperCase()}:${url}:${dataHash}`
+  }
+
+  // Clean up expired pending requests
+  private cleanupExpiredRequests(): void {
+    const now = Date.now()
+    for (const [key, request] of this.pendingRequests.entries()) {
+      if (now - request.timestamp > this.REQUEST_TIMEOUT) {
+        this.pendingRequests.delete(key)
+      }
+    }
+  }
+
+  // Execute request with deduplication
+  private async executeWithDeduplication<T>(
+    requestKey: string,
+    requestFn: () => Promise<T>
+  ): Promise<T> {
+    // Clean up expired requests first
+    this.cleanupExpiredRequests()
+
+    // Check if same request is already pending
+    const existingRequest = this.pendingRequests.get(requestKey)
+    if (existingRequest) {
+      console.log(`Deduplicating request: ${requestKey}`)
+      return existingRequest.promise as Promise<T>
+    }
+
+    // Create new request
+    const promise = requestFn().finally(() => {
+      // Remove from pending requests when completed
+      this.pendingRequests.delete(requestKey)
+    })
+
+    // Store pending request
+    this.pendingRequests.set(requestKey, {
+      promise,
+      timestamp: Date.now()
+    })
+
+    return promise
+  }
+
   // Standard GET request
   async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.get<T>(url, config)
-    return response.data
+    const requestKey = this.generateRequestKey('GET', url)
+    return this.executeWithDeduplication(requestKey, async () => {
+      const response = await this.instance.get<T>(url, config)
+      return response.data
+    })
   }
 
   // Standard POST request
   async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.post<T>(url, data, config)
-    return response.data
+    const requestKey = this.generateRequestKey('POST', url, data)
+    return this.executeWithDeduplication(requestKey, async () => {
+      const response = await this.instance.post<T>(url, data, config)
+      return response.data
+    })
   }
 
   // Standard PUT request
   async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.put<T>(url, data, config)
-    return response.data
+    const requestKey = this.generateRequestKey('PUT', url, data)
+    return this.executeWithDeduplication(requestKey, async () => {
+      const response = await this.instance.put<T>(url, data, config)
+      return response.data
+    })
   }
 
   // Standard PATCH request
   async patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.patch<T>(url, data, config)
-    return response.data
+    const requestKey = this.generateRequestKey('PATCH', url, data)
+    return this.executeWithDeduplication(requestKey, async () => {
+      const response = await this.instance.patch<T>(url, data, config)
+      return response.data
+    })
   }
 
   // Standard DELETE request
   async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.delete<T>(url, config)
-    return response.data
+    const requestKey = this.generateRequestKey('DELETE', url)
+    return this.executeWithDeduplication(requestKey, async () => {
+      const response = await this.instance.delete<T>(url, config)
+      return response.data
+    })
   }
 
   // File upload with progress
@@ -302,14 +371,14 @@ export class ApiClient {
       totalPages: number
     }
   }> {
-    const response = await this.instance.get(url, {
-      params: {
-        page,
-        limit,
-        ...params
-      }
+    const requestParams = { page, limit, ...params }
+    const requestKey = this.generateRequestKey('GET', url, requestParams)
+    return this.executeWithDeduplication(requestKey, async () => {
+      const response = await this.instance.get(url, {
+        params: requestParams
+      })
+      return response.data
     })
-    return response.data
   }
 
   // Batch requests
@@ -322,6 +391,17 @@ export class ApiClient {
         throw result.reason
       }
     })
+  }
+
+  // Clear all pending requests (useful for cleanup)
+  clearPendingRequests(): void {
+    this.pendingRequests.clear()
+  }
+
+  // Get pending requests count (for debugging)
+  getPendingRequestsCount(): number {
+    this.cleanupExpiredRequests()
+    return this.pendingRequests.size
   }
 
   // Get raw axios instance for custom usage

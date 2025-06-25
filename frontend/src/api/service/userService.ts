@@ -1,5 +1,5 @@
 import { ApiClient } from '../endpoint/axios'
-import type { ApiResponse, PaginatedResponse, User, UserRole, Permission } from '../types'
+import type { ApiResponse, PaginatedResponse, User, UserRole, Permission, UserStats, UserActivityResponse, LoginHistory } from '../types'
 
 export interface CreateUserRequest {
   name: string
@@ -71,7 +71,7 @@ export class UserService {
   }
 
   async getAllRoles(): Promise<ApiResponse<UserRole[]>> {
-    return await this.apiClient.get<ApiResponse<UserRole[]>>('/api/v1/roles/all')
+    return await this.apiClient.get<ApiResponse<UserRole[]>>('/api/v1/roles')
   }
 
   async getRoleById(id: string): Promise<ApiResponse<UserRole>> {
@@ -101,6 +101,24 @@ export class UserService {
 
   async removeRoleFromUser(userId: string): Promise<ApiResponse<User>> {
     return await this.apiClient.delete<ApiResponse<User>>(`/api/v1/users/${userId}/remove-role`)
+  }
+
+  // User Statistics
+  async getUserStats(): Promise<ApiResponse<UserStats>> {
+    return this.apiClient.get('/api/v1/users/stats')
+  }
+
+  // User Activity Methods
+  async getUserActivity(userId: string, days: number = 30): Promise<ApiResponse<UserActivityResponse>> {
+    return this.apiClient.get(`/api/v1/users/${userId}/activity?days=${days}`)
+  }
+
+  async getLoginHistory(userId: string, limit: number = 50): Promise<ApiResponse<LoginHistory[]>> {
+    return this.apiClient.get(`/api/v1/auth/login-history?limit=${limit}`)
+  }
+
+  async getAllUsersActivity(days: number = 7): Promise<ApiResponse<{ [userId: string]: UserActivityResponse }>> {
+    return this.apiClient.get(`/api/v1/users/activity?days=${days}`)
   }
 }
 

@@ -148,12 +148,12 @@ body {
 }
 
 /* Focus States */
-.v-btn:focus-visible,
+/* .v-btn:focus-visible,
 .v-text-field:focus-within,
 .v-select:focus-within {
   outline: 2px solid rgba(var(--v-theme-primary), 0.5);
   outline-offset: 2px;
-}
+} */
 
 /* Print Styles */
 @media print {

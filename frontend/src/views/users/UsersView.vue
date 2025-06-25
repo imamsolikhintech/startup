@@ -79,19 +79,19 @@
         class="elevation-0"
         item-value="id"
       >
-        <template #item.avatar="{ item }">
+        <template #item.profile_picture="{ item }">
           <v-avatar size="40">
-            <v-img :src="item.avatar" :alt="item.name" />
+            <v-img :src="item.profile_picture" :alt="item.name" />
           </v-avatar>
         </template>
 
-        <template #item.status="{ item }">
+        <template #item.active="{ item }">
           <v-chip
-            :color="item.status === 'active' ? 'success' : 'error'"
+            :color="item.active ? 'success' : 'error'"
             size="small"
             variant="tonal"
           >
-            {{ item.status }}
+            {{ item.active ? 'Active' : 'Inactive' }}
           </v-chip>
         </template>
 
@@ -105,23 +105,34 @@
           </v-chip>
         </template>
 
-        <template #item.lastLogin="{ item }">
-          {{ formatDate(item.lastLogin) }}
+        <template #item.last_login="{ item }">
+          {{ formatDate(item.last_login) }}
         </template>
 
         <template #item.actions="{ item }">
           <v-btn
+            icon="mdi-chart-line"
+            size="small"
+            color="info"
+            variant="text"
+            @click="viewUserActivity(item)"
+            title="View Activity"
+          />
+          <v-btn
             icon="mdi-pencil"
             size="small"
+            color="primary"
             variant="text"
             @click="editUser(item)"
+            title="Edit User"
           />
           <v-btn
             icon="mdi-delete"
             size="small"
-            variant="text"
             color="error"
+            variant="text"
             @click="deleteUser(item)"
+            title="Delete User"
           />
         </template>
       </v-data-table>
@@ -201,24 +212,178 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- User Activity Dialog -->
+    <v-dialog v-model="activityDialog" max-width="1200px">
+      <v-card>
+        <v-card-title class="text-h5">
+          User Activity & Login History
+        </v-card-title>
+        
+        <v-card-text>
+          <v-progress-linear v-if="activityLoading" indeterminate></v-progress-linear>
+          
+          <div v-else-if="selectedUserActivity">
+            <!-- Activity Statistics -->
+            <v-row class="mb-4">
+              <v-col cols="12">
+                <h3 class="mb-3">Activity Statistics</h3>
+                <v-row>
+                  <v-col cols="6" md="3">
+                    <v-card class="pa-3 text-center">
+                      <div class="text-h4 text-primary">{{ selectedUserActivity.statistics.total_logins }}</div>
+                      <div class="text-caption">Total Logins</div>
+                    </v-card>
+                  </v-col>
+                  <v-col cols="6" md="3">
+                    <v-card class="pa-3 text-center">
+                      <div class="text-h4 text-success">{{ selectedUserActivity.statistics.unique_ips }}</div>
+                      <div class="text-caption">Unique IPs</div>
+                    </v-card>
+                  </v-col>
+                  <v-col cols="6" md="3">
+                    <v-card class="pa-3 text-center">
+                      <div class="text-h4 text-info">{{ selectedUserActivity.statistics.total_days }}</div>
+                      <div class="text-caption">Active Days</div>
+                    </v-card>
+                  </v-col>
+                  <v-col cols="6" md="3">
+                    <v-card class="pa-3 text-center">
+                      <div class="text-h4 text-warning">{{ selectedUserActivity.statistics.average_per_day?.toFixed(1) || '0.0' }}</div>
+                      <div class="text-caption">Avg/Day</div>
+                    </v-card>
+                  </v-col>
+                </v-row>
+                <v-row class="mt-2">
+                  <v-col cols="6" md="3">
+                    <v-card class="pa-3 text-center">
+                      <div class="text-h4 text-purple">{{ selectedUserActivity.statistics.most_active_day || 'N/A' }}</div>
+                      <div class="text-caption">Most Active Day</div>
+                    </v-card>
+                  </v-col>
+                  <v-col cols="6" md="3">
+                    <v-card class="pa-3 text-center">
+                      <div class="text-h4 text-indigo">{{ formatDate(selectedUserActivity.statistics.last_login) }}</div>
+                      <div class="text-caption">Last Login</div>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-col>
+            </v-row>
+
+            <!-- Activity Chart -->
+            <v-row class="mb-4">
+              <v-col cols="12">
+                <h3 class="mb-3">Daily Activity (Last 30 Days)</h3>
+                <v-card class="pa-4">
+                  <div v-if="selectedUserActivity.activity_log && selectedUserActivity.activity_log.length > 0">
+                    <v-row class="mb-2 font-weight-bold">
+                      <v-col cols="4">Date</v-col>
+                      <v-col cols="4">Logins</v-col>
+                      <v-col cols="4">Unique IPs</v-col>
+                    </v-row>
+                    <v-divider class="mb-2"></v-divider>
+                    <v-row v-for="activity in selectedUserActivity.activity_log.slice(0, 10)" :key="activity.date" class="mb-2">
+                      <v-col cols="4">{{ formatDate(activity.date) }}</v-col>
+                      <v-col cols="4">{{ activity.login_count }} logins</v-col>
+                      <v-col cols="4">{{ activity.unique_ips }} unique IPs</v-col>
+                    </v-row>
+                  </div>
+                  <div v-else class="text-center text-grey">
+                    No activity data available
+                  </div>
+                </v-card>
+              </v-col>
+            </v-row>
+
+            <!-- Login History -->
+            <v-row>
+              <v-col cols="12">
+                <h3 class="mb-3">Recent Login Sessions</h3>
+                <v-data-table
+                  :headers="[
+                    { title: 'Date/Time', key: 'login_time' },
+                    { title: 'IP Address', key: 'ip' },
+                    { title: 'Location', key: 'location' },
+                    { title: 'Device', key: 'device_info' },
+                    { title: 'Status', key: 'success' }
+                  ]"
+                  :items="selectedUserLoginHistory"
+                  :items-per-page="10"
+                  class="elevation-1"
+                >
+                  <template #item.login_time="{ item }">
+                    {{ formatDateTime(item.login_time) }}
+                  </template>
+                  
+                  <template #item.location="{ item }">
+                    <span v-if="item.city || item.country">
+                      {{ item.city }}{{ item.city && item.country ? ', ' : '' }}{{ item.country }}
+                    </span>
+                    <span v-else class="text-grey">Unknown</span>
+                  </template>
+                  
+                  <template #item.device_info="{ item }">
+                    <div>
+                      <div class="text-body-2">{{ item.browser || 'Unknown Browser' }}</div>
+                      <div class="text-caption text-grey">{{ item.os || 'Unknown OS' }}</div>
+                    </div>
+                  </template>
+                  
+                  <template #item.success="{ item }">
+                    <v-chip
+                      :color="item.success ? 'success' : 'error'"
+                      size="small"
+                      variant="flat"
+                    >
+                      {{ item.success ? 'Success' : 'Failed' }}
+                    </v-chip>
+                    <div v-if="!item.success && item.failure_reason" class="text-caption text-error mt-1">
+                      {{ item.failure_reason }}
+                    </div>
+                  </template>
+                </v-data-table>
+              </v-col>
+            </v-row>
+          </div>
+        </v-card-text>
+        
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" @click="activityDialog = false">
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useNotificationStore } from '@/stores/notifications'
+import { userService } from '@/api/service'
+import type { User, UserStats, UserActivityResponse, LoginHistory } from '@/api/types'
 
 const notificationStore = useNotificationStore()
 
+// Refs
+const userForm = ref()
+
+// Data
 const search = ref('')
 const roleFilter = ref('')
 const statusFilter = ref('')
 const loading = ref(false)
-const saving = ref(false)
 const showAddDialog = ref(false)
-const editingUser = ref<any>(null)
+const editingUser = ref<User | null>(null)
+const activityDialog = ref(false)
+const selectedUserActivity = ref<UserActivityResponse | null>(null)
+const selectedUserLoginHistory = ref<LoginHistory[]>([])
+const activityLoading = ref(false)
+const saving = ref(false)
 
-const userForm = ref()
+// Form data
 const userFormData = ref({
   name: '',
   email: '',
@@ -227,61 +392,34 @@ const userFormData = ref({
   password: ''
 })
 
-const roles = ['admin', 'user', 'moderator', 'viewer']
+// API Data
+const users = ref<User[]>([])
+const userStats = ref<UserStats | null>(null)
+const roles = ref(['admin', 'user', 'moderator']) // Will be loaded from API
+
 const statuses = ['active', 'inactive']
 
 const headers = [
-  { title: 'Avatar', key: 'avatar', sortable: false },
+  { title: 'Avatar', key: 'profile_picture', sortable: false },
   { title: 'Name', key: 'name' },
   { title: 'Email', key: 'email' },
   { title: 'Role', key: 'role' },
-  { title: 'Status', key: 'status' },
-  { title: 'Last Login', key: 'lastLogin' },
+  { title: 'Status', key: 'active', sortable: false },
+  { title: 'Last Login', key: 'last_login' },
   { title: 'Actions', key: 'actions', sortable: false }
 ]
 
-const users = ref([
-  {
-    id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'admin',
-    status: 'active',
-    avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=1',
-    lastLogin: new Date('2024-01-15T10:30:00')
-  },
-  {
-    id: 2,
-    name: 'Alice Johnson',
-    email: 'alice@example.com',
-    role: 'user',
-    status: 'active',
-    avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=1',
-    lastLogin: new Date('2024-01-14T15:45:00')
-  },
-  {
-    id: 3,
-    name: 'Bob Smith',
-    email: 'bob@example.com',
-    role: 'moderator',
-    status: 'inactive',
-    avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=1',
-    lastLogin: new Date('2024-01-10T09:15:00')
-  }
-])
-
 const filteredUsers = computed(() => {
-  let filtered = users.value
-
-  if (roleFilter.value) {
-    filtered = filtered.filter(user => user.role === roleFilter.value)
-  }
-
-  if (statusFilter.value) {
-    filtered = filtered.filter(user => user.status === statusFilter.value)
-  }
-
-  return filtered
+  return users.value.filter(user => {
+    const matchesSearch = user.name?.toLowerCase().includes(search.value.toLowerCase()) ||
+                         user.email?.toLowerCase().includes(search.value.toLowerCase())
+    const matchesRole = roleFilter.value === '' || user.role === roleFilter.value
+    const matchesStatus = statusFilter.value === '' || 
+                         (statusFilter.value === 'active' && user.active) ||
+                         (statusFilter.value === 'inactive' && !user.active)
+    
+    return matchesSearch && matchesRole && matchesStatus
+  })
 })
 
 const nameRules = [
@@ -309,8 +447,10 @@ const getRoleColor = (role: string) => {
   return colors[role] || 'primary'
 }
 
-const formatDate = (date: Date) => {
-  return date.toLocaleDateString('en-US', {
+const formatDate = (date: string | Date) => {
+  if (!date) return 'Never'
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return dateObj.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -319,76 +459,173 @@ const formatDate = (date: Date) => {
   })
 }
 
-const editUser = (user: any) => {
+const formatDateTime = (dateTime: string | Date) => {
+  return new Date(dateTime).toLocaleString()
+}
+
+// API Methods
+const loadUsers = async () => {
+  loading.value = true
+  try {
+    const response = await userService.getUsers()
+    // if (response.success === 200) {
+      users.value = response.data
+    // }
+    console.log(users.value)
+  } catch (error) {
+    notificationStore.addNotification({
+      type: 'error',
+      title: 'Error',
+      message: 'Failed to load users'
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+const loadUserStats = async () => {
+  try {
+    const response = await userService.getUserStats()
+    if (response.success) {
+      userStats.value = response.data
+    }
+  } catch (error) {
+    console.error('Failed to load user stats:', error)
+  }
+}
+
+const loadRoles = async () => {
+  try {
+    const response = await userService.getAllRoles()
+    if (response.success) {
+      roles.value = response.data.map(role => role.name)
+    }
+  } catch (error) {
+    console.error('Failed to load roles:', error)
+  }
+}
+
+// User Activity Methods
+const viewUserActivity = async (user: User) => {
+  activityLoading.value = true
+  activityDialog.value = true
+  
+  try {
+    const [activityResponse, historyResponse] = await Promise.all([
+      userService.getUserActivity(user.id, 30),
+      userService.getLoginHistory(user.id, 50)
+    ])
+    
+    if (activityResponse.status === 200) {
+      selectedUserActivity.value = activityResponse.data
+    }
+    
+    if (historyResponse.status === 200) {
+      selectedUserLoginHistory.value = historyResponse.data
+    }
+  } catch (error) {
+    notificationStore.addNotification({
+      type: 'error',
+      title: 'Error',
+      message: 'Failed to load user activity'
+    })
+  } finally {
+    activityLoading.value = false
+  }
+}
+
+// Methods
+const editUser = (user: User) => {
   editingUser.value = user
-  userFormData.value = { ...user, password: '' }
+  userFormData.value = {
+    name: user.name || '',
+    email: user.email || '',
+    role: user.role || '',
+    status: user.active ? 'active' : 'inactive',
+    password: ''
+  }
   showAddDialog.value = true
 }
 
-const deleteUser = (user: any) => {
+const deleteUser = async (user: User) => {
   if (confirm(`Are you sure you want to delete ${user.name}?`)) {
-    const index = users.value.findIndex(u => u.id === user.id)
-    if (index > -1) {
-      users.value.splice(index, 1)
+    try {
+      const response = await userService.deleteUser(user.id)
+      if (response.success) {
+        await loadUsers() // Reload users
+        notificationStore.addNotification({
+          type: 'success',
+          title: 'User Deleted',
+          message: `${user.name} has been deleted successfully`
+        })
+      }
+    } catch (error) {
       notificationStore.addNotification({
-        title: 'User Deleted',
-        message: `${user.name} has been removed`,
-        type: 'success'
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to delete user'
       })
     }
   }
 }
 
 const saveUser = async () => {
-  const { valid } = await userForm.value.validate()
-  if (!valid) return
-
   saving.value = true
-
   try {
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
+    let response
+    
     if (editingUser.value) {
       // Update existing user
-      const index = users.value.findIndex(u => u.id === editingUser.value.id)
-      if (index > -1) {
-        users.value[index] = { ...users.value[index], ...userFormData.value }
-      }
-      notificationStore.addNotification({
-        title: 'User Updated',
-        message: `${userFormData.value.name} has been updated`,
-        type: 'success'
+      response = await userService.updateUser(editingUser.value.id, {
+        name: userFormData.value.name,
+        email: userFormData.value.email,
+        role: userFormData.value.role,
+        active: userFormData.value.status === 'active'
       })
+      
+      if (response.success) {
+        notificationStore.addNotification({
+          type: 'success',
+          title: 'User Updated',
+          message: `${userFormData.value.name} has been updated successfully`
+        })
+      }
     } else {
-      // Add new user
-      const newUser = {
-        ...userFormData.value,
-        id: Math.max(...users.value.map(u => u.id)) + 1,
-        avatar: `https://images.pexels.com/photos/${Math.floor(Math.random() * 1000000)}/pexels-photo-${Math.floor(Math.random() * 1000000)}.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=1`,
-        lastLogin: new Date()
-      }
-      users.value.push(newUser)
-      notificationStore.addNotification({
-        title: 'User Created',
-        message: `${userFormData.value.name} has been added`,
-        type: 'success'
+      // Create new user
+      response = await userService.createUser({
+        name: userFormData.value.name,
+        email: userFormData.value.email,
+        password: userFormData.value.password,
+        role: userFormData.value.role,
+        active: userFormData.value.status === 'active'
       })
+      
+      if (response.success) {
+        notificationStore.addNotification({
+          type: 'success',
+          title: 'User Created',
+          message: `${userFormData.value.name} has been created successfully`
+        })
+      }
     }
-
-    showAddDialog.value = false
-    editingUser.value = null
-    userFormData.value = {
-      name: '',
-      email: '',
-      role: '',
-      status: 'active',
-      password: ''
+    
+    if (response.success) {
+      await loadUsers() // Reload users
+      showAddDialog.value = false
+      editingUser.value = null
+      userFormData.value = {
+        name: '',
+        email: '',
+        role: '',
+        status: 'active',
+        password: ''
+      }
     }
   } catch (error) {
     notificationStore.addNotification({
+      type: 'error',
       title: 'Error',
-      message: 'Failed to save user',
-      type: 'error'
+      message: 'Failed to save user'
     })
   } finally {
     saving.value = false
@@ -396,18 +633,32 @@ const saveUser = async () => {
 }
 
 const exportUsers = () => {
+  // Export functionality
+  const csvContent = users.value.map(user => 
+    `${user.name},${user.email},${user.role},${user.active ? 'Active' : 'Inactive'},${user.last_login || ''}`
+  ).join('\n')
+  
+  const blob = new Blob([`Name,Email,Role,Status,Last Login\n${csvContent}`], { type: 'text/csv' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'users.csv'
+  a.click()
+  window.URL.revokeObjectURL(url)
+  
   notificationStore.addNotification({
-    title: 'Export Started',
-    message: 'User data is being exported...',
-    type: 'info'
+    type: 'success',
+    title: 'Export Complete',
+    message: 'User data has been exported successfully'
   })
 }
 
-onMounted(() => {
-  loading.value = true
-  setTimeout(() => {
-    loading.value = false
-  }, 1000)
+onMounted(async () => {
+  await Promise.all([
+    loadUsers(),
+    loadUserStats(),
+    loadRoles()
+  ])
 })
 </script>
 

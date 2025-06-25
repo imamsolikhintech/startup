@@ -2,6 +2,7 @@ import { ApiClient } from '../endpoint/axios'
 import { AuthService } from './authService'
 import { FileService } from './fileService'
 import UserService from './userService'
+import { ApiClient } from '../endpoint/axios'
 import {
   BaseAuth,
   BaseFile,
