@@ -18,6 +18,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const initializing = ref(true)
 
   const isAuthenticated = computed(() => !!user.value)
   const token = computed(() => SecureTokenStorage.getToken(AUTH_CONSTANTS.TOKEN_KEY))
@@ -44,35 +45,37 @@ export const useAuthStore = defineStore('auth', () => {
         email,
         password
       }
-      
+
       const response = await authService.login(credentials)
-      
-      if (response.success && response.data) {
+
+      if (response.data) {
         const { user: apiUser, token } = response.data
-        
+
         // Map API user to store user format
         const userData: User = {
           id: apiUser.id,
           email: apiUser.email,
           name: apiUser.name,
-          avatar: apiUser.avatar,
-          role: apiUser.role?.name || 'user'
+          avatar: apiUser.profile_picture,
+          role: apiUser.role || 'user'
         }
-        
+
         user.value = userData
-        
+
         // Store token and user data securely
-        SecureTokenStorage.setToken(AUTH_CONSTANTS.TOKEN_KEY, response.data.accessToken || token)
+        if (response.data.token) {
+          SecureTokenStorage.setToken(AUTH_CONSTANTS.TOKEN_KEY, response.data.token)
+        }
         if (response.data.refreshToken) {
           SecureTokenStorage.setToken(AUTH_CONSTANTS.REFRESH_TOKEN_KEY, response.data.refreshToken)
         }
         SecureTokenStorage.setToken(AUTH_CONSTANTS.USER_KEY, JSON.stringify(userData))
-        
+
         // Reset login attempts on successful login
         LoginRateLimit.resetAttempts(email)
         loginAttempts.value = 0
         isInCooldown.value = false
-        
+
         console.log('Login successful, user data:', userData)
         return true
       } else {
@@ -80,20 +83,20 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } catch (err: any) {
       console.error('Login error:', err)
-      
+
       // Increment login attempts
       const attempts = LoginRateLimit.incrementAttempts(email)
       loginAttempts.value = attempts
-      
+
       // Handle different error types
       const authError = err instanceof AuthError ? err : AuthError.fromApiError(err)
       error.value = authError.getUserFriendlyMessage()
-      
+
       // Check if account is now in cooldown
       if (attempts >= AUTH_CONSTANTS.MAX_LOGIN_ATTEMPTS) {
         isInCooldown.value = true
       }
-      
+
       return false
     } finally {
       loading.value = false
@@ -112,24 +115,24 @@ export const useAuthStore = defineStore('auth', () => {
         name,
         terms: true
       }
-      
+
       const response = await authService.register(registerData)
-      
-      if (response.success && response.data) {
+
+      if (response.data) {
         const apiUser = response.data
-        
+
         // Map API user to store user format
         const userData: User = {
           id: apiUser.id,
           email: apiUser.email,
           name: apiUser.name,
-          avatar: apiUser.avatar,
-          role: apiUser.role?.name || 'user'
+          avatar: apiUser.profile_picture,
+          role: apiUser.role || 'user'
         }
-        
+
         user.value = userData
         localStorage.setItem('auth_user', JSON.stringify(userData))
-        
+
         console.log('Registration successful, user data:', userData)
         return true
       } else {
@@ -137,7 +140,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } catch (err: any) {
       console.error('Registration error:', err)
-      
+
       // Handle API error response
       if (err.response?.data?.message) {
         error.value = err.response.data.message
@@ -148,7 +151,7 @@ export const useAuthStore = defineStore('auth', () => {
       } else {
         error.value = 'Registration failed. Please try again.'
       }
-      
+
       return false
     } finally {
       loading.value = false
@@ -176,18 +179,18 @@ export const useAuthStore = defineStore('auth', () => {
       isInCooldown.value = false
       SecureTokenStorage.clearAllTokens()
       console.log('User logged out')
-      
+
       // Show success notification with backend message if available
       try {
         const { useNotificationStore } = await import('@/stores/notifications')
         const notificationStore = useNotificationStore()
-        
+
         const message = logoutResponse?.message || 'You have been successfully logged out'
         notificationStore.showSuccess(message, 'Logout Successful')
       } catch (notificationError) {
         console.warn('Could not show logout notification:', notificationError)
       }
-      
+
       // Redirect to login page if router is provided
       if (router) {
         router.push('/auth/login')
@@ -199,66 +202,83 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const checkStoredAuth = async () => {
-    const storedUser = SecureTokenStorage.getToken(AUTH_CONSTANTS.USER_KEY)
-    const storedToken = SecureTokenStorage.getToken(AUTH_CONSTANTS.TOKEN_KEY)
-    
-    if (storedUser && storedToken) {
-      try {
-        // Check if token is expired
-        if (isTokenExpired(storedToken)) {
-          console.log('Stored token is expired, attempting refresh')
-          try {
-            await refreshToken()
-          } catch (refreshError) {
-            console.error('Token refresh failed during auth check:', refreshError)
-            SecureTokenStorage.clearAllTokens()
-            return
-          }
-        }
-        
-        // Restore user from storage
-        user.value = JSON.parse(storedUser)
-        console.log('Restored user from storage:', user.value)
-        
-        // Verify token is still valid by getting fresh profile
+    initializing.value = true
+    try {
+      const storedUser = SecureTokenStorage.getToken(AUTH_CONSTANTS.USER_KEY)
+      const storedToken = SecureTokenStorage.getToken(AUTH_CONSTANTS.TOKEN_KEY)
+
+      console.log('checkStoredAuth: Starting auth check', { hasUser: !!storedUser, hasToken: !!storedToken })
+
+      if (storedUser && storedToken) {
         try {
-          const response = await authService.getProfile()
-          if (response.success && response.data) {
-            const apiUser = response.data
-            const userData: User = {
-              id: apiUser.id,
-              email: apiUser.email,
-              name: apiUser.name,
-              avatar: apiUser.avatar,
-              role: apiUser.role?.name || 'user'
+          // Check if token is expired
+          if (isTokenExpired(storedToken)) {
+            console.log('Stored token is expired, attempting refresh')
+            try {
+              await refreshToken()
+            } catch (refreshError) {
+              console.error('Token refresh failed during auth check:', refreshError)
+              SecureTokenStorage.clearAllTokens()
+              return
             }
-            user.value = userData
-            SecureTokenStorage.setToken(AUTH_CONSTANTS.USER_KEY, JSON.stringify(userData))
+          }
+
+          // Restore user from storage
+          user.value = JSON.parse(storedUser)
+          console.log('checkStoredAuth: Restored user from storage:', user.value)
+          console.log('checkStoredAuth: isAuthenticated after restore:', isAuthenticated.value)
+
+          // Verify token is still valid by getting fresh profile
+          try {
+            console.log('checkStoredAuth: Verifying token with API call')
+            const response = await authService.getProfile()
+            if (response.data) {
+              const apiUser = response.data
+              const userData: User = {
+                id: apiUser.id,
+                email: apiUser.email,
+                name: apiUser.name,
+                avatar: apiUser.profile_picture,
+                role: apiUser.role || 'user'
+              }
+              user.value = userData
+              SecureTokenStorage.setToken(AUTH_CONSTANTS.USER_KEY, JSON.stringify(userData))
+              console.log('checkStoredAuth: Token validation successful, user updated')
+            } else {
+              console.log('checkStoredAuth: API response unsuccessful:', response)
+              user.value = null
+              // SecureTokenStorage.clearAllTokens()
+            }
+          } catch (err) {
+            console.error('checkStoredAuth: Token validation failed:', err)
+            // Clear invalid session
+            user.value = null
+            SecureTokenStorage.clearAllTokens()
           }
         } catch (err) {
-          console.error('Token validation failed:', err)
-          // Clear invalid session
-          user.value = null
+          console.error('checkStoredAuth: Error parsing stored user data:', err)
           SecureTokenStorage.clearAllTokens()
         }
-      } catch (err) {
-        console.error('Error parsing stored user data:', err)
-        SecureTokenStorage.clearAllTokens()
+      } else {
+        console.log('checkStoredAuth: No stored auth data found')
       }
+    } finally {
+      initializing.value = false
+      console.log('checkStoredAuth: Initialization completed, isAuthenticated:', isAuthenticated.value)
     }
   }
-  
+
   const refreshToken = async () => {
     const storedRefreshToken = SecureTokenStorage.getToken(AUTH_CONSTANTS.REFRESH_TOKEN_KEY)
-    
+
     if (!storedRefreshToken) {
       throw new AuthError('No refresh token available', AuthErrorType.TOKEN_EXPIRED)
     }
-    
+
     try {
       const response = await authService.refreshToken(storedRefreshToken)
-      
-      if (response.success && response.data) {
+
+      if (response.data) {
         SecureTokenStorage.setToken(AUTH_CONSTANTS.TOKEN_KEY, response.data.accessToken)
         SecureTokenStorage.setToken(AUTH_CONSTANTS.REFRESH_TOKEN_KEY, response.data.refreshToken)
         return response.data.accessToken
@@ -308,23 +328,23 @@ export const useAuthStore = defineStore('auth', () => {
   const updateProfile = async (profileData: Partial<User>) => {
     loading.value = true
     error.value = null
-    
+
     try {
       const response = await authService.updateProfile(profileData)
-      
-      if (response.success && response.data) {
+
+      if (response.data) {
         const apiUser = response.data
         const userData: User = {
           id: apiUser.id,
           email: apiUser.email,
           name: apiUser.name,
-          avatar: apiUser.avatar,
-          role: apiUser.role?.name || 'user'
+          avatar: apiUser.profile_picture,
+          role: apiUser.role || 'user'
         }
-        
+
         user.value = userData
         localStorage.setItem('auth_user', JSON.stringify(userData))
-        
+
         console.log('Profile updated successfully:', userData)
         return true
       } else {
@@ -332,7 +352,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } catch (err: any) {
       console.error('Profile update error:', err)
-      
+
       if (err.response?.data?.message) {
         error.value = err.response.data.message
       } else if (err.message) {
@@ -340,7 +360,7 @@ export const useAuthStore = defineStore('auth', () => {
       } else {
         error.value = 'Profile update failed. Please try again.'
       }
-      
+
       return false
     } finally {
       loading.value = false
@@ -351,16 +371,16 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       // Set user data
       user.value = userData
-      
+
       // Store tokens
       localStorage.setItem('auth_token', accessToken)
       localStorage.setItem('refresh_token', refreshToken)
       localStorage.setItem('auth_user', JSON.stringify(userData))
-      
+
       // Clear any errors
       error.value = null
       loading.value = false
-      
+
       console.log('Google OAuth authentication set successfully')
       return true
     } catch (err) {
@@ -400,6 +420,7 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     loading,
     error,
+    initializing,
     isAuthenticated,
     token,
     loginAttempts,

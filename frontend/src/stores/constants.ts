@@ -2,7 +2,7 @@
 export const AUTH_CONSTANTS = {  
   TOKEN_KEY: 'auth_token',
   REFRESH_TOKEN_KEY: 'refresh_token',
-  USER_KEY: 'user_data',
+  USER_KEY: 'auth_user',
   REMEMBER_ME_KEY: 'remember_me',
   TOKEN_EXPIRY_BUFFER: 5 * 60 * 1000, // 5 minutes in milliseconds
   MAX_LOGIN_ATTEMPTS: 5,

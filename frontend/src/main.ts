@@ -66,6 +66,11 @@ app.use(vuetify)
 // Initialize auth store after pinia is set up
 import { useAuthStore } from './stores/auth'
 const authStore = useAuthStore()
-authStore.checkStoredAuth()
 
-app.mount('#app')
+// Wait for auth initialization before mounting the app
+authStore.checkStoredAuth().then(() => {
+  app.mount('#app')
+}).catch((error) => {
+  console.error('Auth initialization failed:', error)
+  app.mount('#app')
+})

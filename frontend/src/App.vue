@@ -41,9 +41,6 @@ onMounted(() => {
   // Initialize notification system
   notificationStore.initNotifications()
   
-  // Check for stored auth
-  authStore.checkStoredAuth()
-  
   // Setup auto-refresh for authenticated users
   if (authStore.isAuthenticated) {
     authStore.setupAutoRefresh()

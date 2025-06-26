@@ -6,7 +6,10 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/auth/login'
+      redirect: (to) => {
+        const authStore = useAuthStore()
+        return authStore.isAuthenticated ? '/dashboard' : '/auth/login'
+      }
     },
     {
       path: '/auth',
@@ -70,19 +73,49 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore()
-  
   console.log('Router guard - navigating to:', to.path)
+  console.log('Router guard - initializing:', authStore.initializing)
   console.log('Router guard - authenticated:', authStore.isAuthenticated)
+
+  // Wait for auth initialization to complete
+  if (authStore.initializing) {
+    console.log('Router guard: Waiting for auth initialization...')
+    // Wait for initialization to complete with a timeout
+    let attempts = 0
+    const maxAttempts = 10 // 5 seconds max wait
+    while (authStore.initializing && attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 50))
+      attempts++
+    }
+
+    console.log('AFTER Router guard - navigating to:', to.path)
+    console.log('AFTER Router guard - initializing:', authStore.initializing)
+    console.log('AFTER Router guard - authenticated:', authStore.isAuthenticated)
+    if (attempts >= maxAttempts) {
+      console.warn('Router guard: Auth initialization timeout, proceeding anyway')
+    } else {
+      console.log('Router guard: Auth initialization completed, authenticated:', authStore.isAuthenticated)
+    }
+  }
+
+  // Check if route requires authentication (check both current route and parent route meta)
+  const requiresAuth = to.meta.requiresAuth || to.matched.some(record => record.meta.requiresAuth)
+  const requiresGuest = to.meta.requiresGuest || to.matched.some(record => record.meta.requiresGuest)
   
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    console.log('Redirecting to login - auth required but not authenticated')
+  console.log("requiresAuth: " + requiresAuth)
+  console.log("isAuthenticated: " + authStore.isAuthenticated)
+  if (requiresAuth && !authStore.isAuthenticated) {
+    console.log('Router guard: Redirecting to login - auth required but not authenticated')
+    console.log('Router guard: Route meta:', to.meta)
+    console.log('Router guard: User state:', authStore.user)
     next('/auth/login')
-  } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    console.log('Redirecting to dashboard - guest route but authenticated')
+  } else if (requiresGuest && authStore.isAuthenticated) {
+    console.log('Router guard: Redirecting to dashboard - guest route but authenticated')
     next('/dashboard')
   } else {
+    console.log('Router guard: Allowing navigation to:', to.path)
     next()
   }
 })

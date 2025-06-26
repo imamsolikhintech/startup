@@ -185,25 +185,25 @@ const headers = [
 const statsData = computed(() => [
   {
     title: 'Total Users',
-    value: userStats.value?.total || 0,
+    value: userStats.value?.total_users || 0,
     icon: 'mdi-account-group',
     color: 'primary'
   },
   {
     title: 'Active Users',
-    value: userStats.value?.active || 0,
+    value: userStats.value?.active_users || 0,
     icon: 'mdi-account-check',
     color: 'success'
   },
   {
-    title: 'Pending Verification',
-    value: userStats.value?.pending || 0,
+    title: 'Verification',
+    value: userStats.value?.verified_users || 0,
     icon: 'mdi-clock-outline',
     color: 'warning'
   },
   {
     title: 'New This Month',
-    value: userStats.value?.new_this_month || 0,
+    value: userStats.value?.new_users_this_month || 0,
     icon: 'mdi-account-plus',
     color: 'info'
   }
