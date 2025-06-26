@@ -35,11 +35,11 @@
           <slot name="footer">
             <!-- Default Footer Actions -->
             <div :class="footerJustifyStart ? 'flex justify-start gap-2' : 'flex justify-end gap-2'">
-              <n-button v-if="showCancelButton" :type="cancelButtonVariant" :size="buttonSize" @click="handleCancel"
+              <n-button v-if="showCancelButton" :type="cancelButtonVariant" @click="handleCancel"
                 :disabled="loading">
                 {{ cancelButtonText }}
               </n-button>
-
+              &nbsp;
               <n-button v-if="showConfirmButton" :type="confirmButtonVariant" :loading="loading"
                 @click="handleConfirm">
                 {{ confirmButtonText }}
@@ -139,12 +139,12 @@ const props = withDefaults(defineProps<Props>(), {
   showCancelButton: true,
   cancelButtonText: 'Cancel',
   cancelButtonColor: '',
-  cancelButtonVariant: 'default',
+  cancelButtonVariant: 'error',
 
   showConfirmButton: true,
   confirmButtonText: 'Confirm',
   confirmButtonColor: 'primary',
-  confirmButtonVariant: 'primary',
+  confirmButtonVariant: 'success',
 
   buttonSize: 'default',
   loading: false

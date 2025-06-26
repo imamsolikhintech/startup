@@ -531,7 +531,7 @@ onMounted(() => {
 <style scoped>
 .settings-view {
   padding: 24px;
-  max-width: 1200px;
+  /* max-width: 1200px; */
   margin: 0 auto;
 }
 
