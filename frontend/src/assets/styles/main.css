@@ -213,10 +213,21 @@ body {
   text-transform: none !important;
   font-weight: 500 !important;
 }
+.v-row {
+  margin: 0px 0px;
+}
+.pa-6 {
+    padding: 10px !important;
+}
+
+/* Dark Theme Adjustments */
+.v-theme--dark{
+  background-color: rgba(54, 54, 54, 1.75) !important;
+}
 
 /* Dark Theme Adjustments */
 .v-theme--dark .v-card {
-  background-color: rgba(54, 54, 54, 1.75) !important;
+  background-color: rgba(54, 54, 54, 0.75) !important;
 }
 
 .v-theme--dark .glass-effect {
