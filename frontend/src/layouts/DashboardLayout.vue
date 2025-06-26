@@ -83,14 +83,7 @@
             </n-dropdown> -->
 
             <!-- User Menu -->
-            <!-- <n-dropdown :options="userMenuOptions" @select="handleUserMenuSelect" trigger="click"
-              placement="bottom-end">
-              <template #trigger>
-                <n-button text class="user-menu-btn">
-                  <n-avatar size="small" :src="authStore.user?.avatar" fallback-src="/default-avatar.png" />
-                </n-button>
-              </template>
-            </n-dropdown> -->
+            <UserMenu />
           </div>
         </div>
       </n-layout-header>
@@ -113,8 +106,9 @@ import { useNotificationStore } from '@/stores/notifications'
 import { usePageLoaderStore } from '@/stores/pageLoader'
 import { useThemeStore } from '@/stores/theme'
 import ThemeToggle from '@/components/common/ThemeToggle.vue'
+import UserMenu from '@/components/common/UserMenu.vue'
 // import NotificationDropdown from '@/components/notifications/NotificationDropdown.vue'
-import type { MenuOption, DropdownOption } from 'naive-ui'
+import type { MenuOption } from 'naive-ui'
 
 const router = useRouter()
 const route = useRoute()
@@ -174,48 +168,14 @@ const menuOptions = computed((): MenuOption[] => [
   }
 ])
 
-// User menu dropdown options
-const userMenuOptions = computed((): DropdownOption[] => [
-  {
-    label: 'Profile',
-    key: 'profile'
-  },
-  {
-    label: 'Settings',
-    key: 'settings'
-  },
-  {
-    type: 'divider',
-    key: 'divider'
-  },
-  {
-    label: 'Logout',
-    key: 'logout'
-  }
-])
+
 
 // Event handlers
 const handleMenuSelect = (key: string) => {
   router.push(key)
 }
 
-const handleUserMenuSelect = (key: string) => {
-  switch (key) {
-    case 'profile':
-      router.push('/profile')
-      break
-    case 'settings':
-      router.push('/settings')
-      break
-    case 'logout':
-      handleLogout()
-      break
-  }
-}
 
-const handleLogout = () => {
-  authStore.logout(router)
-}
 
 
 
@@ -443,15 +403,7 @@ onUnmounted(() => {
   background: var(--n-color-hover);
 }
 
-.user-menu-btn {
-  padding: 6px;
-  border-radius: 50%;
-  transition: all 0.15s ease;
-}
 
-.user-menu-btn:hover {
-  background: var(--n-color-hover);
-}
 
 /* Main Content */
 .dashboard-main {
