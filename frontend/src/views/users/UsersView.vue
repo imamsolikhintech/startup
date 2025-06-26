@@ -12,7 +12,7 @@
     ]" @action="handleHeaderAction" />
 
     <!-- Stats Cards -->
-    <StatsCards :stats="statsData" class="mb-6" />
+    <StatsCard :stats="statsData" multiple layout="grid" class="mb-6" />
 
     <!-- Search and Filters -->
     <SearchFilters 
@@ -74,7 +74,7 @@ import { userService } from '@/api/service'
 import { useNotificationStore } from '@/stores/notifications'
 import PageHeader from '@/components/common/PageHeader.vue'
 import SearchFilters from '@/components/common/SearchFilters.vue'
-import StatsCards from '@/components/common/StatsCards.vue'
+import StatsCard from '@/components/base/StatsCard.vue'
 import DataTable from '@/components/datatable/DataTable.vue'
 import UserFormDialog from './UserFormDialog.vue'
 import ResetPasswordDialog from './ResetPasswordDialog.vue'
@@ -154,31 +154,31 @@ const headers = [
 
 // Removed computed filteredUsers - now using API-based filtering
 
-// Stats data for StatsCards component
+// Stats data for StatsCard component
 const statsData = computed(() => [
   {
     title: 'Total Users',
     value: userStats.value?.total_users || 0,
     icon: 'mdi-account-group',
-    color: 'primary'
+    variant: 'primary'
   },
   {
     title: 'Active Users',
     value: userStats.value?.active_users || 0,
     icon: 'mdi-account-check',
-    color: 'success'
+    variant: 'success'
   },
   {
     title: 'Verification',
     value: userStats.value?.verified_users || 0,
     icon: 'mdi-clock-outline',
-    color: 'warning'
+    variant: 'warning'
   },
   {
     title: 'New This Month',
     value: userStats.value?.new_users_this_month || 0,
     icon: 'mdi-account-plus',
-    color: 'info'
+    variant: 'info'
   }
 ])
 

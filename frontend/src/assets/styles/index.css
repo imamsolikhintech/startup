@@ -1,16 +1,419 @@
-/* Main Styles Index */
-/* Import all style files for centralized management */
+/**
+ * Main Stylesheet
+ * 
+ * This file imports all CSS modules in the correct order:
+ * 1. Design Tokens (CSS Custom Properties)
+ * 2. Base styles (reset, utilities)
+ * 3. Component styles
+ * 4. Legacy styles (for backward compatibility)
+ */
 
-/* Base styles */
-@import './main.css';
-@import './theme.css';
-@import './colors.css';
-@import './naive-ui-theme.css';
+/* Design Tokens
+   ========================================================================== */
 
-/* Component styles */
-@import './components/dashboard.css';
-@import './components/common.css';
-@import './components/dialog.css';
-@import './components/chat.css';
+/* Import design tokens first to make CSS custom properties available */
+@import './tokens/index.css';
+
+/* Base Styles
+   ========================================================================== */
+
+/* CSS Reset and normalize */
+@import './base/reset.css';
+
+/* Utility classes */
+@import './base/utilities.css';
+
+/* Component Styles
+   ========================================================================== */
+
+/* New optimized components */
+@import './components/stats-card.css';
+@import './components/page-header.css';
+
+/* Legacy Component Styles (for backward compatibility)
+   ========================================================================== */
+
+/* Keep existing component styles until migration is complete */
 @import './components/charts.css';
+@import './components/chat.css';
+@import './components/common.css';
+@import './components/dashboard.css';
+@import './components/dialog.css';
 @import './components/notifications.css';
+
+/* Legacy Theme Files (for backward compatibility)
+   ========================================================================== */
+
+/* Keep existing theme files until full migration */
+@import './components/main.css';
+@import './components/theme.css';
+@import './components/colors.css';
+@import './components/color-variants.css';
+@import './components/naive-ui-theme.css';
+
+/* Global Overrides and Enhancements
+   ========================================================================== */
+
+/**
+ * Global application styles that enhance the base reset
+ * and provide consistent behavior across all components.
+ */
+
+/* Improved focus management */
+*:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Enhanced scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface-secondary);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-tertiary);
+  border-radius: var(--radius-sm);
+  transition: var(--transition-colors);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-surface-tertiary) var(--color-surface-secondary);
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--color-primary-200);
+  color: var(--color-primary-900);
+}
+
+::-moz-selection {
+  background-color: var(--color-primary-200);
+  color: var(--color-primary-900);
+}
+
+/* Improved form element styling */
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+/* Button reset with better defaults */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Link improvements */
+a {
+  color: var(--color-text-link);
+  text-decoration: none;
+  transition: var(--transition-colors);
+}
+
+a:hover {
+  color: var(--color-text-link-hover);
+  text-decoration: underline;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Image improvements */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Table improvements */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+th,
+td {
+  text-align: left;
+  vertical-align: top;
+  padding: var(--spacing-2) var(--spacing-3);
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+th {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-secondary);
+}
+
+/* Code improvements */
+code,
+pre {
+  font-family: var(--font-family-mono);
+  font-size: 0.875em;
+}
+
+code {
+  background-color: var(--color-surface-secondary);
+  padding: var(--spacing-0-5) var(--spacing-1);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+}
+
+pre {
+  background-color: var(--color-surface-secondary);
+  padding: var(--spacing-4);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  line-height: var(--line-height-relaxed);
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Blockquote improvements */
+blockquote {
+  margin: var(--spacing-6) 0;
+  padding: var(--spacing-4) var(--spacing-6);
+  border-left: 4px solid var(--color-primary-500);
+  background-color: var(--color-surface-secondary);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+/* List improvements */
+ul,
+ol {
+  padding-left: var(--spacing-6);
+}
+
+li {
+  margin-bottom: var(--spacing-1);
+  line-height: var(--line-height-relaxed);
+}
+
+/* Horizontal rule improvements */
+hr {
+  border: none;
+  height: 1px;
+  background-color: var(--color-border-primary);
+  margin: var(--spacing-8) 0;
+}
+
+/* Form improvements */
+fieldset {
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-4);
+  margin: var(--spacing-4) 0;
+}
+
+legend {
+  padding: 0 var(--spacing-2);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* Loading states */
+.loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.loading * {
+  cursor: wait !important;
+}
+
+/* Error states */
+.error {
+  color: var(--color-text-error);
+  border-color: var(--color-border-error);
+}
+
+/* Success states */
+.success {
+  color: var(--color-text-success);
+  border-color: var(--color-border-success);
+}
+
+/* Warning states */
+.warning {
+  color: var(--color-text-warning);
+  border-color: var(--color-border-warning);
+}
+
+/* Info states */
+.info {
+  color: var(--color-text-info);
+  border-color: var(--color-border-info);
+}
+
+/* Accessibility improvements */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Skip link for keyboard navigation */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--color-primary-500);
+  color: var(--color-white);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-weight: var(--font-weight-semibold);
+  z-index: var(--z-modal);
+  transition: var(--transition-all);
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Print optimizations */
+@media print {
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+  
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+  
+  abbr[title]:after {
+    content: " (" attr(title) ")";
+  }
+  
+  pre,
+  blockquote {
+    border: 1px solid #999;
+    page-break-inside: avoid;
+  }
+  
+  thead {
+    display: table-header-group;
+  }
+  
+  tr,
+  img {
+    page-break-inside: avoid;
+  }
+  
+  img {
+    max-width: 100% !important;
+  }
+  
+  p,
+  h2,
+  h3 {
+    orphans: 3;
+    widows: 3;
+  }
+  
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border-primary: currentColor;
+    --color-border-secondary: currentColor;
+  }
+  
+  button,
+  input,
+  select,
+  textarea {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
+/* Force hardware acceleration for smooth animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Container queries support (when available) */
+@supports (container-type: inline-size) {
+  .container {
+    container-type: inline-size;
+  }
+}

@@ -47,10 +47,10 @@ export { default as DialogPlugin } from './useDialog'
 // Export other common components
 export { default as ActionButtons } from './ActionButtons.vue'
 export { default as DataTable } from '../datatable/DataTable.vue'
-export { default as PageHeader } from './PageHeader.vue'
+export { default as PageHeader } from '../common/PageHeader.vue'
 export { default as PageLoader } from './PageLoader.vue'
 export { default as SearchFilters } from './SearchFilters.vue'
-export { default as StatsCards } from './StatsCards.vue'
+export { default as StatsCards } from '../base/StatsCard.vue'
 
 // Re-export types for other common components if needed
 export type {
@@ -66,10 +66,10 @@ export function installCommonComponents(app: any) {
   // Register other common components
   app.component('ActionButtons', () => import('./ActionButtons.vue'))
   app.component('DataTable', () => import('../datatable/DataTable.vue'))
-  app.component('PageHeader', () => import('./PageHeader.vue'))
+  app.component('PageHeader', () => import('../common/PageHeader.vue'))
   app.component('PageLoader', () => import('./PageLoader.vue'))
   app.component('SearchFilters', () => import('./SearchFilters.vue'))
-  app.component('StatsCards', () => import('./StatsCards.vue'))
+  app.component('StatsCards', () => import('../base/StatsCard.vue'))
   
   // Install dialog plugin
   const DialogPlugin = () => import('./useDialog')
