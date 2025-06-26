@@ -1,13 +1,15 @@
 <template>
-  <div class="register-form">
-    <div class="text-center mb-6">
-      <h2 class="text-h4 font-weight-bold mb-2">Create Account</h2>
-      <p class="text-subtitle-1 text-medium-emphasis">
-        Join us and start managing your dashboard
-      </p>
-    </div>
-
-    <v-form @submit.prevent="handleRegister" ref="formRef">
+  <div class="register-container">
+    <div class="register-card">
+      <div class="register-header">
+        <h2 class="register-title">Create Account</h2>
+        <p class="register-subtitle">
+          Join us and start managing your dashboard
+        </p>
+      </div>
+      
+      <div class="register-form">
+        <v-form @submit.prevent="handleRegister" ref="formRef">
       <v-text-field
         v-model="form.name"
         label="Full Name"
@@ -16,6 +18,7 @@
         :rules="nameRules"
         class="mb-3"
         required
+        autocomplete="off"
       />
 
       <v-text-field
@@ -27,6 +30,7 @@
         :rules="emailRules"
         class="mb-3"
         required
+        autocomplete="off"
       />
 
       <v-text-field
@@ -40,6 +44,7 @@
         :rules="passwordRules"
         class="mb-3"
         required
+        autocomplete="off"
       />
 
       <v-text-field
@@ -53,6 +58,7 @@
         :rules="confirmPasswordRules"
         class="mb-3"
         required
+        autocomplete="off"
       />
 
       <v-checkbox
@@ -115,15 +121,6 @@
       >
         Sign up with Google
       </v-btn>
-      <v-btn
-        variant="outlined"
-        size="large"
-        block
-        class="text-none"
-        prepend-icon="mdi-github"
-      >
-        Sign up with GitHub
-      </v-btn>
     </div>
 
     <div class="text-center">
@@ -137,6 +134,8 @@
       >
         Sign in
       </v-btn>
+    </div>
+      </div>
     </div>
   </div>
 </template>
@@ -214,22 +213,3 @@ const handleRegister = async () => {
 }
 </script>
 
-<style scoped>
-.register-form {
-  width: 100%;
-}
-
-.social-login .v-btn {
-  text-transform: none;
-}
-
-:deep(.v-checkbox .v-label) {
-  opacity: 1;
-}
-
-@media (max-width: 600px) {
-  .register-form {
-    padding: 0;
-  }
-}
-</style>

@@ -1,0 +1,263 @@
+/* Auth Views Styles */
+
+/* LoginView Component */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.1), rgba(var(--v-theme-secondary), 0.05));
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background: rgba(var(--v-theme-surface));
+}
+
+.login-form {
+  width: 100%;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: rgba(var(--v-theme-on-surface));
+  margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 0.875rem;
+}
+
+.social-login {
+  margin-bottom: 1.5rem;
+}
+
+.social-login .v-btn {
+  text-transform: none;
+  width: 100%;
+  height: 48px;
+  border-radius: 8px;
+}
+
+.divider-container {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.divider-text {
+  padding: 0 1rem;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  font-size: 0.875rem;
+}
+
+.login-actions {
+  margin-top: 1.5rem;
+}
+
+.forgot-password {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.signup-link {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.demo-card {
+  border-radius: 8px;
+  margin-top: 1rem;
+  background: rgba(var(--v-theme-info), 0.05);
+  border: 1px solid rgba(var(--v-theme-info), 0.2);
+}
+
+/* RegisterView Component */
+.register-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(var(--v-theme-secondary), 0.1), rgba(var(--v-theme-primary), 0.05));
+}
+
+.register-card {
+  width: 100%;
+  max-width: 500px;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background: rgba(var(--v-theme-surface));
+}
+
+.register-form {
+  width: 100%;
+}
+
+.register-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.register-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: rgba(var(--v-theme-on-surface));
+  margin-bottom: 0.5rem;
+}
+
+.register-subtitle {
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 0.875rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .v-text-field {
+  flex: 1;
+}
+
+.password-requirements {
+  margin-top: 0.5rem;
+}
+
+.requirement-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.requirement-item.valid {
+  color: rgba(var(--v-theme-success));
+}
+
+.requirement-item.invalid {
+  color: rgba(var(--v-theme-error));
+}
+
+.terms-checkbox {
+  margin: 1rem 0;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+/* GoogleCallbackView Component */
+.callback-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.callback-content {
+  max-width: 400px;
+  width: 100%;
+}
+
+.callback-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  color: rgba(var(--v-theme-primary));
+}
+
+.callback-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: rgba(var(--v-theme-on-surface));
+}
+
+.callback-message {
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.callback-loading {
+  margin-bottom: 1rem;
+}
+
+.callback-error {
+  background: rgba(var(--v-theme-error), 0.1);
+  border: 1px solid rgba(var(--v-theme-error), 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.callback-error-title {
+  color: rgba(var(--v-theme-error));
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.callback-error-message {
+  color: rgba(var(--v-theme-on-surface), 0.8);
+  font-size: 0.875rem;
+}
+
+/* Responsive design for auth pages */
+@media (max-width: 600px) {
+  .login-form,
+  .register-form {
+    padding: 0;
+  }
+  
+  .login-card,
+  .register-card {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .login-title,
+  .register-title {
+    font-size: 1.75rem;
+  }
+}
+
+/* Dark theme adjustments */
+.v-theme--dark .login-container,
+.v-theme--dark .register-container {
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.05), rgba(var(--v-theme-secondary), 0.02));
+}
+
+.v-theme--dark .demo-card {
+  background: rgba(var(--v-theme-info), 0.1);
+}

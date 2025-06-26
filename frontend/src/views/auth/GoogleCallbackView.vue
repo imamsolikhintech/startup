@@ -1,34 +1,30 @@
 <template>
-  <div class="google-callback">
-    <div class="text-center">
-      <v-progress-circular
-        indeterminate
-        color="primary"
-        size="64"
-        class="mb-4"
-      />
-      <h3 class="text-h5 mb-2">Processing Google Authentication...</h3>
-      <p class="text-body-1 text-medium-emphasis">
-        Please wait while we complete your sign-in.
-      </p>
+  <div class="callback-container">
+    <div class="callback-content">
+      <div class="callback-icon">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          size="64"
+        />
+      </div>
       
-      <v-alert
-        v-if="error"
-        type="error"
-        variant="tonal"
-        class="mt-4"
-      >
-        {{ error }}
-        <template #append>
-          <v-btn
-            variant="text"
-            size="small"
-            @click="redirectToLogin"
-          >
-            Try Again
-          </v-btn>
-        </template>
-      </v-alert>
+      <h3 class="callback-title">Processing Google Authentication</h3>
+      <p class="callback-message">Please wait while we complete your sign-in...</p>
+
+      <div v-if="error" class="callback-error">
+        <div class="callback-error-title">Authentication Error</div>
+        <div class="callback-error-message">{{ error }}</div>
+        
+        <v-btn
+          variant="outlined"
+          size="small"
+          @click="router.push('/auth/login')"
+          class="mt-3"
+        >
+          Try Again
+        </v-btn>
+      </div>
     </div>
   </div>
 </template>
@@ -120,12 +116,3 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-.google-callback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  padding: 2rem;
-}
-</style>

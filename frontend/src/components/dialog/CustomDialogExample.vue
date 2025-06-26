@@ -460,15 +460,3 @@ const saveCustomConfig = () => {
 }
 </script>
 
-<style scoped>
-.gap-2 {
-  gap: 8px;
-}
-
-pre {
-  background: rgba(var(--v-theme-surface-variant), 0.1);
-  padding: 16px;
-  border-radius: 8px;
-  overflow-x: auto;
-}
-</style>

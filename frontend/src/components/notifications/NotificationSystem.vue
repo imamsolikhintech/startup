@@ -69,17 +69,3 @@ watch(visibleNotifications, (newNotifications) => {
 }, { immediate: true, deep: true })
 </script>
 
-<style scoped>
-.notification-snackbar {
-  margin-bottom: 8px;
-}
-
-:deep(.v-snackbar__wrapper) {
-  min-width: 350px;
-  max-width: 500px;
-}
-
-:deep(.v-snackbar__content) {
-  padding: 16px;
-}
-</style>

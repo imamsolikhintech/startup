@@ -519,25 +519,3 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-.settings-view {
-  max-width: 100%;
-}
-
-:deep(.v-tabs-window-item) {
-  padding: 0;
-}
-
-:deep(.v-switch) {
-  margin-bottom: 8px;
-}
-
-:deep(.v-switch .v-selection-control__wrapper) {
-  margin-right: 16px;
-}
-
-.gap-2 > * {
-  margin-right: 8px;
-  margin-bottom: 8px;
-}
-</style>

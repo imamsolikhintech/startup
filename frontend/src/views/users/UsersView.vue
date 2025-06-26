@@ -521,21 +521,3 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
-.users-view {
-  padding: 24px;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .users-view {
-    padding: 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .users-view {
-    padding: 8px;
-  }
-}
-</style>

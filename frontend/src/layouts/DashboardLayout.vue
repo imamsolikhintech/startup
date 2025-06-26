@@ -237,39 +237,3 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
-.dashboard-drawer {
-  border-right: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-}
-
-.drawer-header {
-  display: flex;
-  align-items: center;
-  padding: 1.5rem 1rem;
-  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  margin-bottom: 1rem;
-}
-
-.dashboard-appbar {
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-}
-
-.blur-background {
-  background-color: rgba(var(--v-theme-surface), 0.8) !important;
-}
-
-.dashboard-main {
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.02) 0%, rgba(var(--v-theme-secondary), 0.02) 100%);
-  min-height: 100vh;
-}
-
-:deep(.v-list-item--active) {
-  background: rgba(var(--v-theme-primary), 0.1);
-  color: rgba(var(--v-theme-primary));
-}
-
-:deep(.v-list-item--active .v-icon) {
-  color: rgba(var(--v-theme-primary));
-}
-</style>

@@ -1,0 +1,22 @@
+/* Main Styles Index */
+/* Import all style files for centralized management */
+
+/* Base styles */
+@import './main.css';
+@import './theme.css';
+@import './colors.css';
+
+/* Component styles */
+@import './components/dashboard.css';
+@import './components/common.css';
+@import './components/dialog.css';
+@import './components/chat.css';
+@import './components/charts.css';
+@import './components/notifications.css';
+
+/* View styles */
+@import './views/auth.css';
+@import './views/dashboard.css';
+@import './views/users.css';
+@import './views/analytics.css';
+@import './views/other.css';

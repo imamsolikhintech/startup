@@ -501,16 +501,3 @@ const saveProfile = async () => {
 }
 </script>
 
-<style scoped>
-.profile-view {
-  max-width: 100%;
-}
-
-:deep(.v-tabs-window-item) {
-  padding: 0;
-}
-
-:deep(.v-switch) {
-  margin-bottom: 8px;
-}
-</style>

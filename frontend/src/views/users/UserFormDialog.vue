@@ -191,9 +191,3 @@ const confirmPasswordRules = computed(() => [
   (v: string) => v === props.formData.password || 'Passwords do not match'
 ])
 </script>
-
-<style scoped>
-.bg-gradient-primary {
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-secondary)) 100%);
-}
-</style>

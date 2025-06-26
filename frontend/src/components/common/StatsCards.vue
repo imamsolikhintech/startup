@@ -127,14 +127,3 @@ const getTrendIcon = (direction: string): string => {
   }
 }
 </script>
-
-<style scoped>
-.stats-card {
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.stats-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
-}
-</style>

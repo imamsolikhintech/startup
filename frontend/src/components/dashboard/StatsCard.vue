@@ -41,15 +41,3 @@ interface Props {
 
 defineProps<Props>()
 </script>
-
-<style scoped>
-.stats-card {
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.stats-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
-}
-</style>

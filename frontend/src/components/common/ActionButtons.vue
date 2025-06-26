@@ -47,13 +47,3 @@ defineEmits<{
   action: [key: string]
 }>()
 </script>
-
-<style scoped>
-.gap-1 {
-  gap: 4px;
-}
-
-.gap-2 {
-  gap: 8px;
-}
-</style>

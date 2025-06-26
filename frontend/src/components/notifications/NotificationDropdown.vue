@@ -116,27 +116,3 @@ const markAsRead = (id: string) => {
   notificationStore.markAsRead(id)
 }
 </script>
-
-<style scoped>
-.notification-list {
-  overflow-y: auto;
-}
-
-.notification-item {
-  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  transition: background-color 0.2s ease;
-}
-
-.notification-item:hover {
-  background-color: rgba(var(--v-theme-primary), 0.04);
-}
-
-.notification-item.unread {
-  background-color: rgba(var(--v-theme-primary), 0.02);
-}
-
-.notification-content {
-  flex: 1;
-  min-width: 0;
-}
-</style>

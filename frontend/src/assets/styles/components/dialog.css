@@ -1,0 +1,124 @@
+/* Dialog Components Styles */
+
+/* CustomDialog Component */
+.custom-dialog-header {
+  background: rgba(var(--v-theme-surface));
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.custom-dialog-footer {
+  background: rgba(var(--v-theme-surface));
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+/* Dark theme support */
+.v-theme--dark .custom-dialog-header,
+.v-theme--dark .custom-dialog-footer {
+  background: rgba(var(--v-theme-surface));
+}
+
+/* Animation enhancements */
+.dialog-transition-enter-active,
+.dialog-transition-leave-active {
+  transition: all 0.3s ease;
+}
+
+.dialog-transition-enter-from {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.dialog-transition-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+/* Dialog content styling */
+.dialog-content {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+/* Responsive dialog */
+@media (max-width: 600px) {
+  .v-dialog {
+    margin: 1rem;
+  }
+  
+  .dialog-content {
+    max-height: 60vh;
+  }
+}
+
+/* CustomDialogDemo specific styles */
+.demo-section {
+  margin-bottom: 2rem;
+}
+
+.demo-section:last-child {
+  margin-bottom: 0;
+}
+
+.demo-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: rgba(var(--v-theme-primary));
+}
+
+.demo-description {
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.demo-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Dialog size variants */
+.dialog-small {
+  max-width: 400px;
+}
+
+.dialog-medium {
+  max-width: 600px;
+}
+
+.dialog-large {
+  max-width: 800px;
+}
+
+.dialog-extra-large {
+  max-width: 1200px;
+}
+
+/* Dialog header variants */
+.dialog-header-primary {
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.1), rgba(var(--v-theme-primary), 0.05));
+  border-bottom: 1px solid rgba(var(--v-theme-primary), 0.2);
+}
+
+.dialog-header-success {
+  background: linear-gradient(135deg, rgba(var(--v-theme-success), 0.1), rgba(var(--v-theme-success), 0.05));
+  border-bottom: 1px solid rgba(var(--v-theme-success), 0.2);
+}
+
+.dialog-header-warning {
+  background: linear-gradient(135deg, rgba(var(--v-theme-warning), 0.1), rgba(var(--v-theme-warning), 0.05));
+  border-bottom: 1px solid rgba(var(--v-theme-warning), 0.2);
+}
+
+.dialog-header-error {
+  background: linear-gradient(135deg, rgba(var(--v-theme-error), 0.1), rgba(var(--v-theme-error), 0.05));
+  border-bottom: 1px solid rgba(var(--v-theme-error), 0.2);
+}

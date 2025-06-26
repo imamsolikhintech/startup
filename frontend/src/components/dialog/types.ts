@@ -304,6 +304,7 @@ export function useDialogPreset(
   ...args: any[]
 ): DialogConfig {
   const presetFn = DialogPresets[preset];
+  //@ts-ignore-line
   const presetConfig = presetFn.apply(null, args);
   return createDialogConfig({ ...presetConfig, ...customConfig })
 }

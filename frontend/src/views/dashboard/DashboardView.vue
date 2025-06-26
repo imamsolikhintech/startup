@@ -326,23 +326,3 @@ onMounted(() => {
   }, 30000) // Every 30 seconds
 })
 </script>
-
-<style scoped>
-.dashboard-view {
-  max-width: 100%;
-}
-
-.welcome-card {
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.1), rgba(var(--v-theme-primary), 0.05));
-  border: 1px solid rgba(var(--v-theme-primary), 0.2);
-}
-
-:deep(.v-card) {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-:deep(.v-card:hover) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
-}
-</style>

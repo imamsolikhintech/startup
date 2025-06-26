@@ -11,11 +11,10 @@ import App from './App.vue'
 import 'vuetify/styles'
 import '@mdi/font/css/materialdesignicons.css'
 
-// Custom styles
-import './assets/styles/main.css'
+// Import all styles
+import '@/assets/styles/index.css'
 
 // Service Worker Registration removed - sw.js file not found
-
 const vuetify = createVuetify({
   components,
   directives,

@@ -308,33 +308,3 @@ const geoData = [
 ]
 </script>
 
-<style scoped>
-.analytics-view {
-  max-width: 100%;
-}
-
-.metric-card {
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.metric-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
-}
-
-.country-flag {
-  font-size: 20px;
-  width: 32px;
-  text-align: center;
-}
-
-:deep(.v-card) {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-:deep(.v-card:hover) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
-}
-</style>

@@ -98,8 +98,3 @@ const confirmPasswordRules = computed(() => [
 ])
 </script>
 
-<style scoped>
-.bg-warning {
-  background-color: rgb(var(--v-theme-warning)) !important;
-}
-</style>

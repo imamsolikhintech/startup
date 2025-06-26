@@ -74,10 +74,3 @@ watch(() => props.data, () => {
 }, { deep: true })
 </script>
 
-<style scoped>
-.chart-container {
-  position: relative;
-  height: 300px;
-  width: 100%;
-}
-</style>
