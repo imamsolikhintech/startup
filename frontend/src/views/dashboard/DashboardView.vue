@@ -303,25 +303,13 @@ const quickActions = [
 const handleQuickAction = (action: string) => {
   switch (action) {
     case 'add-user':
-      notificationStore.addNotification({
-        title: 'Quick Action',
-        message: 'Add User dialog would open here',
-        type: 'info'
-      })
+      notificationStore.showInfo('Add User dialog would open here', 'Quick Action')
       break
     case 'generate-report':
-      notificationStore.addNotification({
-        title: 'Report Generated',
-        message: 'Your monthly report is being generated',
-        type: 'success'
-      })
+      notificationStore.showSuccess('Your monthly report is being generated', 'Report Generated')
       break
     case 'send-notification':
-      notificationStore.addNotification({
-        title: 'Notification Sent',
-        message: 'Push notification sent to all users',
-        type: 'success'
-      })
+      notificationStore.showSuccess('Push notification sent to all users', 'Notification Sent')
       break
     case 'start-chat':
       chatStore.startChat('2') // Start chat with Alice
@@ -333,11 +321,7 @@ onMounted(() => {
   // Simulate some periodic updates
   setInterval(() => {
     if (Math.random() > 0.7) {
-      notificationStore.addNotification({
-        title: 'System Update',
-        message: `New activity detected at ${new Date().toLocaleTimeString()}`,
-        type: 'info'
-      })
+      notificationStore.showInfo(`New activity detected at ${new Date().toLocaleTimeString()}`, 'System Update')
     }
   }, 30000) // Every 30 seconds
 })

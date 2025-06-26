@@ -284,8 +284,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
+import { useTheme } from 'vuetify'
 import { useNotificationStore } from '@/stores/notifications'
+import { useThemeStore } from '@/stores/theme'
 
 interface PasswordPolicy {
   requireUppercase: boolean
@@ -327,6 +329,8 @@ interface PushNotificationItem {
 }
 
 const notificationStore = useNotificationStore()
+const themeStore = useThemeStore()
+const theme = useTheme()
 
 const activeTab = ref('general')
 const saving = ref(false)
@@ -472,17 +476,9 @@ const saveSettings = async () => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    notificationStore.addNotification({
-      title: 'Settings Saved',
-      message: 'Your settings have been updated successfully',
-      type: 'success'
-    })
+    notificationStore.showSuccess('Your settings have been updated successfully', 'Settings Saved')
   } catch (error) {
-    notificationStore.addNotification({
-      title: 'Error',
-      message: 'Failed to save settings',
-      type: 'error'
-    })
+    notificationStore.showError('Failed to save settings')
   } finally {
     saving.value = false
   }
@@ -491,11 +487,7 @@ const saveSettings = async () => {
 const resetSettings = () => {
   if (confirm('Are you sure you want to reset all settings to defaults?')) {
     // Reset logic would go here
-    notificationStore.addNotification({
-      title: 'Settings Reset',
-      message: 'All settings have been reset to defaults',
-      type: 'info'
-    })
+    notificationStore.showInfo('All settings have been reset to defaults', 'Settings Reset')
   }
 }
 
@@ -508,12 +500,23 @@ const exportSettings = () => {
   link.download = 'settings.json'
   link.click()
   
-  notificationStore.addNotification({
-    title: 'Settings Exported',
-    message: 'Your settings have been exported successfully',
-    type: 'success'
-  })
+  notificationStore.showSuccess('Your settings have been exported successfully', 'Settings Exported')
 }
+
+// Watch for theme changes and sync with theme store
+watch(
+  () => settings.value.appearance.theme,
+  (newTheme) => {
+    if (newTheme && ['light', 'dark', 'system'].includes(newTheme)) {
+      themeStore.setTheme(newTheme as 'light' | 'dark' | 'system', theme)
+    }
+  }
+)
+
+// Initialize settings with current theme from store
+onMounted(() => {
+  settings.value.appearance.theme = themeStore.mode
+})
 </script>
 
 <style scoped>

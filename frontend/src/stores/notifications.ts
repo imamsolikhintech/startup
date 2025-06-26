@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { defineStore } from 'pinia'
 
 export interface Notification {
   id: string
@@ -71,13 +71,46 @@ export const useNotificationStore = defineStore('notifications', () => {
     }
 
     // Simulate some initial notifications
-    setTimeout(() => {
-      addNotification({
-        title: 'Welcome!',
-        message: 'Your dashboard is ready to use.',
-        type: 'success'
-      })
-    }, 2000)
+    // setTimeout(() => {
+    //   addNotification({
+    //     title: 'Welcome!',
+    //     message: 'Your dashboard is ready to use.',
+    //     type: 'success'
+    //   })
+    // }, 2000)
+  }
+
+  // Helper methods for common notification types
+  const showSuccess = (message: string, title: string = 'Success') => {
+    return addNotification({
+      title,
+      message,
+      type: 'success'
+    })
+  }
+
+  const showError = (message: string, title: string = 'Error') => {
+    return addNotification({
+      title,
+      message,
+      type: 'error'
+    })
+  }
+
+  const showWarning = (message: string, title: string = 'Warning') => {
+    return addNotification({
+      title,
+      message,
+      type: 'warning'
+    })
+  }
+
+  const showInfo = (message: string, title: string = 'Info') => {
+    return addNotification({
+      title,
+      message,
+      type: 'info'
+    })
   }
 
   return {
@@ -87,6 +120,10 @@ export const useNotificationStore = defineStore('notifications', () => {
     markAsRead,
     markAllAsRead,
     removeNotification,
-    initNotifications
+    initNotifications,
+    showSuccess,
+    showError,
+    showWarning,
+    showInfo
   }
 })

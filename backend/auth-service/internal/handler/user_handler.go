@@ -266,9 +266,9 @@ func (h *UserHandler) RegisterRoutes(router *gin.Engine, authMiddleware gin.Hand
 	users := router.Group("/api/v1/users")
 	users.Use(authMiddleware) // Semua endpoint memerlukan autentikasi
 	{
-		users.GET("", h.GetAllUsers)                    // GET /api/v1/users
-		users.PUT("/:id", h.UpdateUser)                 // PUT /api/v1/users/:id
-		users.GET("/stats", h.GetUserStats)             // GET /api/v1/users/stats
-		users.GET("/:id/activity", h.GetUserActivity)   // GET /api/v1/users/:id/activity
+		users.GET("", h.GetAllUsers)                  // GET /api/v1/users
+		users.PUT("/:id", h.UpdateUser)               // PUT /api/v1/users/:id
+		users.GET("/stats", h.GetUserStats)           // GET /api/v1/users/stats
+		users.GET("/:id/activity", h.GetUserActivity) // GET /api/v1/users/:id/activity
 	}
 }

@@ -158,11 +158,7 @@ export const useAuthStore = defineStore('auth', () => {
       const notificationStore = useNotificationStore()
       
       const message = logoutResponse?.message || 'You have been successfully logged out'
-      notificationStore.addNotification({
-        type: 'success',
-        title: 'Logout Successful',
-        message: message
-      })
+      notificationStore.showSuccess(message, 'Logout Successful')
       
       // Redirect to login page if router is provided
       if (router) {

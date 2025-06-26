@@ -66,13 +66,7 @@ export const createApiInstance = (baseURL: string): AxiosInstance => {
           } catch (refreshError) {
             // If refresh token fails, logout and redirect to login
             authStore.logout()
-            notificationStore.addNotification({
-              id: Date.now().toString(),
-              type: 'error',
-              title: 'Session Expired',
-              message: 'Please login again',
-              timestamp: new Date()
-            })
+            notificationStore.showError('Please login again', 'Session Expired')
           }
         }
         
@@ -81,69 +75,27 @@ export const createApiInstance = (baseURL: string): AxiosInstance => {
             // Only handle 401 here if token refresh failed or wasn't attempted
             if (!error.config || error.config.__isRetryRequest) {
               authStore.logout()
-              notificationStore.addNotification({
-                id: Date.now().toString(),
-                type: 'error',
-                title: 'Session Expired',
-                message: 'Please login again',
-                timestamp: new Date()
-              })
+              notificationStore.showError('Please login again', 'Session Expired')
             }
             break
           case 403:
-            notificationStore.addNotification({
-              id: Date.now().toString(),
-              type: 'error',
-              title: 'Access Denied',
-              message: 'You do not have permission to access this resource',
-              timestamp: new Date()
-            })
+            notificationStore.showError('You do not have permission to access this resource', 'Access Denied')
             break
           case 404:
-            notificationStore.addNotification({
-              id: Date.now().toString(),
-              type: 'error',
-              title: 'Not Found',
-              message: 'The requested resource was not found',
-              timestamp: new Date()
-            })
+            notificationStore.showError('The requested resource was not found', 'Not Found')
             break
           case 422:
-            notificationStore.addNotification({
-              id: Date.now().toString(),
-              type: 'error',
-              title: 'Validation Error',
-              message: data.message || 'Please check your input',
-              timestamp: new Date()
-            })
+            notificationStore.showError(data.message || 'Please check your input', 'Validation Error')
             break
           case 500:
-            notificationStore.addNotification({
-              id: Date.now().toString(),
-              type: 'error',
-              title: 'Server Error',
-              message: 'Internal server error occurred',
-              timestamp: new Date()
-            })
+            notificationStore.showError('Internal server error occurred', 'Server Error')
             break
           default:
-            notificationStore.addNotification({
-              id: Date.now().toString(),
-              type: 'error',
-              title: 'Error',
-              message: data.message || 'An error occurred',
-              timestamp: new Date()
-            })
+            notificationStore.showError(data.message || 'An error occurred', 'Error')
         }
       } else if (error.request) {
         // Network error
-        notificationStore.addNotification({
-          id: Date.now().toString(),
-          type: 'error',
-          title: 'Network Error',
-          message: 'Unable to connect to server',
-          timestamp: new Date()
-        })
+        notificationStore.showError('Unable to connect to server', 'Network Error')
       }
       
       return Promise.reject(error)

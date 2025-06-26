@@ -32,11 +32,13 @@ export class UserService {
   constructor(private apiClient: ApiClient) {}
 
   // User Management
-  async getUsers(page: number = 1, limit: number = 10, search?: string): Promise<PaginatedResponse<User>> {
+  async getUsers(page: number = 1, limit: number = 10, search?: string, role?: string, status?: string): Promise<PaginatedResponse<User>> {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
-      ...(search && { search })
+      ...(search && { search }),
+      ...(role && { role }),
+      ...(status && { status })
     })
     return await this.apiClient.get<PaginatedResponse<User>>(`/api/v1/users?${params}`)
   }

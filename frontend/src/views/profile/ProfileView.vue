@@ -455,11 +455,7 @@ const getRoleColor = (role?: string) => {
 }
 
 const changeAvatar = () => {
-  notificationStore.addNotification({
-    title: 'Feature Coming Soon',
-    message: 'Avatar upload functionality will be available soon',
-    type: 'info'
-  })
+  notificationStore.showInfo('Avatar upload functionality will be available soon', 'Feature Coming Soon')
 }
 
 const changePassword = async () => {
@@ -470,39 +466,23 @@ const changePassword = async () => {
     
     passwordData.value = { current: '', new: '', confirm: '' }
     
-    notificationStore.addNotification({
-      title: 'Password Updated',
-      message: 'Your password has been changed successfully',
-      type: 'success'
-    })
+    notificationStore.showSuccess('Your password has been changed successfully', 'Password Updated')
   } catch (error) {
-    notificationStore.addNotification({
-      title: 'Error',
-      message: 'Failed to update password',
-      type: 'error'
-    })
+    notificationStore.showError('Failed to update password')
   } finally {
     changingPassword.value = false
   }
 }
 
 const toggle2FA = () => {
-  notificationStore.addNotification({
-    title: twoFactorEnabled.value ? '2FA Enabled' : '2FA Disabled',
-    message: `Two-factor authentication has been ${twoFactorEnabled.value ? 'enabled' : 'disabled'}`,
-    type: 'success'
-  })
+  notificationStore.showSuccess(`Two-factor authentication has been ${twoFactorEnabled.value ? 'enabled' : 'disabled'}`, twoFactorEnabled.value ? '2FA Enabled' : '2FA Disabled')
 }
 
 const terminateSession = (sessionId: number) => {
   const index = activeSessions.value.findIndex(s => s.id === sessionId)
   if (index > -1) {
     activeSessions.value.splice(index, 1)
-    notificationStore.addNotification({
-      title: 'Session Terminated',
-      message: 'The session has been terminated successfully',
-      type: 'success'
-    })
+    notificationStore.showSuccess('The session has been terminated successfully', 'Session Terminated')
   }
 }
 
@@ -512,17 +492,9 @@ const saveProfile = async () => {
   try {
     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    notificationStore.addNotification({
-      title: 'Profile Updated',
-      message: 'Your profile has been saved successfully',
-      type: 'success'
-    })
+    notificationStore.showSuccess('Your profile has been saved successfully', 'Profile Updated')
   } catch (error) {
-    notificationStore.addNotification({
-      title: 'Error',
-      message: 'Failed to save profile',
-      type: 'error'
-    })
+    notificationStore.showError('Failed to save profile')
   } finally {
     saving.value = false
   }

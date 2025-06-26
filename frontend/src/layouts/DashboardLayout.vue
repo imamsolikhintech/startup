@@ -161,8 +161,9 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useDisplay, useTheme } from 'vuetify'
 import { useAuthStore } from '@/stores/auth'
-import { useNotificationStore }   from '@/stores/notifications'
+import { useNotificationStore } from '@/stores/notifications'
 import { usePageLoaderStore } from '@/stores/pageLoader'
+import { useThemeStore } from '@/stores/theme'
 import NotificationDropdown from '@/components/notifications/NotificationDropdown.vue'
 
 const router = useRouter()
@@ -173,6 +174,7 @@ const theme = useTheme()
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
 const pageLoaderStore = usePageLoaderStore()
+const themeStore = useThemeStore()
 
 const drawer = ref(!mobile.value)
 const searchQuery = ref('')
@@ -203,7 +205,7 @@ const handleLogout = () => {
 }
 
 const toggleTheme = () => {
-  theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
+  themeStore.toggleTheme(theme)
 }
 
 const handleScroll = () => {
@@ -226,6 +228,8 @@ watch(
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
+  // Initialize theme from cookies
+  themeStore.initializeTheme(theme)
 })
 
 onUnmounted(() => {

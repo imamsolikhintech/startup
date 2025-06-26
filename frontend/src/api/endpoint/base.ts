@@ -1,3 +1,4 @@
+// Base URL configuration for different services
 export const BaseAuth = () => import.meta.env.VITE_API_SERVICE_AUTH
 export const BaseFile = () => import.meta.env.VITE_API_SERVICE_FILE
 export const BaseProvider = () => import.meta.env.VITE_API_SERVICE_PROVIDER
