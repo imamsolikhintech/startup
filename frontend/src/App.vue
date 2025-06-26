@@ -3,6 +3,7 @@
     <router-view />
     <NotificationSystem />
     <ChatWidget v-if="authStore.isAuthenticated" />
+    <SessionTimeoutWarning />
     <PageLoader :loading="pageLoaderStore.isLoading" />
   </v-app>
 </template>
@@ -15,6 +16,7 @@ import { useNotificationStore } from '@/stores/notifications'
 import { usePageLoaderStore } from '@/stores/pageLoader'
 import NotificationSystem from '@/components/notifications/NotificationSystem.vue'
 import ChatWidget from '@/components/chat/ChatWidget.vue'
+import SessionTimeoutWarning from '@/components/auth/SessionTimeoutWarning.vue'
 import PageLoader from '@/components/common/PageLoader.vue'
 
 const route = useRoute()
@@ -41,5 +43,20 @@ onMounted(() => {
   
   // Check for stored auth
   authStore.checkStoredAuth()
+  
+  // Setup auto-refresh for authenticated users
+  if (authStore.isAuthenticated) {
+    authStore.setupAutoRefresh()
+  }
 })
+
+// Watch for authentication changes to setup auto-refresh
+watch(
+  () => authStore.isAuthenticated,
+  (isAuthenticated) => {
+    if (isAuthenticated) {
+      authStore.setupAutoRefresh()
+    }
+  }
+)
 </script>

@@ -2,6 +2,9 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authService } from '@/api'
 import type { User as ApiUser, LoginRequest } from '@/api/types'
+import { AUTH_CONSTANTS, ERROR_MESSAGES } from './constants'
+import { AuthError, AuthErrorType } from './errors'
+import { SecureTokenStorage, LoginRateLimit, isTokenExpired, shouldRefreshToken } from '@/utils/tokenUtils'
 
 export interface User {
   id: string
@@ -17,11 +20,22 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref<string | null>(null)
 
   const isAuthenticated = computed(() => !!user.value)
-  const token = computed(() => localStorage.getItem('auth_token'))
+  const token = computed(() => SecureTokenStorage.getToken(AUTH_CONSTANTS.TOKEN_KEY))
+  const loginAttempts = ref(0)
+  const isInCooldown = ref(false)
 
   const login = async (email: string, password: string) => {
     loading.value = true
     error.value = null
+
+    // Check rate limiting
+    if (LoginRateLimit.isInCooldown(email)) {
+      const remainingTime = Math.ceil(LoginRateLimit.getCooldownTimeRemaining(email) / 60000)
+      error.value = `${ERROR_MESSAGES.ACCOUNT_LOCKED} Try again in ${remainingTime} minutes.`
+      loading.value = false
+      isInCooldown.value = true
+      return false
+    }
 
     console.log('Auth store login called with:', email)
 
@@ -47,28 +61,37 @@ export const useAuthStore = defineStore('auth', () => {
         
         user.value = userData
         
-        // Store token and user data
-        localStorage.setItem('auth_token', response.data.accessToken || token)
+        // Store token and user data securely
+        SecureTokenStorage.setToken(AUTH_CONSTANTS.TOKEN_KEY, response.data.accessToken || token)
         if (response.data.refreshToken) {
-          localStorage.setItem('refresh_token', response.data.refreshToken)
+          SecureTokenStorage.setToken(AUTH_CONSTANTS.REFRESH_TOKEN_KEY, response.data.refreshToken)
         }
-        localStorage.setItem('auth_user', JSON.stringify(userData))
+        SecureTokenStorage.setToken(AUTH_CONSTANTS.USER_KEY, JSON.stringify(userData))
+        
+        // Reset login attempts on successful login
+        LoginRateLimit.resetAttempts(email)
+        loginAttempts.value = 0
+        isInCooldown.value = false
         
         console.log('Login successful, user data:', userData)
         return true
       } else {
-        throw new Error(response.message || 'Login failed')
+        throw new AuthError(response.message || ERROR_MESSAGES.LOGIN_FAILED, AuthErrorType.INVALID_CREDENTIALS)
       }
     } catch (err: any) {
       console.error('Login error:', err)
       
-      // Handle API error response
-      if (err.response?.data?.message) {
-        error.value = err.response.data.message
-      } else if (err.message) {
-        error.value = err.message
-      } else {
-        error.value = 'Login failed. Please try again.'
+      // Increment login attempts
+      const attempts = LoginRateLimit.incrementAttempts(email)
+      loginAttempts.value = attempts
+      
+      // Handle different error types
+      const authError = err instanceof AuthError ? err : AuthError.fromApiError(err)
+      error.value = authError.getUserFriendlyMessage()
+      
+      // Check if account is now in cooldown
+      if (attempts >= AUTH_CONSTANTS.MAX_LOGIN_ATTEMPTS) {
+        isInCooldown.value = true
       }
       
       return false
@@ -136,7 +159,7 @@ export const useAuthStore = defineStore('auth', () => {
     let logoutResponse = null
     try {
       // Only call API logout if we have a refresh token
-      const refreshToken = localStorage.getItem('refresh_token')
+      const refreshToken = SecureTokenStorage.getToken(AUTH_CONSTANTS.REFRESH_TOKEN_KEY)
       if (refreshToken) {
         logoutResponse = await authService.logout()
       } else {
@@ -148,17 +171,22 @@ export const useAuthStore = defineStore('auth', () => {
     } finally {
       // Clear local state and storage
       user.value = null
-      localStorage.removeItem('auth_user')
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('refresh_token')
+      error.value = null
+      loginAttempts.value = 0
+      isInCooldown.value = false
+      SecureTokenStorage.clearAllTokens()
       console.log('User logged out')
       
       // Show success notification with backend message if available
-      const { useNotificationStore } = await import('@/stores/notifications')
-      const notificationStore = useNotificationStore()
-      
-      const message = logoutResponse?.message || 'You have been successfully logged out'
-      notificationStore.showSuccess(message, 'Logout Successful')
+      try {
+        const { useNotificationStore } = await import('@/stores/notifications')
+        const notificationStore = useNotificationStore()
+        
+        const message = logoutResponse?.message || 'You have been successfully logged out'
+        notificationStore.showSuccess(message, 'Logout Successful')
+      } catch (notificationError) {
+        console.warn('Could not show logout notification:', notificationError)
+      }
       
       // Redirect to login page if router is provided
       if (router) {
@@ -171,11 +199,23 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const checkStoredAuth = async () => {
-    const storedUser = localStorage.getItem('auth_user')
-    const storedToken = localStorage.getItem('auth_token')
+    const storedUser = SecureTokenStorage.getToken(AUTH_CONSTANTS.USER_KEY)
+    const storedToken = SecureTokenStorage.getToken(AUTH_CONSTANTS.TOKEN_KEY)
     
     if (storedUser && storedToken) {
       try {
+        // Check if token is expired
+        if (isTokenExpired(storedToken)) {
+          console.log('Stored token is expired, attempting refresh')
+          try {
+            await refreshToken()
+          } catch (refreshError) {
+            console.error('Token refresh failed during auth check:', refreshError)
+            SecureTokenStorage.clearAllTokens()
+            return
+          }
+        }
+        
         // Restore user from storage
         user.value = JSON.parse(storedUser)
         console.log('Restored user from storage:', user.value)
@@ -193,46 +233,76 @@ export const useAuthStore = defineStore('auth', () => {
               role: apiUser.role?.name || 'user'
             }
             user.value = userData
-            localStorage.setItem('auth_user', JSON.stringify(userData))
+            SecureTokenStorage.setToken(AUTH_CONSTANTS.USER_KEY, JSON.stringify(userData))
           }
         } catch (err) {
           console.error('Token validation failed:', err)
           // Clear invalid session
           user.value = null
-          localStorage.removeItem('auth_user')
-          localStorage.removeItem('auth_token')
+          SecureTokenStorage.clearAllTokens()
         }
       } catch (err) {
         console.error('Error parsing stored user data:', err)
-        localStorage.removeItem('auth_user')
-        localStorage.removeItem('auth_token')
+        SecureTokenStorage.clearAllTokens()
       }
     }
   }
   
   const refreshToken = async () => {
-    const storedRefreshToken = localStorage.getItem('refresh_token')
+    const storedRefreshToken = SecureTokenStorage.getToken(AUTH_CONSTANTS.REFRESH_TOKEN_KEY)
     
     if (!storedRefreshToken) {
-      throw new Error('No refresh token available')
+      throw new AuthError('No refresh token available', AuthErrorType.TOKEN_EXPIRED)
     }
     
     try {
       const response = await authService.refreshToken(storedRefreshToken)
       
       if (response.success && response.data) {
-        localStorage.setItem('auth_token', response.data.accessToken)
-        localStorage.setItem('refresh_token', response.data.refreshToken)
+        SecureTokenStorage.setToken(AUTH_CONSTANTS.TOKEN_KEY, response.data.accessToken)
+        SecureTokenStorage.setToken(AUTH_CONSTANTS.REFRESH_TOKEN_KEY, response.data.refreshToken)
         return response.data.accessToken
       } else {
-        throw new Error(response.message || 'Token refresh failed')
+        throw new AuthError(response.message || ERROR_MESSAGES.TOKEN_EXPIRED, AuthErrorType.TOKEN_EXPIRED)
       }
     } catch (err: any) {
       console.error('Token refresh error:', err)
       // Clear invalid tokens and logout
+      const authError = err instanceof AuthError ? err : AuthError.fromApiError(err)
+      error.value = authError.getUserFriendlyMessage()
       logout()
-      throw err
+      throw authError
     }
+  }
+
+  // Auto-refresh token when it's about to expire
+  const setupAutoRefresh = () => {
+    const currentToken = SecureTokenStorage.getToken(AUTH_CONSTANTS.TOKEN_KEY)
+    if (!currentToken || !user.value) return
+
+    if (shouldRefreshToken(currentToken)) {
+      refreshToken().catch(err => {
+        console.error('Auto-refresh failed:', err)
+      })
+    }
+
+    // Set up periodic check for token refresh
+    const refreshInterval = setInterval(() => {
+      const token = SecureTokenStorage.getToken(AUTH_CONSTANTS.TOKEN_KEY)
+      if (!token || !user.value) {
+        clearInterval(refreshInterval)
+        return
+      }
+
+      if (shouldRefreshToken(token)) {
+        refreshToken().catch(err => {
+          console.error('Auto-refresh failed:', err)
+          clearInterval(refreshInterval)
+        })
+      }
+    }, 60000) // Check every minute
+
+    return refreshInterval
   }
 
   const updateProfile = async (profileData: Partial<User>) => {
@@ -301,18 +371,51 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // Session timeout warning
+  const sessionTimeoutWarning = ref(false)
+  const showSessionWarning = () => {
+    sessionTimeoutWarning.value = true
+  }
+  const hideSessionWarning = () => {
+    sessionTimeoutWarning.value = false
+  }
+
+  // Remember me functionality
+  const rememberMe = ref(false)
+  const setRememberMe = (remember: boolean) => {
+    rememberMe.value = remember
+    localStorage.setItem(AUTH_CONSTANTS.REMEMBER_ME_KEY, remember.toString())
+  }
+
+  // Initialize remember me from storage
+  const initRememberMe = () => {
+    const stored = localStorage.getItem(AUTH_CONSTANTS.REMEMBER_ME_KEY)
+    rememberMe.value = stored === 'true'
+  }
+
+  // Initialize on store creation
+  initRememberMe()
+
   return {
     user,
     loading,
     error,
     isAuthenticated,
     token,
+    loginAttempts,
+    isInCooldown,
+    sessionTimeoutWarning,
+    rememberMe,
     login,
     register,
     logout,
     refreshToken,
     checkStoredAuth,
     updateProfile,
-    setGoogleAuth
+    setGoogleAuth,
+    setupAutoRefresh,
+    showSessionWarning,
+    hideSessionWarning,
+    setRememberMe
   }
 })

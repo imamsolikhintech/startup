@@ -114,6 +114,9 @@ const handleLogin = async () => {
   console.log('Attempting login with:', credentials.value.email)
 
   try {
+    // Set remember me preference before login
+    authStore.setRememberMe(rememberMe.value)
+    
     const success = await authStore.login(credentials.value.email, credentials.value.password)
     if (success) {
       console.log('Login successful, redirecting to dashboard')
