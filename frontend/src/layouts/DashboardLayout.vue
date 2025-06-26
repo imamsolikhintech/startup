@@ -1,5 +1,8 @@
 <template>
   <n-layout has-sider class="dashboard-layout">
+    <!-- Mobile Overlay -->
+    <div v-if="isMobile && drawer" class="mobile-overlay" @click="drawer = false"></div>
+    
     <!-- Navigation Drawer -->
     <n-layout-sider :collapsed="!drawer" @update:collapsed="(value: boolean) => drawer = !value" :collapsed-width="0"
       :width="280" :native-scrollbar="false" class="dashboard-drawer" show-trigger="bar" collapse-mode="width" bordered>
@@ -40,8 +43,8 @@
       <!-- App Bar -->
       <n-layout-header class="dashboard-appbar" :class="{ 'scrolled': scrolled }">
         <div class="appbar-content">
-          <!-- Mobile Menu Toggle -->
-          <n-button v-if="isMobile" text circle @click="drawer = !drawer" class="mobile-menu-btn">
+          <!-- Sidebar Toggle Button -->
+          <n-button text circle @click="drawer = !drawer" class="sidebar-toggle-btn">
             <template #icon>
               <n-icon size="20">
                 <svg viewBox="0 0 24 24">
@@ -90,7 +93,7 @@
 
       <!-- Main Content -->
       <n-layout-content class="dashboard-main">
-        <div class="main-content">
+        <div class="main-content" style="padding-left: 1rem;padding-right: 1rem;">
           <router-view />
         </div>
       </n-layout-content>
@@ -122,13 +125,31 @@ const drawer = ref(true)
 const searchQuery = ref('')
 const scrolled = ref(false)
 
-// Mobile detection
-const isMobile = computed(() => {
-  if (typeof window !== 'undefined') {
-    return window.innerWidth < 768
+// Mobile detection with reactive window size
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
+const isMobile = computed(() => windowWidth.value < 768)
+const isTablet = computed(() => windowWidth.value >= 768 && windowWidth.value < 1024)
+
+// Initialize drawer state based on screen size
+const initializeDrawer = () => {
+  if (isMobile.value) {
+    drawer.value = false // Hide sidebar on mobile by default
+  } else {
+    drawer.value = true // Show sidebar on desktop by default
   }
-  return false
-})
+}
+
+// Handle window resize
+const handleResize = () => {
+  windowWidth.value = window.innerWidth
+  // Auto-adjust drawer based on screen size
+  if (isMobile.value && drawer.value) {
+    // Keep drawer open if user explicitly opened it on mobile
+  } else if (!isMobile.value && !drawer.value) {
+    // Auto-open drawer when switching to desktop
+    drawer.value = true
+  }
+}
 
 const currentPageTitle = computed(() => {
   const titles: Record<string, string> = {
@@ -189,6 +210,10 @@ watch(
   (newPath, oldPath) => {
     if (newPath !== oldPath && !newPath.startsWith('/auth')) {
       pageLoaderStore.startLoading('Loading page...')
+      // Auto-close sidebar on mobile when navigating
+      if (isMobile.value) {
+        drawer.value = false
+      }
       // Simulate loading time for better UX
       setTimeout(() => {
         pageLoaderStore.stopLoading()
@@ -197,12 +222,33 @@ watch(
   }
 )
 
+// Watch for window width changes to adjust drawer behavior
+watch(
+  () => windowWidth.value,
+  (newWidth, oldWidth) => {
+    const wasMobile = oldWidth < 768
+    const isMobileNow = newWidth < 768
+    
+    // If switching from mobile to desktop, open drawer
+    if (wasMobile && !isMobileNow) {
+      drawer.value = true
+    }
+    // If switching from desktop to mobile, close drawer
+    else if (!wasMobile && isMobileNow) {
+      drawer.value = false
+    }
+  }
+)
+
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
+  window.addEventListener('resize', handleResize)
+  
   // Initialize theme from cookies
   themeStore.initializeTheme()
-  // Set initial drawer state based on screen size
-  drawer.value = !isMobile.value
+  
+  // Initialize drawer state based on screen size
+  initializeDrawer()
 
   // Add some demo notifications for testing
   // setTimeout(() => {
@@ -215,6 +261,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('resize', handleResize)
 })
 </script>
 
@@ -250,6 +297,7 @@ onUnmounted(() => {
 .dashboard-layout {
   height: 100vh;
   overflow: hidden;
+  position: relative;
 }
 
 .main-layout {
@@ -258,12 +306,72 @@ onUnmounted(() => {
   flex-direction: column;
 }
 
+/* Mobile Overlay */
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  cursor: pointer;
+  animation: fadeIn 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  backdrop-filter: blur(4px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+  }
+}
+
 /* Sidebar Styling */
 .dashboard-drawer {
   background: var(--n-color);
   height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
+  z-index: 1000;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform-origin: left center;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-drawer:not(.n-layout-sider--collapsed) {
+  animation: slideInFromLeft 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.dashboard-drawer.n-layout-sider--collapsed {
+  animation: slideOutToLeft 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
 }
 
 /* Brand Header */
@@ -271,6 +379,11 @@ onUnmounted(() => {
   padding: 20px;
   border-bottom: 1px solid var(--n-border-color);
   background: var(--n-color);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.dashboard-drawer:not(.n-layout-sider--collapsed) .drawer-header {
+  animation: slideInContent 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) 0.1s both;
 }
 
 .brand-container {
@@ -293,6 +406,11 @@ onUnmounted(() => {
 /* User Profile Section */
 .user-profile-section {
   padding: 16px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.dashboard-drawer:not(.n-layout-sider--collapsed) .user-profile-section {
+  animation: slideInContent 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) 0.2s both;
 }
 
 .user-profile-card {
@@ -340,6 +458,22 @@ onUnmounted(() => {
 .navigation-section {
   flex: 1;
   padding: 0 16px 16px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.dashboard-drawer:not(.n-layout-sider--collapsed) .navigation-section {
+  animation: slideInContent 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) 0.3s both;
+}
+
+@keyframes slideInContent {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .navigation-menu {
@@ -354,6 +488,8 @@ onUnmounted(() => {
   height: 56px;
   flex-shrink: 0;
   z-index: 100;
+  position: sticky;
+  top: 0;
 }
 
 .dashboard-appbar.scrolled {
@@ -369,8 +505,20 @@ onUnmounted(() => {
   max-width: 100%;
 }
 
-.mobile-menu-btn {
+.sidebar-toggle-btn {
   flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border-radius: 50%;
+}
+
+.sidebar-toggle-btn:hover {
+  background: var(--n-color-hover);
+  transform: scale(1.1) rotate(180deg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-toggle-btn:active {
+  transform: scale(0.95) rotate(180deg);
 }
 
 .page-title-section {
@@ -428,7 +576,24 @@ onUnmounted(() => {
 :deep(.n-menu .n-menu-item) {
   margin: 4px 0;
   border-radius: 8px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+:deep(.n-menu .n-menu-item::before) {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+:deep(.n-menu .n-menu-item:hover::before) {
+  left: 100%;
 }
 
 :deep(.n-menu .n-menu-item:hover) {
@@ -476,7 +641,10 @@ onUnmounted(() => {
     top: 0;
     left: 0;
     height: 100vh;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
   }
+
+
 
   .appbar-content {
     padding: 0 var(--content-padding-xs);
@@ -495,6 +663,10 @@ onUnmounted(() => {
   .action-buttons {
     gap: 2px;
   }
+
+  .sidebar-toggle-btn {
+    order: -1; /* Move toggle button to the left on mobile */
+  }
 }
 
 /* Small Devices (phones, 480px to 767px) */
@@ -505,7 +677,10 @@ onUnmounted(() => {
     top: 0;
     left: 0;
     height: 100vh;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
   }
+
+
 
   .appbar-content {
     padding: 0 var(--content-padding-sm);
@@ -523,6 +698,10 @@ onUnmounted(() => {
 
   .action-buttons {
     gap: 4px;
+  }
+
+  .sidebar-toggle-btn {
+    order: -1; /* Move toggle button to the left on mobile */
   }
 }
 
