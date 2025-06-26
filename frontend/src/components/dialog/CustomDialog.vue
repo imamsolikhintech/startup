@@ -31,20 +31,17 @@
 
       <!-- Footer Section -->
       <template v-if="showFooter" #footer>
-        <div class="custom-dialog-footer" :class="footerClass">
+        <div class="custom-dialog-footer" :class="footerClass" style="background: rgb(30 30 30 / 0%);">
           <slot name="footer">
             <!-- Default Footer Actions -->
-            <div :class="footerJustifyStart ? 'flex justify-start gap-2' : 'flex justify-end gap-2'">
-              <n-button v-if="showCancelButton" :type="cancelButtonVariant" @click="handleCancel"
-                :disabled="loading">
+            <n-flex justify="end">
+              <n-button v-if="showCancelButton" :type="cancelButtonVariant" @click="handleCancel" :disabled="loading">
                 {{ cancelButtonText }}
               </n-button>
-              &nbsp;
-              <n-button v-if="showConfirmButton" :type="confirmButtonVariant" :loading="loading"
-                @click="handleConfirm">
+              <n-button v-if="showConfirmButton" :type="confirmButtonVariant" :loading="loading" @click="handleConfirm">
                 {{ confirmButtonText }}
               </n-button>
-            </div>
+            </n-flex>
           </slot>
         </div>
       </template>

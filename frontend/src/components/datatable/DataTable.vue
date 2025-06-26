@@ -221,6 +221,11 @@ const formatDate = (date: string | Date) => {
 
 :deep(.n-data-table-td) {
   border-bottom: 1px solid var(--n-border-color);
+  white-space: nowrap;
+}
+:deep(.n-data-table-th) {
+  border-bottom: 1px solid var(--n-border-color);
+  white-space: nowrap;
 }
 
 :deep(.n-data-table-tr:hover .n-data-table-td) {
