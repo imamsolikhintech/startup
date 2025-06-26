@@ -186,19 +186,19 @@ const statsData = computed(() => [
 const tableActions = [
   {
     key: 'activity',
-    icon: 'mdi-chart-line',
+    icon: 'mdi-eye',
     color: 'info',
     title: 'View Activity'
   },
   {
     key: 'edit',
     icon: 'mdi-pencil',
-    color: 'primary',
+    color: 'warning',
     title: 'Edit User'
   },
   {
     key: 'reset',
-    icon: 'mdi-lock-reset',
+    icon: 'mdi-key-outline',
     color: 'warning',
     title: 'Reset Password'
   },

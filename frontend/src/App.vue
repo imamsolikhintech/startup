@@ -1,11 +1,13 @@
 <template>
   <n-config-provider :theme="theme">
     <n-global-style />
-    <router-view />
-    <NotificationSystem />
-    <ChatWidget v-if="authStore.isAuthenticated" />
-    <SessionTimeoutWarning />
-    <PageLoader :loading="pageLoaderStore.isLoading" />
+    <n-message-provider>
+      <router-view />
+      <NotificationSystem />
+      <ChatWidget v-if="authStore.isAuthenticated" />
+      <SessionTimeoutWarning />
+      <PageLoader :loading="pageLoaderStore.isLoading" />
+    </n-message-provider>
   </n-config-provider>
 </template>
 

@@ -666,6 +666,7 @@ onUnmounted(() => {
 
   .sidebar-toggle-btn {
     order: -1; /* Move toggle button to the left on mobile */
+    padding-left: 10px;
   }
 }
 
@@ -702,6 +703,7 @@ onUnmounted(() => {
 
   .sidebar-toggle-btn {
     order: -1; /* Move toggle button to the left on mobile */
+    padding-left: 10px;
   }
 }
 
