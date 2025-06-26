@@ -17,14 +17,19 @@
     @close="$emit('cancel')"
     header-class="bg-error text-white"
   >
-    <v-alert
+    <n-alert
       type="error"
-      variant="tonal"
       class="mb-4"
-      icon="mdi-alert-circle"
     >
+      <template #icon>
+        <n-icon>
+          <svg viewBox="0 0 24 24">
+            <path fill="currentColor" d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+          </svg>
+        </n-icon>
+      </template>
       You are about to permanently delete this user. This action cannot be undone.
-    </v-alert>
+    </n-alert>
     
     <div class="text-body-1 mb-4">
       Are you sure you want to delete <strong>{{ userName }}</strong>?
@@ -37,6 +42,8 @@
 </template>
 
 <script setup lang="ts">
+import { NAlert, NIcon } from 'naive-ui'
+
 interface Props {
   show: boolean
   userName: string

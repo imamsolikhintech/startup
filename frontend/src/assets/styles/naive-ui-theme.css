@@ -1,0 +1,251 @@
+/* Naive UI Theme Integration */
+/* Custom theme variables and overrides for Naive UI components */
+
+/* Global Naive UI Theme Variables */
+:root {
+  /* Primary Colors */
+  --n-primary-color: rgb(25, 118, 210);
+  --n-primary-color-hover: rgb(30, 136, 229);
+  --n-primary-color-pressed: rgb(21, 101, 192);
+  --n-primary-color-suppl: rgb(33, 150, 243);
+  
+  /* Info Colors */
+  --n-info-color: rgb(33, 150, 243);
+  --n-info-color-hover: rgb(66, 165, 245);
+  --n-info-color-pressed: rgb(30, 136, 229);
+  --n-info-color-suppl: rgb(100, 181, 246);
+  
+  /* Success Colors */
+  --n-success-color: rgb(76, 175, 80);
+  --n-success-color-hover: rgb(102, 187, 106);
+  --n-success-color-pressed: rgb(67, 160, 71);
+  --n-success-color-suppl: rgb(129, 199, 132);
+  
+  /* Warning Colors */
+  --n-warning-color: rgb(255, 152, 0);
+  --n-warning-color-hover: rgb(255, 167, 38);
+  --n-warning-color-pressed: rgb(239, 108, 0);
+  --n-warning-color-suppl: rgb(255, 183, 77);
+  
+  /* Error Colors */
+  --n-error-color: rgb(244, 67, 54);
+  --n-error-color-hover: rgb(239, 83, 80);
+  --n-error-color-pressed: rgb(211, 47, 47);
+  --n-error-color-suppl: rgb(255, 138, 128);
+}
+
+/* Dark Theme Variables */
+.dark,
+[data-theme="dark"],
+.v-theme--dark {
+  /* Primary Colors for Dark Theme */
+  --n-primary-color: rgb(33, 150, 243);
+  --n-primary-color-hover: rgb(66, 165, 245);
+  --n-primary-color-pressed: rgb(30, 136, 229);
+  --n-primary-color-suppl: rgb(100, 181, 246);
+  
+  /* Info Colors for Dark Theme */
+  --n-info-color: rgb(66, 165, 245);
+  --n-info-color-hover: rgb(100, 181, 246);
+  --n-info-color-pressed: rgb(33, 150, 243);
+  --n-info-color-suppl: rgb(144, 202, 249);
+  
+  /* Success Colors for Dark Theme */
+  --n-success-color: rgb(102, 187, 106);
+  --n-success-color-hover: rgb(129, 199, 132);
+  --n-success-color-pressed: rgb(76, 175, 80);
+  --n-success-color-suppl: rgb(165, 214, 167);
+  
+  /* Warning Colors for Dark Theme */
+  --n-warning-color: rgb(255, 167, 38);
+  --n-warning-color-hover: rgb(255, 183, 77);
+  --n-warning-color-pressed: rgb(255, 152, 0);
+  --n-warning-color-suppl: rgb(255, 204, 128);
+  
+  /* Error Colors for Dark Theme */
+  --n-error-color: rgb(239, 83, 80);
+  --n-error-color-hover: rgb(255, 138, 128);
+  --n-error-color-pressed: rgb(244, 67, 54);
+  --n-error-color-suppl: rgb(255, 171, 145);
+}
+
+/* Component Specific Overrides */
+
+/* Card Component */
+.n-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.n-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Button Component */
+.n-button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+}
+
+.n-button:hover {
+  transform: translateY(-1px);
+}
+
+.n-button--primary-type {
+  background: linear-gradient(135deg, var(--n-primary-color) 0%, var(--n-primary-color-hover) 100%);
+}
+
+/* Input Component */
+.n-input {
+  transition: all 0.2s ease;
+}
+
+.n-input:focus-within {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.15);
+}
+
+/* Menu Component */
+.n-menu .n-menu-item {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  margin: 2px 0;
+}
+
+.n-menu .n-menu-item:hover {
+  transform: translateX(4px);
+}
+
+.n-menu .n-menu-item--selected {
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.1) 0%, rgba(var(--v-theme-primary), 0.05) 100%);
+  border-left: 3px solid var(--n-primary-color);
+  font-weight: 600;
+}
+
+/* Layout Components */
+.n-layout-sider {
+  background: var(--n-color);
+  border-right: 1px solid var(--n-border-color);
+}
+
+.n-layout-header {
+  background: var(--n-color);
+  border-bottom: 1px solid var(--n-border-color);
+  backdrop-filter: blur(12px);
+}
+
+.n-layout-content {
+  background: var(--n-body-color);
+}
+
+/* Modal and Dialog */
+.n-modal {
+  backdrop-filter: blur(8px);
+}
+
+.n-card.n-modal {
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+/* Dropdown */
+.n-dropdown-menu {
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--n-border-color);
+  backdrop-filter: blur(12px);
+}
+
+/* Avatar */
+.n-avatar {
+  transition: all 0.2s ease;
+}
+
+.n-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Badge */
+.n-badge {
+  font-weight: 600;
+}
+
+/* Tag */
+.n-tag {
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+/* Scrollbar Styling for Naive UI */
+.n-scrollbar-rail {
+  background: transparent;
+}
+
+.n-scrollbar-rail__scrollbar {
+  background: var(--n-scrollbar-color);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.n-scrollbar-rail__scrollbar:hover {
+  background: var(--n-scrollbar-color-hover);
+}
+
+/* Theme Transition */
+.n-config-provider * {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Custom Utilities for Naive UI */
+.naive-glass-effect {
+  background: rgba(var(--v-theme-surface), 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(var(--v-theme-primary), 0.1);
+}
+
+.naive-gradient-primary {
+  background: linear-gradient(135deg, var(--n-primary-color) 0%, var(--n-primary-color-hover) 100%);
+}
+
+.naive-shadow-soft {
+  box-shadow: 0 4px 20px rgba(var(--v-theme-primary), 0.08);
+}
+
+.naive-shadow-medium {
+  box-shadow: 0 8px 30px rgba(var(--v-theme-primary), 0.12);
+}
+
+.naive-shadow-strong {
+  box-shadow: 0 12px 40px rgba(var(--v-theme-primary), 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .n-card:hover {
+    transform: none;
+  }
+  
+  .n-button:hover {
+    transform: none;
+  }
+  
+  .n-input:focus-within {
+    transform: none;
+  }
+  
+  .n-menu .n-menu-item:hover {
+    transform: none;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .n-card,
+  .n-button,
+  .n-input,
+  .n-menu .n-menu-item {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+}

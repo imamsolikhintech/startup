@@ -1,139 +1,148 @@
 <template>
   <div class="dashboard-view">
     <!-- Welcome Section -->
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <v-card class="welcome-card" variant="tonal" color="primary">
-          <v-card-text class="pa-6">
-            <v-row align="center">
-              <v-col cols="12" md="8">
-                <h1 class="text-h4 font-weight-bold mb-2">
-                  Welcome back, {{ authStore.user?.name }}! 👋
-                </h1>
-                <p class="text-subtitle-1 opacity-90">
-                  Here's what's happening with your dashboard today.
-                </p>
-              </v-col>
-              <v-col cols="12" md="4" class="text-center">
-                <v-img
-                  src="https://images.pexels.com/photos/3184306/pexels-photo-3184306.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1"
-                  max-width="200"
-                  class="mx-auto"
-                  rounded="lg"
-                />
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+    <div class="welcome-section mb-6">
+      <n-card class="welcome-card">
+        <div class="welcome-content p-6">
+          <div class="welcome-grid">
+            <div class="welcome-text">
+              <h1 class="text-2xl font-bold mb-2">
+                Welcome back, {{ authStore.user?.name }}! 👋
+              </h1>
+              <p class="text-gray-600">
+                Here's what's happening with your dashboard today.
+              </p>
+            </div>
+            <div class="welcome-image text-center">
+              <img
+                src="https://images.pexels.com/photos/3184306/pexels-photo-3184306.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1"
+                alt="Dashboard illustration"
+                class="welcome-img"
+              />
+            </div>
+          </div>
+        </div>
+      </n-card>
+    </div>
 
     <!-- Stats Cards -->
-    <v-row class="mb-6">
-      <v-col cols="12" sm="6" md="3" v-for="stat in stats" :key="stat.title">
-        <StatsCard
-          :title="stat.title"
-          :value="stat.value"
-          :icon="stat.icon"
-          :color="stat.color"
-          :trend="stat.trend"
-          :change="stat.change"
-        />
-      </v-col>
-    </v-row>
+    <div class="stats-grid mb-6">
+      <StatsCard
+        v-for="stat in stats"
+        :key="stat.title"
+        :title="stat.title"
+        :value="stat.value"
+        :icon="stat.icon"
+        :color="stat.color"
+        :trend="stat.trend"
+        :change="stat.change"
+      />
+    </div>
 
     <!-- Charts Section -->
-    <v-row class="mb-6">
-      <v-col cols="12" md="8">
-        <v-card rounded="lg" elevation="2">
-          <v-card-title class="d-flex align-center justify-space-between">
-            <span class="text-h6">Revenue Overview</span>
-            <v-btn-toggle v-model="chartPeriod" mandatory>
-              <v-btn size="small" value="week">Week</v-btn>
-              <v-btn size="small" value="month">Month</v-btn>
-              <v-btn size="small" value="year">Year</v-btn>
-            </v-btn-toggle>
-          </v-card-title>
-          <v-card-text>
-            <LineChart :data="chartData" :options="chartOptions" />
-          </v-card-text>
-        </v-card>
-      </v-col>
+    <div class="charts-section mb-6">
+      <div class="revenue-chart">
+        <n-card class="h-full">
+          <template #header>
+            <div class="flex items-center justify-between">
+              <span class="text-lg font-semibold">Revenue Overview</span>
+              <n-button-group size="small">
+                <n-button :type="chartPeriod === 'week' ? 'primary' : 'default'" @click="chartPeriod = 'week'">Week</n-button>
+                <n-button :type="chartPeriod === 'month' ? 'primary' : 'default'" @click="chartPeriod = 'month'">Month</n-button>
+                <n-button :type="chartPeriod === 'year' ? 'primary' : 'default'" @click="chartPeriod = 'year'">Year</n-button>
+              </n-button-group>
+            </div>
+          </template>
+          <LineChart :data="chartData" :options="chartOptions" />
+        </n-card>
+      </div>
       
-      <v-col cols="12" md="4">
-        <v-card rounded="lg" elevation="2" class="h-100">
-          <v-card-title>
-            <span class="text-h6">Traffic Sources</span>
-          </v-card-title>
-          <v-card-text>
-            <DoughnutChart :data="doughnutData" :options="doughnutOptions" />
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+      <div class="traffic-chart">
+        <n-card class="h-full">
+          <template #header>
+            <span class="text-lg font-semibold">Traffic Sources</span>
+          </template>
+          <DoughnutChart :data="doughnutData" :options="doughnutOptions" />
+        </n-card>
+      </div>
+    </div>
 
     <!-- Recent Activity & Quick Actions -->
-    <v-row>
-      <v-col cols="12" md="8">
-        <v-card rounded="lg" elevation="2">
-          <v-card-title>
-            <span class="text-h6">Recent Activity</span>
-          </v-card-title>
-          <v-list lines="two">
-            <v-list-item
+    <div class="bottom-section">
+      <div class="activity-section">
+        <n-card>
+          <template #header>
+            <span class="text-lg font-semibold">Recent Activity</span>
+          </template>
+          <div class="activity-list">
+            <div
               v-for="activity in recentActivities"
               :key="activity.id"
-              :prepend-avatar="activity.avatar"
+              class="activity-item flex items-center py-3 border-b border-gray-100 last:border-b-0"
             >
-              <v-list-item-title>{{ activity.title }}</v-list-item-title>
-              <v-list-item-subtitle>{{ activity.description }}</v-list-item-subtitle>
-              <template #append>
-                <v-chip
-                  :color="activity.status === 'completed' ? 'success' : 'warning'"
-                  size="small"
-                  variant="tonal"
-                >
-                  {{ activity.status }}
-                </v-chip>
-              </template>
-            </v-list-item>
-          </v-list>
-        </v-card>
-      </v-col>
+              <n-avatar
+                :src="activity.avatar"
+                size="medium"
+                class="mr-3"
+              />
+              <div class="flex-1">
+                <div class="text-sm font-medium">{{ activity.title }}</div>
+                <div class="text-xs text-gray-500">{{ activity.description }}</div>
+              </div>
+              <n-tag
+                :type="activity.status === 'completed' ? 'success' : 'warning'"
+                size="small"
+              >
+                {{ activity.status }}
+              </n-tag>
+            </div>
+          </div>
+        </n-card>
+      </div>
 
-      <v-col cols="12" md="4">
-        <v-card rounded="lg" elevation="2">
-          <v-card-title>
-            <span class="text-h6">Quick Actions</span>
-          </v-card-title>
-          <v-card-text>
-            <v-btn
+      <div class="actions-section">
+        <n-card>
+          <template #header>
+            <span class="text-lg font-semibold">Quick Actions</span>
+          </template>
+          <div class="actions-list">
+            <n-button
               v-for="action in quickActions"
               :key="action.title"
-              :prepend-icon="action.icon"
-              :color="action.color"
-              variant="tonal"
+              :type="getActionType(action.color)"
               block
-              class="mb-3 justify-start"
+              class="action-btn mb-3"
               @click="handleQuickAction(action.action)"
             >
+              <template #icon>
+                <n-icon>
+                  <component :is="getActionIcon(action.icon)" />
+                </n-icon>
+              </template>
               {{ action.title }}
-            </v-btn>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+            </n-button>
+          </div>
+        </n-card>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, h } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 import { useChatStore } from '@/stores/chat'
 import StatsCard from '@/components/dashboard/StatsCard.vue'
 import LineChart from '@/components/charts/LineChart.vue'
 import DoughnutChart from '@/components/charts/DoughnutChart.vue'
+import { NIcon } from 'naive-ui'
+import {
+  PersonAdd as PersonAddIcon,
+  DocumentText as DocumentTextIcon,
+  Settings as SettingsIcon,
+  Analytics as AnalyticsIcon
+} from '@vicons/ionicons5'
 
 interface StatItem {
   title: string
@@ -317,6 +326,26 @@ const handleQuickAction = (action: string) => {
   }
 }
 
+const getActionIcon = (iconName: string) => {
+  const iconMap = {
+    'mdi-account-plus': PersonAddIcon,
+    'mdi-file-chart': DocumentTextIcon,
+    'mdi-bell-plus': SettingsIcon,
+    'mdi-chat': AnalyticsIcon
+  }
+  return iconMap[iconName] || DocumentTextIcon
+}
+
+const getActionType = (color: string) => {
+  const typeMap = {
+    'primary': 'primary',
+    'success': 'success',
+    'warning': 'warning',
+    'info': 'info'
+  }
+  return typeMap[color] || 'default'
+}
+
 onMounted(() => {
   // Simulate some periodic updates
   setInterval(() => {
@@ -326,3 +355,270 @@ onMounted(() => {
   }, 30000) // Every 30 seconds
 })
 </script>
+
+<style scoped>
+.dashboard-view {
+  padding: 20px;
+  /* max-width: 1200px; */
+  margin: 0 auto;
+}
+
+/* Welcome Section */
+.welcome-section {
+  margin-bottom: 24px;
+}
+
+.welcome-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.welcome-content {
+  padding: 24px;
+}
+
+.welcome-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: center;
+}
+
+.welcome-text h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: white;
+}
+
+.welcome-text p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+}
+
+.welcome-img {
+  max-width: 200px;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* Charts Section */
+.charts-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.revenue-chart,
+.traffic-chart {
+  min-height: 400px;
+}
+
+/* Bottom Section */
+.bottom-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+.activity-section,
+.actions-section {
+  min-height: 400px;
+}
+
+/* Activity List */
+.activity-list {
+  padding: 16px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-item .flex-1 {
+  flex: 1;
+  margin-left: 12px;
+}
+
+.activity-item .text-sm {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.activity-item .text-xs {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* Actions List */
+.actions-list {
+  padding: 16px;
+}
+
+.action-btn {
+  margin-bottom: 12px;
+  justify-content: flex-start;
+}
+
+.action-btn:last-child {
+  margin-bottom: 0;
+}
+
+/* Utility Classes */
+.mb-6 {
+  margin-bottom: 24px;
+}
+
+.mb-3 {
+  margin-bottom: 12px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.text-gray-600 {
+  color: #6b7280;
+}
+
+.text-gray-500 {
+  color: #9ca3af;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.p-6 {
+  padding: 24px;
+}
+
+.py-3 {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.mr-3 {
+  margin-right: 12px;
+}
+
+.border-b {
+  border-bottom-width: 1px;
+}
+
+.border-gray-100 {
+  border-color: #f3f4f6;
+}
+
+.last\:border-b-0:last-child {
+  border-bottom-width: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-view {
+    padding: 16px;
+  }
+  
+  .welcome-grid {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  
+  .welcome-img {
+    max-width: 150px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .charts-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .bottom-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .welcome-text h1 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-view {
+    padding: 12px;
+  }
+  
+  .welcome-content {
+    padding: 16px;
+  }
+  
+  .activity-list,
+  .actions-list {
+    padding: 12px;
+  }
+}
+</style>

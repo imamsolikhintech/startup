@@ -17,46 +17,63 @@
     @close="$emit('cancel')"
     header-class="bg-warning text-white"
   >
-        <v-form ref="resetPasswordForm">
-          <v-alert
+        <n-form ref="resetPasswordForm">
+          <n-alert
             type="warning"
-            variant="tonal"
             class="mb-4"
-            icon="mdi-shield-alert"
           >
+            <template #icon>
+              <n-icon>
+                <svg viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11.5C15.4,11.5 16,12.4 16,13V16C16,17.4 15.4,18 14.8,18H9.2C8.6,18 8,17.4 8,16V13C8,12.4 8.6,11.5 9.2,11.5V10C9.2,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.5,8.7 10.5,10V11.5H13.5V10C13.5,8.7 12.8,8.2 12,8.2Z"/>
+                </svg>
+              </n-icon>
+            </template>
             The user will need to use this new password for their next login.
-          </v-alert>
+          </n-alert>
           
-          <v-text-field
-            :model-value="formData.newPassword"
-            @update:model-value="updateField('newPassword', $event)"
-            label="New Password"
-            type="password"
-            variant="outlined"
-            prepend-inner-icon="mdi-lock"
-            :rules="passwordRules"
-            required
-            color="warning"
-            class="mb-4"
-          />
+          <n-form-item label="New Password" class="mb-4">
+            <n-input
+              :value="formData.newPassword"
+              @update:value="updateField('newPassword', $event)"
+              type="password"
+              placeholder="Enter new password"
+              show-password-on="click"
+            >
+              <template #prefix>
+                <n-icon>
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
+                  </svg>
+                </n-icon>
+              </template>
+            </n-input>
+          </n-form-item>
           
-          <v-text-field
-            :model-value="formData.confirmPassword"
-            @update:model-value="updateField('confirmPassword', $event)"
-            label="Confirm New Password"
-            type="password"
-            variant="outlined"
-            prepend-inner-icon="mdi-lock-check"
-            :rules="confirmPasswordRules"
-            required
-            color="warning"
-          />
-        </v-form>
+          <n-form-item label="Confirm New Password">
+            <n-input
+              :value="formData.confirmPassword"
+              @update:value="updateField('confirmPassword', $event)"
+              type="password"
+              placeholder="Confirm new password"
+              show-password-on="click"
+            >
+              <template #prefix>
+                <n-icon>
+                  <svg viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
+                  </svg>
+                </n-icon>
+              </template>
+            </n-input>
+          </n-form-item>
+        </n-form>
   </CustomDialog>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { NForm, NFormItem, NInput, NAlert, NIcon } from 'naive-ui'
 import CustomDialog from '@/components/dialog/CustomDialog.vue'
 
 interface ResetPasswordData {

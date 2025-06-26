@@ -1,41 +1,39 @@
 <template>
-  <v-container fluid class="users-view">
+  <div class="users-view">
     <!-- Header Section -->
-    <PageHeader
-      title="User Management"
-      subtitle="Manage users, roles, and permissions"
-      :actions="[
-        {
-          key: 'add',
-          label: 'Add User',
-          icon: 'mdi-plus',
-          color: 'primary',
-          variant: 'elevated'
-        }
-      ]"
-      @action="handleHeaderAction"
-    />
+    <PageHeader title="User Management" subtitle="Manage users, roles, and permissions" :actions="[
+      {
+        key: 'add',
+        label: 'Add User',
+        icon: 'mdi-plus',
+        color: 'primary',
+        variant: 'elevated'
+      }
+    ]" @action="handleHeaderAction" />
 
     <!-- Stats Cards -->
-    <StatsCards
-      :stats="statsData"
-      class="mb-6"
-    />
+    <StatsCards :stats="statsData" class="mb-6" />
 
     <!-- Search and Filters -->
-    <SearchFilters
-      v-model:search="search"
+    <SearchFilters 
+      v-model:search="search" 
       :filters="[
         {
           key: 'role',
           label: 'Filter by Role',
-          items: roles.map(role => ({ title: role, value: role })),
+          items: roles.map(role => ({ 
+            title: role.label, 
+            value: role.value 
+          })),
           value: roleFilter
         },
         {
           key: 'status',
-          label: 'Filter by Status',
-          items: statuses.map(status => ({ title: status, value: status })),
+          label: 'Filter by Status', 
+          items: statuses.map(status => ({ 
+            title: status.label, 
+            value: status.value 
+          })),
           value: statusFilter
         }
       ]"
@@ -44,62 +42,30 @@
       @export="exportUsers"
       class="mb-6"
     />
-
     <!-- Users Table -->
-    <DataTable
-      :headers="headers"
-      :items="filteredUsers"
-      :search="search"
-      :loading="loading"
-      :actions="tableActions"
-      @action="handleTableAction"
-    />
+    <DataTable :headers="headers" :items="filteredUsers" :search="search" :loading="loading" :actions="tableActions"
+      @action="handleTableAction" />
 
     <!-- Add/Edit User Dialog -->
-    <UserFormDialog
-      :show="showAddDialog"
-      :form-data="userFormData"
-      :is-editing="!!editingUser"
-      :roles="roles"
-      :statuses="statuses"
-      :loading="saving"
-      @update:show="showAddDialog = $event"
-      @update:form-data="userFormData = $event"
-      @save="saveUser"
-      @cancel="closeDialog"
-      @reset-password="openResetPasswordDialog"
-    />
+    <UserFormDialog :show="showAddDialog" :form-data="userFormData" :is-editing="!!editingUser" :roles="roles"
+      :statuses="statuses" :loading="saving" @update:show="showAddDialog = $event"
+      @update:form-data="userFormData = $event" @save="saveUser" @cancel="closeDialog"
+      @reset-password="openResetPasswordDialog" />
 
     <!-- Reset Password Dialog -->
-    <ResetPasswordDialog
-      :show="showResetPasswordDialog"
-      :form-data="resetPasswordData"
-      :loading="resetPasswordLoading"
-      @update:show="showResetPasswordDialog = $event"
-      @confirm="confirmResetPassword"
-      @cancel="closeResetPasswordDialog"
-    />
+    <ResetPasswordDialog :show="showResetPasswordDialog" :form-data="resetPasswordData" :loading="resetPasswordLoading"
+      @update:show="showResetPasswordDialog = $event" @confirm="confirmResetPassword"
+      @cancel="closeResetPasswordDialog" />
 
     <!-- User Activity Dialog -->
-    <UserActivityDialog
-      :show="activityDialog"
-      :activity-data="selectedUserActivity"
-      :login-history="selectedUserLoginHistory"
-      :loading="activityLoading"
-      @update:show="activityDialog = $event"
-      @close="activityDialog = false"
-    />
+    <UserActivityDialog :show="activityDialog" :activity-data="selectedUserActivity"
+      :login-history="selectedUserLoginHistory" :loading="activityLoading" @update:show="activityDialog = $event"
+      @close="activityDialog = false" />
 
     <!-- Delete Confirmation Dialog -->
-    <DeleteConfirmDialog
-      :show="showDeleteDialog"
-      :user-name="userToDelete?.name || ''"
-      :loading="deleteLoading"
-      @update:show="showDeleteDialog = $event"
-      @confirm="confirmDeleteUser"
-      @cancel="closeDeleteDialog"
-    />
-  </v-container>
+    <DeleteConfirmDialog :show="showDeleteDialog" :user-name="userToDelete?.name || ''" :loading="deleteLoading"
+      @update:show="showDeleteDialog = $event" @confirm="confirmDeleteUser" @cancel="closeDeleteDialog" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -164,9 +130,16 @@ const deleteLoading = ref(false)
 const users = ref<User[]>([])
 const filteredUsers = ref<User[]>([])
 const userStats = ref<UserStats | null>(null)
-const roles = ref(['admin', 'user', 'moderator']) // Will be loaded from API
+const roles = ref([
+  { label: 'Admin', value: 'admin' },
+  { label: 'User', value: 'user' },
+  { label: 'Moderator', value: 'moderator' }
+]) // Will be loaded from API
 
-const statuses = ['active', 'inactive']
+const statuses = ref([
+  { label: 'Active', value: 'active' },
+  { label: 'Inactive', value: 'inactive' }
+])
 
 const headers = [
   { title: 'Avatar', key: 'profile_picture', sortable: false },
@@ -264,7 +237,10 @@ const loadUserStats = async () => {
 const loadRoles = async () => {
   try {
     const response = await userService.getRoles()
-    roles.value = response.data.map(role => role.name)
+    roles.value = response.data.map(role => ({
+      label: role.name.charAt(0).toUpperCase() + role.name.slice(1),
+      value: role.name
+    }))
   } catch (error) {
     console.error('Error loading roles:', error)
   }
@@ -283,14 +259,14 @@ const handleFilterChange = async (payload: { key: string; value: any }) => {
   } else if (payload.key === 'status') {
     statusFilter.value = payload.value
   }
-  
+
   // Reload users with current filters
   await loadUsers(search.value, roleFilter.value, statusFilter.value)
 }
 
 const handleTableAction = (payload: { action: string; item: any }) => {
   const { action, item } = payload
-  
+
   switch (action) {
     case 'activity':
       viewUserActivity(item)
@@ -311,17 +287,17 @@ const handleTableAction = (payload: { action: string; item: any }) => {
 const viewUserActivity = async (user: User) => {
   activityLoading.value = true
   activityDialog.value = true
-  
+
   try {
     const [activityResponse, historyResponse] = await Promise.all([
       userService.getUserActivity(user.id, 30),
       userService.getLoginHistory(user.id, 50)
     ])
-    
+
     if (activityResponse.status === 200) {
       selectedUserActivity.value = activityResponse.data
     }
-    
+
     if (historyResponse.status === 200) {
       selectedUserLoginHistory.value = historyResponse.data
     }
@@ -398,7 +374,7 @@ const confirmResetPassword = async () => {
     const response = await userService.resetPassword(resetPasswordData.value.userId, {
       password: resetPasswordData.value.newPassword
     })
-    
+
     if (response.success) {
       showSuccess('User password has been reset successfully')
       closeResetPasswordDialog()
@@ -417,7 +393,7 @@ const deleteUser = (user: User) => {
 
 const confirmDeleteUser = async () => {
   if (!userToDelete.value) return
-  
+
   deleteLoading.value = true
   try {
     const response = await userService.deleteUser(userToDelete.value.id)
@@ -442,7 +418,7 @@ const saveUser = async () => {
   saving.value = true
   try {
     let response
-    
+
     if (editingUser.value) {
       // Update existing user
       response = await userService.updateUser(editingUser.value.id, {
@@ -453,7 +429,7 @@ const saveUser = async () => {
         profile_picture: userFormData.value.profile_picture,
         verified: userFormData.value.verified
       })
-      
+
       if (response.success) {
         showSuccess(`${userFormData.value.name} has been updated successfully`)
       }
@@ -468,12 +444,12 @@ const saveUser = async () => {
         profile_picture: userFormData.value.profile_picture,
         verified: userFormData.value.verified
       })
-      
+
       if (response.success) {
         showSuccess(`${userFormData.value.name} has been created successfully`)
       }
     }
-    
+
     if (response.success) {
       await loadUsers() // Reload users
       closeDialog()
@@ -487,10 +463,10 @@ const saveUser = async () => {
 
 const exportUsers = () => {
   // Export functionality
-  const csvContent = users.value.map(user => 
+  const csvContent = users.value.map(user =>
     `${user.name},${user.email},${user.role},${user.active ? 'Active' : 'Inactive'},${user.last_login || ''}`
   ).join('\n')
-  
+
   const blob = new Blob([`Name,Email,Role,Status,Last Login\n${csvContent}`], { type: 'text/csv' })
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -498,7 +474,7 @@ const exportUsers = () => {
   a.download = 'users.csv'
   a.click()
   window.URL.revokeObjectURL(url)
-  
+
   showSuccess('User data has been exported successfully')
 }
 
@@ -520,4 +496,3 @@ onMounted(async () => {
   ])
 })
 </script>
-

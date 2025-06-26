@@ -1,52 +1,55 @@
 <template>
-  <v-card class="mb-6" rounded="lg">
-    <v-card-text>
-      <v-row>
-        <v-col cols="12" md="4">
-          <v-text-field
-            :model-value="search"
-            @update:model-value="$emit('update:search', $event)"
-            prepend-inner-icon="mdi-magnify"
-            :label="searchLabel || 'Search...'"
-            variant="outlined"
-            hide-details
-            clearable
-          />
-        </v-col>  
-        
-        <v-col 
-          v-for="filter in filters" 
-          :key="filter.key"
-          cols="12" 
-          :md="filter.cols || 3"
+  <n-card class="search-filters">
+    <div class="filters-grid">
+      <div class="search-field">
+        <n-input
+          :value="search"
+          @update:value="$emit('update:search', $event)"
+          :placeholder="searchLabel || 'Search...'"
+          clearable
         >
-          <v-select
-            :model-value="filter.value"
-            @update:model-value="$emit('update:filter', { key: filter.key, value: $event })"
-            :items="filter.items"
-            :label="filter.label"
-            variant="outlined"
-            hide-details
-            clearable
-          />
-        </v-col>
-        
-        <v-col cols="12" md="2" v-if="showExport">
-          <v-btn
-            color="primary"
-            variant="outlined"
-            block
-            @click="$emit('export')"
-          >
-            Export
-          </v-btn>
-        </v-col>
-      </v-row>
-    </v-card-text>
-  </v-card>
+          <template #prefix>
+            <n-icon>
+              <svg viewBox="0 0 24 24">
+                <path fill="currentColor" d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"/>
+              </svg>
+            </n-icon>
+          </template>
+        </n-input>
+      </div>
+      
+      <div 
+        v-for="filter in filters" 
+        :key="filter.key"
+        class="filter-field"
+        :class="`filter-cols-${filter.cols || 3}`"
+      >
+        <n-select
+          :value="filter.value"
+          @update:value="$emit('update:filter', { key: filter.key, value: $event })"
+          :options="formatSelectItems(filter.items)"
+          :placeholder="filter.label"
+          clearable
+        />
+      </div>
+      
+      <div class="export-field" v-if="showExport">
+        <n-button
+          type="primary"
+          secondary
+          block
+          @click="$emit('export')"
+        >
+          Export
+        </n-button>
+      </div>
+    </div>
+  </n-card>
 </template>
 
 <script setup lang="ts">
+import { NCard, NInput, NSelect, NButton, NIcon } from 'naive-ui'
+
 interface Filter {
   key: string
   label: string
@@ -68,4 +71,71 @@ defineEmits<{
   'update:filter': [payload: { key: string; value: string }]
   export: []
 }>()
+
+const formatSelectItems = (items: string[] | { title: string; value: string }[]) => {
+  if (Array.isArray(items) && items.length > 0) {
+    if (typeof items[0] === 'string') {
+      return (items as string[]).map(item => ({ label: item, value: item }))
+    } else {
+      return (items as { title: string; value: string }[]).map(item => ({ label: item.title, value: item.value }))
+    }
+  }
+  return []
+}
 </script>
+
+<style scoped>
+.search-filters {
+  margin-bottom: 1.5rem;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .filters-grid {
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    align-items: end;
+  }
+  
+  .search-field {
+    grid-column: 1;
+  }
+  
+  .filter-field {
+    grid-column: span 1;
+  }
+  
+  .filter-cols-2 {
+    grid-column: span 2;
+  }
+  
+  .filter-cols-3 {
+    grid-column: span 1;
+  }
+  
+  .filter-cols-4 {
+    grid-column: span 1;
+  }
+  
+  .export-field {
+    grid-column: -1;
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 767px) {
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .search-field,
+  .filter-field,
+  .export-field {
+    grid-column: 1;
+  }
+}
+</style>

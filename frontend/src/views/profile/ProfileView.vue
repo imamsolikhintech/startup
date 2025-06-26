@@ -1,359 +1,367 @@
 <template>
   <div class="profile-view">
-    <v-row class="mb-6">
-      <v-col cols="12">
-        <h1 class="text-h4 font-weight-bold mb-2">Profile</h1>
-        <p class="text-subtitle-1 text-medium-emphasis">
+    <div class="mb-6">
+      <div>
+        <h1 class="text-2xl font-bold mb-2">Profile</h1>
+        <p class="text-gray-600">
           Manage your personal information and preferences
         </p>
-      </v-col>
-    </v-row>
+      </div>
+    </div>
 
-    <v-row>
-      <v-col cols="12" lg="4">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-4">
         <!-- Profile Card -->
-        <v-card rounded="lg" elevation="2" class="mb-4">
-          <v-card-text class="text-center pa-6">
-            <v-avatar size="120" class="mb-4">
-              <v-img :src="authStore.user?.avatar" alt="Profile Picture" />
-            </v-avatar>
+        <n-card class="mb-4" :bordered="false">
+          <div class="text-center p-6">
+            <n-avatar
+              :size="120"
+              class="mb-4"
+              :src="authStore.user?.avatar"
+            />
             
-            <h3 class="text-h5 font-weight-bold mb-1">{{ authStore.user?.name }}</h3>
-            <p class="text-subtitle-1 text-medium-emphasis mb-3">{{ authStore.user?.email }}</p>
+            <h3 class="text-xl font-bold mb-1">{{ authStore.user?.name }}</h3>
+            <p class="text-gray-600 mb-3">{{ authStore.user?.email }}</p>
             
-            <v-chip
-              :color="getRoleColor(authStore.user?.role)"
-              variant="tonal"
+            <n-tag
+              :type="getRoleType(authStore.user?.role)"
               class="mb-4"
             >
               {{ authStore.user?.role }}
-            </v-chip>
+            </n-tag>
             
-            <v-btn
-              color="primary"
-              variant="outlined"
-              prepend-icon="mdi-camera"
+            <n-button
+              type="primary"
+              ghost
               @click="changeAvatar"
               block
             >
+              <template #icon>
+                <n-icon><Camera /></n-icon>
+              </template>
               Change Photo
-            </v-btn>
-          </v-card-text>
-        </v-card>
+            </n-button>
+          </div>
+        </n-card>
 
         <!-- Quick Stats -->
-        <v-card rounded="lg" elevation="2">
-          <v-card-title>Activity Stats</v-card-title>
-          <v-card-text>
-            <v-list density="compact">
-              <v-list-item>
-                <template #prepend>
-                  <v-icon color="primary">mdi-login</v-icon>
-                </template>
-                <v-list-item-title>Last Login</v-list-item-title>
-                <template #append>
-                  <span class="text-caption">2 hours ago</span>
-                </template>
-              </v-list-item>
-              <v-list-item>
-                <template #prepend>
-                  <v-icon color="success">mdi-check-circle</v-icon>
-                </template>
-                <v-list-item-title>Tasks Completed</v-list-item-title>
-                <template #append>
-                  <span class="text-caption">47</span>
-                </template>
-              </v-list-item>
-              <v-list-item>
-                <template #prepend>
-                  <v-icon color="info">mdi-calendar</v-icon>
-                </template>
-                <v-list-item-title>Member Since</v-list-item-title>
-                <template #append>
-                  <span class="text-caption">Jan 2024</span>
-                </template>
-              </v-list-item>
-            </v-list>
-          </v-card-text>
-        </v-card>
-      </v-col>
+        <n-card :bordered="false">
+          <template #header>
+            <span class="text-lg font-semibold">Activity Stats</span>
+          </template>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <n-icon size="20" color="#18a058">
+                  <LogIn />
+                </n-icon>
+                <span>Last Login</span>
+              </div>
+              <span class="text-sm text-gray-500">2 hours ago</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <n-icon size="20" color="#18a058">
+                  <CheckCircle />
+                </n-icon>
+                <span>Tasks Completed</span>
+              </div>
+              <span class="text-sm text-gray-500">47</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <n-icon size="20" color="#2080f0">
+                  <Calendar />
+                </n-icon>
+                <span>Member Since</span>
+              </div>
+              <span class="text-sm text-gray-500">Jan 2024</span>
+            </div>
+          </div>
+        </n-card>
+      </div>
 
-      <v-col cols="12" lg="8">
-        <v-card rounded="lg" elevation="2">
-          <v-card-text class="pa-0">
-            <v-tabs v-model="activeTab" class="border-b">
-              <v-tab value="personal">Personal Info</v-tab>
-              <v-tab value="security">Security</v-tab>
-              <v-tab value="preferences">Preferences</v-tab>
-            </v-tabs>
-
-            <v-tabs-window v-model="activeTab">
-              <!-- Personal Information -->
-              <v-tabs-window-item value="personal" class="pa-6">
-                <h3 class="text-h6 mb-4">Personal Information</h3>
+      <div class="lg:col-span-8">
+        <n-card :bordered="false">
+          <n-tabs v-model:value="activeTab" type="line">
+            <n-tab-pane name="personal" tab="Personal Info">
+              <div class="p-6">
+                <h3 class="text-lg font-semibold mb-4">Personal Information</h3>
                 
-                <v-form ref="personalForm">
-                  <v-row>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="profileData.firstName"
-                        label="First Name"
-                        variant="outlined"
-                        :rules="nameRules"
+                <n-form ref="personalForm" :model="profileData" :rules="formRules">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <n-form-item label="First Name" path="firstName">
+                      <n-input
+                        v-model:value="profileData.firstName"
+                        placeholder="Enter first name"
                       />
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="profileData.lastName"
-                        label="Last Name"
-                        variant="outlined"
-                        :rules="nameRules"
+                    </n-form-item>
+                    <n-form-item label="Last Name" path="lastName">
+                      <n-input
+                        v-model:value="profileData.lastName"
+                        placeholder="Enter last name"
                       />
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="profileData.email"
-                        label="Email Address"
+                    </n-form-item>
+                    <n-form-item label="Email Address" path="email">
+                      <n-input
+                        v-model:value="profileData.email"
                         type="email"
-                        variant="outlined"
-                        :rules="emailRules"
+                        placeholder="Enter email address"
                       />
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="profileData.phone"
-                        label="Phone Number"
-                        variant="outlined"
+                    </n-form-item>
+                    <n-form-item label="Phone Number">
+                      <n-input
+                        v-model:value="profileData.phone"
+                        placeholder="Enter phone number"
                       />
-                    </v-col>
-                    <v-col cols="12">
-                      <v-text-field
-                        v-model="profileData.jobTitle"
-                        label="Job Title"
-                        variant="outlined"
+                    </n-form-item>
+                  </div>
+                  <n-form-item label="Job Title">
+                    <n-input
+                      v-model:value="profileData.jobTitle"
+                      placeholder="Enter job title"
+                    />
+                  </n-form-item>
+                  <n-form-item label="Bio">
+                    <n-input
+                      v-model:value="profileData.bio"
+                      type="textarea"
+                      :rows="3"
+                      :maxlength="500"
+                      show-count
+                      placeholder="Tell us about yourself"
+                    />
+                  </n-form-item>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <n-form-item label="Location">
+                      <n-input
+                        v-model:value="profileData.location"
+                        placeholder="Enter location"
                       />
-                    </v-col>
-                    <v-col cols="12">
-                      <v-textarea
-                        v-model="profileData.bio"
-                        label="Bio"
-                        variant="outlined"
-                        rows="3"
-                        counter="500"
+                    </n-form-item>
+                    <n-form-item label="Website">
+                      <n-input
+                        v-model:value="profileData.website"
+                        placeholder="Enter website URL"
                       />
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="profileData.location"
-                        label="Location"
-                        variant="outlined"
-                      />
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        v-model="profileData.website"
-                        label="Website"
-                        variant="outlined"
-                      />
-                    </v-col>
-                  </v-row>
-                </v-form>
-              </v-tabs-window-item>
+                    </n-form-item>
+                  </div>
+                </n-form>
+              </div>
+            </n-tab-pane>
 
-              <!-- Security Settings -->
-              <v-tabs-window-item value="security" class="pa-6">
-                <h3 class="text-h6 mb-4">Security Settings</h3>
+            <n-tab-pane name="security" tab="Security">
+              <div class="p-6">
+                <h3 class="text-lg font-semibold mb-4">Security Settings</h3>
                 
-                <v-card variant="outlined" class="mb-4">
-                  <v-card-title class="text-subtitle-1">Change Password</v-card-title>
-                  <v-card-text>
-                    <v-form ref="passwordForm">
-                      <v-text-field
-                        v-model="passwordData.current"
-                        label="Current Password"
+                <n-card class="mb-4" :bordered="true">
+                  <template #header>
+                    <span class="text-base font-medium">Change Password</span>
+                  </template>
+                  <n-form ref="passwordForm" :model="passwordData">
+                    <n-form-item label="Current Password" class="mb-4">
+                      <n-input
+                        v-model:value="passwordData.current"
                         type="password"
-                        variant="outlined"
-                        class="mb-3"
-                        :rules="[v => !!v || 'Current password is required']"
+                        placeholder="Enter current password"
+                        show-password-on="click"
                       />
-                      <v-text-field
-                        v-model="passwordData.new"
-                        label="New Password"
+                    </n-form-item>
+                    <n-form-item label="New Password" class="mb-4">
+                      <n-input
+                        v-model:value="passwordData.new"
                         type="password"
-                        variant="outlined"
-                        class="mb-3"
-                        :rules="passwordRules"
+                        placeholder="Enter new password"
+                        show-password-on="click"
                       />
-                      <v-text-field
-                        v-model="passwordData.confirm"
-                        label="Confirm New Password"
+                    </n-form-item>
+                    <n-form-item label="Confirm New Password" class="mb-4">
+                      <n-input
+                        v-model:value="passwordData.confirm"
                         type="password"
-                        variant="outlined"
-                        :rules="confirmPasswordRules"
+                        placeholder="Confirm new password"
+                        show-password-on="click"
                       />
-                    </v-form>
-                    <v-btn
-                      color="primary"
-                      @click="changePassword"
-                      :loading="changingPassword"
-                      class="mt-3"
-                    >
-                      Update Password
-                    </v-btn>
-                  </v-card-text>
-                </v-card>
+                    </n-form-item>
+                  </n-form>
+                  <n-button
+                    type="primary"
+                    @click="changePassword"
+                    :loading="changingPassword"
+                    class="mt-3"
+                  >
+                    Update Password
+                  </n-button>
+                </n-card>
 
-                <v-card variant="outlined" class="mb-4">
-                  <v-card-title class="text-subtitle-1">Two-Factor Authentication</v-card-title>
-                  <v-card-text>
-                    <div class="d-flex align-center justify-space-between">
-                      <div>
-                        <p class="text-body-2 mb-1">Secure your account with 2FA</p>
-                        <p class="text-caption text-medium-emphasis">
-                          {{ twoFactorEnabled ? 'Two-factor authentication is enabled' : 'Add an extra layer of security' }}
-                        </p>
-                      </div>
-                      <v-switch
-                        v-model="twoFactorEnabled"
-                        color="primary"
-                        hide-details
-                        @change="toggle2FA"
-                      />
+                <n-card class="mb-4" :bordered="true">
+                  <template #header>
+                    <span class="text-base font-medium">Two-Factor Authentication</span>
+                  </template>
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm mb-1">Secure your account with 2FA</p>
+                      <p class="text-xs text-gray-500">
+                        {{ twoFactorEnabled ? 'Two-factor authentication is enabled' : 'Add an extra layer of security' }}
+                      </p>
                     </div>
-                  </v-card-text>
-                </v-card>
+                    <n-switch
+                      v-model:value="twoFactorEnabled"
+                      @update:value="toggle2FA"
+                    />
+                  </div>
+                </n-card>
 
-                <v-card variant="outlined">
-                  <v-card-title class="text-subtitle-1">Active Sessions</v-card-title>
-                  <v-card-text>
-                    <v-list>
-                      <v-list-item
-                        v-for="session in activeSessions"
-                        :key="session.id"
+                <n-card :bordered="true">
+                  <template #header>
+                    <span class="text-base font-medium">Active Sessions</span>
+                  </template>
+                  <div class="space-y-4">
+                    <div
+                      v-for="session in activeSessions"
+                      :key="session.id"
+                      class="flex items-center justify-between p-3 border rounded-lg"
+                    >
+                      <div class="flex items-center space-x-3">
+                        <n-icon
+                          size="20"
+                          :color="session.current ? '#18a058' : '#2080f0'"
+                        >
+                          <Monitor v-if="session.device === 'desktop'" />
+                          <Phone v-else />
+                        </n-icon>
+                        <div>
+                          <div class="font-medium">{{ session.location }}</div>
+                          <div class="text-sm text-gray-500 flex items-center space-x-2">
+                            <span>{{ session.device }} • {{ session.lastActive }}</span>
+                            <n-tag v-if="session.current" type="success" size="small">
+                              Current
+                            </n-tag>
+                          </div>
+                        </div>
+                      </div>
+                      <n-button
+                        v-if="!session.current"
+                        quaternary
+                        circle
+                        type="error"
+                        @click="terminateSession(session.id)"
                       >
-                        <template #prepend>
-                          <v-icon :color="session.current ? 'success' : 'primary'">
-                            {{ session.device === 'desktop' ? 'mdi-monitor' : 'mdi-cellphone' }}
-                          </v-icon>
+                        <template #icon>
+                          <n-icon><Close /></n-icon>
                         </template>
-                        <v-list-item-title>{{ session.location }}</v-list-item-title>
-                        <v-list-item-subtitle>
-                          {{ session.device }} • {{ session.lastActive }}
-                          <v-chip v-if="session.current" size="x-small" color="success" class="ml-2">
-                            Current
-                          </v-chip>
-                        </v-list-item-subtitle>
-                        <template #append v-if="!session.current">
-                          <v-btn
-                            icon="mdi-close"
-                            size="small"
-                            variant="text"
-                            @click="terminateSession(session.id)"
-                          />
-                        </template>
-                      </v-list-item>
-                    </v-list>
-                  </v-card-text>
-                </v-card>
-              </v-tabs-window-item>
+                      </n-button>
+                    </div>
+                  </div>
+                </n-card>
+              </div>
+            </n-tab-pane>
 
-              <!-- Preferences -->
-              <v-tabs-window-item value="preferences" class="pa-6">
-                <h3 class="text-h6 mb-4">Preferences</h3>
+            <n-tab-pane name="preferences" tab="Preferences">
+              <div class="p-6">
+                <h3 class="text-lg font-semibold mb-4">Preferences</h3>
                 
-                <v-row>
-                  <v-col cols="12" md="6">
-                    <v-card variant="outlined" class="pa-4">
-                      <h4 class="text-subtitle-1 mb-3">Language & Region</h4>
-                      <v-select
-                        v-model="preferences.language"
-                        :items="languages"
-                        label="Language"
-                        variant="outlined"
-                        class="mb-3"
-                      />
-                      <v-select
-                        v-model="preferences.timezone"
-                        :items="timezones"
-                        label="Timezone"
-                        variant="outlined"
-                      />
-                    </v-card>
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <v-card variant="outlined" class="pa-4">
-                      <h4 class="text-subtitle-1 mb-3">Notifications</h4>
-                      <v-switch
-                        v-model="preferences.emailNotifications"
-                        label="Email Notifications"
-                        color="primary"
-                        hide-details
-                        class="mb-2"
-                      />
-                      <v-switch
-                        v-model="preferences.pushNotifications"
-                        label="Push Notifications"
-                        color="primary"
-                        hide-details
-                        class="mb-2"
-                      />
-                      <v-switch
-                        v-model="preferences.marketingEmails"
-                        label="Marketing Emails"
-                        color="primary"
-                        hide-details
-                      />
-                    </v-card>
-                  </v-col>
-                  <v-col cols="12">
-                    <v-card variant="outlined" class="pa-4">
-                      <h4 class="text-subtitle-1 mb-3">Privacy</h4>
-                      <v-switch
-                        v-model="preferences.profileVisibility"
-                        label="Make profile public"
-                        color="primary"
-                        hide-details
-                        class="mb-2"
-                      />
-                      <v-switch
-                        v-model="preferences.activityTracking"
-                        label="Allow activity tracking"
-                        color="primary"
-                        hide-details
-                        class="mb-2"
-                      />
-                      <v-switch
-                        v-model="preferences.dataSharing"
-                        label="Share usage data for improvements"
-                        color="primary"
-                        hide-details
-                      />
-                    </v-card>
-                  </v-col>
-                </v-row>
-              </v-tabs-window-item>
-            </v-tabs-window>
-          </v-card-text>
-        </v-card>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <n-card :bordered="true" class="p-4">
+                    <h4 class="text-base font-medium mb-3">Language & Region</h4>
+                    <div class="space-y-4">
+                      <n-form-item label="Language">
+                        <n-select
+                          v-model:value="preferences.language"
+                          :options="languages"
+                          placeholder="Select language"
+                        />
+                      </n-form-item>
+                      <n-form-item label="Timezone">
+                        <n-select
+                          v-model:value="preferences.timezone"
+                          :options="timezoneOptions"
+                          placeholder="Select timezone"
+                        />
+                      </n-form-item>
+                    </div>
+                  </n-card>
+                  <n-card :bordered="true" class="p-4">
+                    <h4 class="text-base font-medium mb-3">Notifications</h4>
+                    <div class="space-y-3">
+                      <div class="flex items-center justify-between">
+                        <span>Email Notifications</span>
+                        <n-switch v-model:value="preferences.emailNotifications" />
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span>Push Notifications</span>
+                        <n-switch v-model:value="preferences.pushNotifications" />
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span>Marketing Emails</span>
+                        <n-switch v-model:value="preferences.marketingEmails" />
+                      </div>
+                    </div>
+                  </n-card>
+                </div>
+                <n-card :bordered="true" class="p-4 mt-6">
+                  <h4 class="text-base font-medium mb-3">Privacy</h4>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span>Make profile public</span>
+                      <n-switch v-model:value="preferences.profileVisibility" />
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span>Allow activity tracking</span>
+                      <n-switch v-model:value="preferences.activityTracking" />
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <span>Share usage data for improvements</span>
+                      <n-switch v-model:value="preferences.dataSharing" />
+                    </div>
+                  </div>
+                </n-card>
+              </div>
+            </n-tab-pane>
+          </n-tabs>
+        </n-card>
 
         <!-- Save Button -->
         <div class="text-right mt-4">
-          <v-btn
-            color="primary"
+          <n-button
+            type="primary"
             size="large"
             @click="saveProfile"
             :loading="saving"
           >
             Save Changes
-          </v-btn>
+          </n-button>
         </div>
-      </v-col>
-    </v-row>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { 
+  NCard, 
+  NAvatar, 
+  NTag, 
+  NButton, 
+  NIcon, 
+  NTabs, 
+  NTabPane, 
+  NForm, 
+  NFormItem, 
+  NInput, 
+  NSelect, 
+  NSwitch 
+} from 'naive-ui'
+import { 
+  Camera, 
+  LogIn, 
+  CheckCircle, 
+  Calendar, 
+  Monitor, 
+  Phone, 
+  Close 
+} from '@vicons/ionicons5'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 
@@ -411,47 +419,52 @@ const activeSessions = ref([
 ])
 
 const languages = [
-  { title: 'English', value: 'en' },
-  { title: 'Spanish', value: 'es' },
-  { title: 'French', value: 'fr' },
-  { title: 'German', value: 'de' }
+  { label: 'English', value: 'en' },
+  { label: 'Spanish', value: 'es' },
+  { label: 'French', value: 'fr' },
+  { label: 'German', value: 'de' }
 ]
 
-const timezones = [
-  'America/Los_Angeles',
-  'America/New_York',
-  'Europe/London',
-  'Europe/Paris',
-  'Asia/Tokyo'
+const timezoneOptions = [
+  { label: 'Pacific Time (Los Angeles)', value: 'America/Los_Angeles' },
+  { label: 'Eastern Time (New York)', value: 'America/New_York' },
+  { label: 'Greenwich Mean Time (London)', value: 'Europe/London' },
+  { label: 'Central European Time (Paris)', value: 'Europe/Paris' },
+  { label: 'Japan Standard Time (Tokyo)', value: 'Asia/Tokyo' }
 ]
 
-const nameRules = [
-  (v: string) => !!v || 'Name is required',
-  (v: string) => v.length >= 2 || 'Name must be at least 2 characters'
-]
+const formRules = {
+  firstName: {
+    required: true,
+    message: 'First name is required',
+    trigger: ['blur', 'input']
+  },
+  lastName: {
+    required: true,
+    message: 'Last name is required',
+    trigger: ['blur', 'input']
+  },
+  email: [
+    {
+      required: true,
+      message: 'Email is required',
+      trigger: ['blur', 'input']
+    },
+    {
+      type: 'email',
+      message: 'Please enter a valid email',
+      trigger: ['blur', 'input']
+    }
+  ]
+}
 
-const emailRules = [
-  (v: string) => !!v || 'Email is required',
-  (v: string) => /.+@.+\..+/.test(v) || 'Email must be valid'
-]
-
-const passwordRules = [
-  (v: string) => !!v || 'Password is required',
-  (v: string) => v.length >= 8 || 'Password must be at least 8 characters'
-]
-
-const confirmPasswordRules = [
-  (v: string) => !!v || 'Please confirm your password',
-  (v: string) => v === passwordData.value.new || 'Passwords do not match'
-]
-
-const getRoleColor = (role?: string) => {
-  const colors: Record<string, string> = {
+const getRoleType = (role?: string) => {
+  const types: Record<string, 'error' | 'warning' | 'info' | 'success'> = {
     admin: 'error',
     moderator: 'warning',
-    user: 'primary'
+    user: 'info'
   }
-  return colors[role || 'user'] || 'primary'
+  return types[role || 'user'] || 'info'
 }
 
 const changeAvatar = () => {

@@ -5,8 +5,8 @@ export interface DialogAction {
   label: string
   icon?: string
   color?: string
-  variant?: 'flat' | 'text' | 'outlined' | 'plain' | 'tonal'
-  size?: 'x-small' | 'small' | 'default' | 'large' | 'x-large'
+  variant?: 'default' | 'tertiary' | 'primary' | 'info' | 'success' | 'warning' | 'error'
+  size?: 'tiny' | 'small' | 'medium' | 'large'
   disabled?: boolean
   loading?: boolean
   class?: string
@@ -234,19 +234,20 @@ export type DialogColor =
 
 // Utility type for dialog variants
 export type DialogVariant = 
-  | 'flat'
-  | 'text'
-  | 'outlined'
-  | 'plain'
-  | 'tonal'
+  | 'default'
+  | 'tertiary'
+  | 'primary'
+  | 'info'
+  | 'success'
+  | 'warning'
+  | 'error'
 
 // Utility type for dialog sizes
 export type DialogSize = 
-  | 'x-small'
+  | 'tiny'
   | 'small'
-  | 'default'
+  | 'medium'
   | 'large'
-  | 'x-large'
 
 // Helper function to create dialog configuration
 export function createDialogConfig(config: Partial<DialogConfig>): DialogConfig {
@@ -272,25 +273,25 @@ export function createDialogConfig(config: Partial<DialogConfig>): DialogConfig 
     closeIcon: 'mdi-close',
     closeButtonTitle: 'Close',
     
-    contentClass: 'pa-6',
+    contentClass: 'p-6',
     contentStyle: '',
     
     showFooter: true,
-    footerClass: 'pa-4',
+    footerClass: 'p-4',
     showFooterDivider: true,
     footerJustifyStart: false,
     
     showCancelButton: true,
     cancelButtonText: 'Cancel',
     cancelButtonColor: '',
-    cancelButtonVariant: 'text',
+    cancelButtonVariant: 'default',
     
     showConfirmButton: true,
     confirmButtonText: 'Confirm',
     confirmButtonColor: 'primary',
-    confirmButtonVariant: 'flat',
+    confirmButtonVariant: 'primary',
     
-    buttonSize: 'default',
+    buttonSize: 'medium',
     loading: false,
     
     ...config
@@ -320,12 +321,12 @@ export function isValidDialogColor(color: string): color is DialogColor {
 
 // Type guard to check if a value is a valid dialog variant
 export function isValidDialogVariant(variant: string): variant is DialogVariant {
-  const validVariants = ['flat', 'text', 'outlined', 'plain', 'tonal']
+  const validVariants = ['default', 'tertiary', 'primary', 'info', 'success', 'warning', 'error']
   return validVariants.includes(variant)
 }
 
 // Type guard to check if a value is a valid dialog size
 export function isValidDialogSize(size: string): size is DialogSize {
-  const validSizes = ['x-small', 'small', 'default', 'large', 'x-large']
+  const validSizes = ['tiny', 'small', 'medium', 'large']
   return validSizes.includes(size)
 }

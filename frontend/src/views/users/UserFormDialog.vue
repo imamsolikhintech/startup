@@ -6,127 +6,166 @@
     confirm-button-text="Save User" cancel-button-text="Cancel" @update:show="$emit('update:show', $event)"
     @confirm="$emit('save')" @cancel="$emit('cancel')" @close="$emit('cancel')"
     header-class="bg-gradient-primary text-white">
-    <v-form ref="userForm">
+    <n-form ref="userForm">
       <!-- Profile Picture Section -->
-      <div class="text-center mb-6">
-        <v-avatar size="120" class="mb-4 elevation-4">
-          <v-img :src="formData.profile_picture || getDefaultAvatar(formData.name)" :alt="formData.name" />
-        </v-avatar>
-        <div>
-          <v-text-field :model-value="formData.profile_picture"
-            @update:model-value="updateField('profile_picture', $event)" label="Profile Picture URL" variant="outlined"
-            prepend-inner-icon="mdi-image" placeholder="https://example.com/avatar.jpg" hide-details class="mb-2" />
-          <p class="text-caption text-medium-emphasis">
+      <div class="profile-section">
+        <n-avatar size="large" class="profile-avatar">
+          <img :src="formData.profile_picture || getDefaultAvatar(formData.name)" :alt="formData.name" />
+        </n-avatar>
+        <div class="profile-input">
+          <n-input
+            :value="formData.profile_picture"
+            @update:value="updateField('profile_picture', $event)"
+            placeholder="https://example.com/avatar.jpg"
+            class="mb-2"
+          >
+            <template #prefix>
+              <n-icon><component :is="ImageIcon" /></n-icon>
+            </template>
+          </n-input>
+          <p class="input-hint">
             Enter a valid image URL for the user's profile picture
           </p>
         </div>
       </div>
 
-      <v-divider class="mb-6"></v-divider>
+      <n-divider class="section-divider" />
 
       <!-- Basic Information -->
-      <h3 class="text-h6 mb-4 text-primary">
-        <v-icon class="me-2">mdi-account-details</v-icon>
+      <h3 class="section-title">
+        <n-icon class="section-icon"><component :is="PersonIcon" /></n-icon>
         Basic Information
       </h3>
 
-      <v-row>
-        <v-col cols="12" md="6">
-          <v-text-field :model-value="formData.name" @update:model-value="updateField('name', $event)" label="Full Name"
-            variant="outlined" prepend-inner-icon="mdi-account" :rules="nameRules" required color="primary" />
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-text-field :model-value="formData.email" @update:model-value="updateField('email', $event)"
-            label="Email Address" type="email" variant="outlined" prepend-inner-icon="mdi-email" :rules="emailRules"
+      <div class="form-row">
+        <n-form-item label="Full Name" required>
+          <n-input
+            :value="formData.name"
+            @update:value="updateField('name', $event)"
+            placeholder="Enter full name"
+          >
+            <template #prefix>
+              <n-icon><component :is="PersonIcon" /></n-icon>
+            </template>
+          </n-input>
+        </n-form-item>
+        <n-form-item label="Email Address" required>
+          <n-input
+            :value="formData.email"
+            @update:value="updateField('email', $event)"
+            type="email"
+            placeholder="Enter email address"
             :disabled="isEditing"
-            :hint="isEditing ? 'Email cannot be changed after user creation' : 'Enter a valid email address'"
-            persistent-hint required color="primary" />
-        </v-col>
-      </v-row>
+          >
+            <template #prefix>
+              <n-icon><component :is="MailIcon" /></n-icon>
+            </template>
+          </n-input>
+          <template #feedback v-if="isEditing">
+            Email cannot be changed after user creation
+          </template>
+        </n-form-item>
+      </div>
 
-      <v-divider class="my-6"></v-divider>
+      <n-divider class="section-divider" />
 
       <!-- Role & Status -->
-      <h3 class="text-h6 mb-4 text-primary">
-        <v-icon class="me-2">mdi-shield-account</v-icon>
+      <h3 class="section-title">
+        <n-icon class="section-icon"><component :is="ShieldIcon" /></n-icon>
         Role & Permissions
       </h3>
 
-      <v-row>
-        <v-col cols="12" md="4">
-          <v-select :model-value="formData.role" @update:model-value="updateField('role', $event)" :items="roles"
-            label="User Role" variant="outlined" prepend-inner-icon="mdi-account-key"
-            :rules="[v => !!v || 'Role is required']" required color="primary" />
-        </v-col>
-        <v-col cols="12" md="4">
-          <v-select :model-value="formData.status" @update:model-value="updateField('status', $event)" :items="statuses"
-            label="Account Status" variant="outlined" prepend-inner-icon="mdi-account-check"
-            :rules="[v => !!v || 'Status is required']" required color="primary" />
-        </v-col>
-        <v-col cols="12" md="4">
-          <v-switch :model-value="formData.verified" @update:model-value="updateField('verified', $event)"
-            label="Email Verified" color="success" inset
-            :prepend-icon="formData.verified ? 'mdi-check-circle' : 'mdi-clock-outline'" hide-details />
-        </v-col>
-      </v-row>
+      <div class="form-row">
+        <n-form-item label="User Role" required>
+          <n-select
+            :value="formData.role"
+            @update:value="updateField('role', $event)"
+            :options="roles"
+            placeholder="Select user role"
+          />
+        </n-form-item>
+        <n-form-item label="Account Status" required>
+          <n-select
+            :value="formData.status"
+            @update:value="updateField('status', $event)"
+            :options="statuses"
+            placeholder="Select account status"
+          />
+        </n-form-item>
+        <n-form-item label="Email Verified">
+          <n-switch
+            :value="formData.verified"
+            @update:value="updateField('verified', $event)"
+          >
+            <template #checked>
+              Verified
+            </template>
+            <template #unchecked>
+              Unverified
+            </template>
+          </n-switch>
+        </n-form-item>
+      </div>
 
-      <v-divider class="my-6"></v-divider>
+      <n-divider class="section-divider" />
 
       <!-- Password Section -->
-      <h3 class="text-h6 mb-4 text-primary">
-        <v-icon class="me-2">mdi-lock</v-icon>
+      <h3 class="section-title">
+        <n-icon class="section-icon"><component :is="LockIcon" /></n-icon>
         Security Settings
       </h3>
 
-      <div v-if="!isEditing">
-        <v-row>
-          <v-col cols="12" md="6">
-            <v-text-field :model-value="formData.password" @update:model-value="updateField('password', $event)"
-              label="Password" type="password" variant="outlined" prepend-inner-icon="mdi-lock" :rules="passwordRules"
-              required color="primary" />
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-text-field :model-value="formData.confirmPassword"
-              @update:model-value="updateField('confirmPassword', $event)" label="Confirm Password" type="password"
-              variant="outlined" prepend-inner-icon="mdi-lock-check" :rules="confirmPasswordRules" required
-              color="primary" />
-          </v-col>
-        </v-row>
+      <div v-if="!isEditing" class="form-row">
+        <n-form-item label="Password" required>
+          <n-input
+            :value="formData.password"
+            @update:value="updateField('password', $event)"
+            type="password"
+            placeholder="Enter password"
+            show-password-on="click"
+          >
+            <template #prefix>
+              <n-icon><component :is="LockIcon" /></n-icon>
+            </template>
+          </n-input>
+        </n-form-item>
+        <n-form-item label="Confirm Password" required>
+          <n-input
+            :value="formData.confirmPassword"
+            @update:value="updateField('confirmPassword', $event)"
+            type="password"
+            placeholder="Confirm password"
+            show-password-on="click"
+          >
+            <template #prefix>
+              <n-icon><component :is="LockIcon" /></n-icon>
+            </template>
+          </n-input>
+        </n-form-item>
       </div>
 
       <div v-else>
-        <v-card variant="outlined" class="pa-4">
-          <div class="text-center">
-            <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-lock</v-icon>
-            <h4 class="text-subtitle-1 mb-1">Password Management</h4>
-            <v-btn v-if="isEditing" color="warning" variant="outlined" prepend-icon="mdi-lock-reset"
-              @click="$emit('reset-password')">
+        <n-card class="password-management">
+          <div class="password-reset-section">
+            <n-icon size="48" class="reset-icon"><component :is="LockIcon" /></n-icon>
+            <h4 class="reset-title">Password Management</h4>
+            <n-button v-if="isEditing" type="warning" ghost @click="$emit('reset-password')">
+              <template #icon>
+                <n-icon><component :is="LockIcon" /></n-icon>
+              </template>
               Reset Password
-            </v-btn>
-            <v-spacer />
+            </n-button>
           </div>
-        </v-card>
+        </n-card>
       </div>
-    </v-form>
-
-    <template #footer>
-      <v-card-actions class="pa-4">
-        <v-btn variant="outlined" @click="$emit('cancel')" size="large">
-          Cancel
-        </v-btn>
-        <v-btn color="primary" @click="$emit('save')" :loading="loading" size="large" class="px-8">
-          <v-icon class="me-2">
-            {{ isEditing ? 'mdi-content-save' : 'mdi-plus' }}
-          </v-icon>
-          {{ isEditing ? 'Update User' : 'Create User' }}
-        </v-btn>
-      </v-card-actions>
-    </template>
+    </n-form>
   </CustomDialog>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { NForm, NFormItem, NInput, NSelect, NSwitch, NAvatar, NIcon, NCard, NButton, NDivider } from 'naive-ui'
+import { Person as PersonIcon, Mail as MailIcon, Shield as ShieldIcon, LockClosed as LockIcon, Image as ImageIcon } from '@vicons/ionicons5'
 import CustomDialog from '@/components/dialog/CustomDialog.vue'
 
 interface UserFormData {
@@ -144,8 +183,8 @@ interface Props {
   show: boolean
   formData: UserFormData
   isEditing: boolean
-  roles: string[]
-  statuses: string[]
+  roles: { label: string; value: string }[]
+  statuses: { label: string; value: string }[]
   loading?: boolean
 }
 
@@ -191,3 +230,87 @@ const confirmPasswordRules = computed(() => [
   (v: string) => v === props.formData.password || 'Passwords do not match'
 ])
 </script>
+
+<style scoped>
+.profile-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.profile-avatar {
+  margin-bottom: 16px;
+}
+
+.profile-input {
+  width: 100%;
+  max-width: 400px;
+}
+
+.input-hint {
+  font-size: 12px;
+  color: var(--n-text-color-3);
+  margin-top: 4px;
+  text-align: center;
+}
+
+.section-divider {
+  margin: 24px 0;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--n-text-color);
+}
+
+.section-icon {
+  color: var(--n-color-primary);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.password-management {
+  padding: 24px;
+  text-align: center;
+}
+
+.password-reset-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.reset-icon {
+  color: var(--n-text-color-3);
+}
+
+.reset-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+  color: var(--n-text-color);
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .profile-section {
+    padding: 0 16px;
+  }
+}
+</style>
