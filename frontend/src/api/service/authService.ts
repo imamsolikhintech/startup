@@ -27,16 +27,18 @@ export class AuthService extends BaseApiService {
    * @param credentials - User login credentials
    * @returns Login response with user data and tokens
    */
-  async login(credentials: LoginCredentials): Promise<ApiResponse<LoginResponse>> {
+  async login(credentials: LoginCredentials): Promise<ApiResponse<LoginResponse> | undefined> {
     try {
-      this.validateRequired(credentials, ['email', 'password'])
+      if (!credentials.email || !credentials.password) {
+        throw new Error('Email and password are required')
+      }
 
       return await this.apiClient.post<ApiResponse<LoginResponse>>(
         `${this.baseEndpoint}/login`,
         credentials
       )
     } catch (error) {
-      this.handleError(error, 'Login')
+      this.handleError(error)
     }
   }
 
@@ -45,15 +47,18 @@ export class AuthService extends BaseApiService {
    * @param data - User registration data
    * @returns Registration response
    */
-  async register(data: RegisterData): Promise<ApiResponse<LoginResponse>> {
+  async register(data: RegisterData): Promise<ApiResponse<LoginResponse> | undefined> {
     try {
-      this.validateRequired(data, [
-        'email',
-        'password',
-        'confirmPassword',
-        'firstName',
-        'lastName'
-      ])
+      if (!data.email || !data.password) {
+        throw new Error('Email and password are required')
+      }
+      // super.validateRequired(data, [
+      //   'email',
+      //   'password',
+      //   'confirmPassword',
+      //   'firstName',
+      //   'lastName'
+      // ])
 
       if (data.password !== data.confirmPassword) {
         throw new Error('Passwords do not match')
@@ -68,7 +73,7 @@ export class AuthService extends BaseApiService {
         data
       )
     } catch (error) {
-      this.handleError(error, 'Registration')
+      this.handleError(error)
     }
   }
 
@@ -76,13 +81,13 @@ export class AuthService extends BaseApiService {
    * Logout user
    * @returns Logout response
    */
-  async logout(): Promise<ApiResponse<null>> {
+  async logout(): Promise<ApiResponse<null> | undefined> {
     try {
       return await this.apiClient.post<ApiResponse<null>>(
         `${this.baseEndpoint}/logout`
       )
     } catch (error) {
-      this.handleError(error, 'Logout')
+      this.handleError(error)
     }
   }
 
@@ -91,16 +96,18 @@ export class AuthService extends BaseApiService {
    * @param refreshToken - Refresh token
    * @returns New tokens
    */
-  async refreshTokens(refreshToken: string): Promise<ApiResponse<AuthTokens>> {
+  async refreshTokens(refreshToken: string): Promise<ApiResponse<AuthTokens> | undefined> {
     try {
-      this.validateRequired({ refreshToken }, ['refreshToken'])
+      if (!refreshToken) {
+        throw new Error('Refresh token is required')
+      }
 
       return await this.apiClient.post<ApiResponse<AuthTokens>>(
         `${this.baseEndpoint}/refresh`,
         { refreshToken }
       )
     } catch (error) {
-      this.handleError(error, 'Token refresh')
+      this.handleError(error)
     }
   }
 
@@ -108,13 +115,13 @@ export class AuthService extends BaseApiService {
    * Get current user profile
    * @returns Current user data
    */
-  async getCurrentUser(): Promise<ApiResponse<User>> {
+  async getCurrentUser(): Promise<ApiResponse<User> | undefined> {
     try {
       return await this.apiClient.get<ApiResponse<User>>(
         `${this.baseEndpoint}/me`
       )
     } catch (error) {
-      this.handleError(error, 'Get current user')
+      this.handleError(error)
     }
   }
 
@@ -123,14 +130,14 @@ export class AuthService extends BaseApiService {
    * @param data - Profile update data
    * @returns Updated user data
    */
-  async updateProfile(data: UpdateProfileData): Promise<ApiResponse<User>> {
+  async updateProfile(data: UpdateProfileData): Promise<ApiResponse<User> | undefined> {
     try {
       return await this.apiClient.patch<ApiResponse<User>>(
         `${this.baseEndpoint}/me`,
         data
       )
     } catch (error) {
-      this.handleError(error, 'Update profile')
+      this.handleError(error)
     }
   }
 
@@ -139,13 +146,11 @@ export class AuthService extends BaseApiService {
    * @param data - Password change data
    * @returns Success response
    */
-  async changePassword(data: ChangePasswordData): Promise<ApiResponse<null>> {
+  async changePassword(data: ChangePasswordData): Promise<ApiResponse<null> | undefined> {
     try {
-      this.validateRequired(data, [
-        'currentPassword',
-        'newPassword',
-        'confirmPassword'
-      ])
+      if (!data.currentPassword || !data.newPassword || !data.confirmPassword) {
+        throw new Error('Current password, new password and confirm password are required')
+      }
 
       if (data.newPassword !== data.confirmPassword) {
         throw new Error('New passwords do not match')
@@ -156,7 +161,7 @@ export class AuthService extends BaseApiService {
         data
       )
     } catch (error) {
-      this.handleError(error, 'Change password')
+      this.handleError(error)
     }
   }
 
@@ -165,16 +170,18 @@ export class AuthService extends BaseApiService {
    * @param data - Email for password reset
    * @returns Success response
    */
-  async forgotPassword(data: ResetPasswordData): Promise<ApiResponse<null>> {
+  async forgotPassword(data: ResetPasswordData): Promise<ApiResponse<null> | undefined> {
     try {
-      this.validateRequired(data, ['email'])
+      if (!data.email) {
+        throw new Error('Email is required')
+      }
 
       return await this.apiClient.post<ApiResponse<null>>(
         `${this.baseEndpoint}/forgot-password`,
         data
       )
     } catch (error) {
-      this.handleError(error, 'Forgot password')
+      this.handleError(error)
     }
   }
 
@@ -184,10 +191,11 @@ export class AuthService extends BaseApiService {
    * @param data - New password data
    * @returns Success response
    */
-  async resetPassword(token: string, data: ChangePasswordData): Promise<ApiResponse<null>> {
+  async resetPassword(token: string, data: ChangePasswordData): Promise<ApiResponse<null> | undefined> {
     try {
-      this.validateRequired(data, ['newPassword', 'confirmPassword'])
-
+      if (!data.newPassword || !data.confirmPassword) {
+        throw new Error('New password and confirm password are required')
+      }
       if (data.newPassword !== data.confirmPassword) {
         throw new Error('New passwords do not match')
       }
@@ -197,7 +205,7 @@ export class AuthService extends BaseApiService {
         data
       )
     } catch (error) {
-      this.handleError(error, 'Reset password')
+      this.handleError(error)
     }
   }
 
@@ -206,16 +214,17 @@ export class AuthService extends BaseApiService {
    * @param token - Verification token
    * @returns Success response
    */
-  async verifyEmail(token: string): Promise<ApiResponse<null>> {
+  async verifyEmail(token: string): Promise<ApiResponse<null> | undefined> {
     try {
-      this.validateRequired({ token }, ['token'])
-
+      if (!token) {
+        throw new Error('Token is required')
+      }
       return await this.apiClient.post<ApiResponse<null>>(
         `${this.baseEndpoint}/verify-email`,
         { token }
       )
     } catch (error) {
-      this.handleError(error, 'Email verification')
+      this.handleError(error)
     }
   }
 
@@ -224,16 +233,17 @@ export class AuthService extends BaseApiService {
    * @param email - User email
    * @returns Success response
    */
-  async resendVerificationEmail(email: string): Promise<ApiResponse<null>> {
+  async resendVerificationEmail(email: string): Promise<ApiResponse<null> | undefined> {
     try {
-      this.validateRequired({ email }, ['email'])
-
+      if (!email) {
+        throw new Error('Email is required')
+      }
       return await this.apiClient.post<ApiResponse<null>>(
         `${this.baseEndpoint}/resend-verification-email`,
         { email }
       )
     } catch (error) {
-      this.handleError(error, 'Resend verification email')
+      this.handleError(error)
     }
   }
 
@@ -242,15 +252,16 @@ export class AuthService extends BaseApiService {
    * @param email - Email to check
    * @returns Response indicating if email exists
    */
-  async checkEmail(email: string): Promise<ApiResponse<{ exists: boolean }>> {
+  async checkEmail(email: string): Promise<ApiResponse<{ exists: boolean }> | undefined> {
     try {
-      this.validateRequired({ email }, ['email'])
-
+      if (!email) {
+        throw new Error('Email is required')
+      }
       return await this.apiClient.get<ApiResponse<{ exists: boolean }>>(
         `${this.baseEndpoint}/check-email?email=${email}`
       )
     } catch (error) {
-      this.handleError(error, 'Check email')
+      this.handleError(error)
     }
   }
 
@@ -258,13 +269,13 @@ export class AuthService extends BaseApiService {
    * Get user permissions
    * @returns Array of permissions
    */
-  async getPermissions(): Promise<ApiResponse<string[]>> {
+  async getPermissions(): Promise<ApiResponse<string[]> | undefined> {
     try {
       return await this.apiClient.get<ApiResponse<string[]>>(
         `${this.baseEndpoint}/permissions`
       )
     } catch (error) {
-      this.handleError(error, 'Get permissions')
+      this.handleError(error)
     }
   }
 
@@ -277,7 +288,7 @@ export class AuthService extends BaseApiService {
   async uploadAvatar(
     file: File,
     onProgress?: (progress: number) => void
-  ): Promise<ApiResponse<{ avatarUrl: string }>> {
+  ): Promise<ApiResponse<{ avatarUrl: string }> | undefined> {
     try {
       return await this.apiClient.upload<ApiResponse<{ avatarUrl: string }>>(
         `${this.baseEndpoint}/upload-avatar`,
@@ -290,7 +301,7 @@ export class AuthService extends BaseApiService {
         }
       )
     } catch (error) {
-      this.handleError(error, 'Upload avatar')
+      this.handleError(error)
     }
   }
 
@@ -298,13 +309,13 @@ export class AuthService extends BaseApiService {
    * Delete user avatar
    * @returns Success response
    */
-  async deleteAvatar(): Promise<ApiResponse<null>> {
+  async deleteAvatar(): Promise<ApiResponse<null> | undefined> {
     try {
       return await this.apiClient.delete<ApiResponse<null>>(
         `${this.baseEndpoint}/avatar`
       )
     } catch (error) {
-      this.handleError(error, 'Delete avatar')
+      this.handleError(error)
     }
   }
 
@@ -312,13 +323,13 @@ export class AuthService extends BaseApiService {
    * Enable Two-Factor Authentication (2FA)
    * @returns QR code and secret for 2FA setup
    */
-  async enable2FA(): Promise<ApiResponse<{ qrCode: string; secret: string }>> {
+  async enable2FA(): Promise<ApiResponse<{ qrCode: string; secret: string }> | undefined> {
     try {
       return await this.apiClient.post<ApiResponse<{ qrCode: string; secret: string }>>(
         `${this.baseEndpoint}/2fa/enable`
       )
     } catch (error) {
-      this.handleError(error, 'Enable 2FA')
+      this.handleError(error)
     }
   }
 
@@ -327,16 +338,17 @@ export class AuthService extends BaseApiService {
    * @param code - 2FA code from authenticator app
    * @returns Backup codes
    */
-  async verify2FA(code: string): Promise<ApiResponse<{ backupCodes: string[] }>> {
+  async verify2FA(code: string): Promise<ApiResponse<{ backupCodes: string[] }> | undefined> {
     try {
-      this.validateRequired({ code }, ['code'])
-
+      if (!code) {
+        throw new Error('2FA verification code is required')
+      }
       return await this.apiClient.post<ApiResponse<{ backupCodes: string[] }>>(
         `${this.baseEndpoint}/2fa/verify`,
         { code }
       )
     } catch (error) {
-      this.handleError(error, 'Verify 2FA')
+      this.handleError(error)
     }
   }
 
@@ -345,16 +357,18 @@ export class AuthService extends BaseApiService {
    * @param password - User's current password
    * @returns Success response
    */
-  async disable2FA(password: string): Promise<ApiResponse<null>> {
+  async disable2FA(password: string): Promise<ApiResponse<null> | undefined> {
     try {
-      this.validateRequired({ password }, ['password'])
+      if (!password) {
+        throw new Error('Password is required')
+      }
 
       return await this.apiClient.post<ApiResponse<null>>(
         `${this.baseEndpoint}/2fa/disable`,
         { password }
       )
     } catch (error) {
-      this.handleError(error, 'Disable 2FA')
+      this.handleError(error)
     }
   }
 
@@ -364,13 +378,13 @@ export class AuthService extends BaseApiService {
    * @param limit - Items per page
    * @returns Paginated login history
    */
-  async getLoginHistory(page: number = 1, limit: number = 10): Promise<ApiResponse<any>> {
+  async getLoginHistory(page: number = 1, limit: number = 10): Promise<ApiResponse<any> | undefined> {
     try {
       return await this.apiClient.get<ApiResponse<any>>(
         `${this.baseEndpoint}/login-history?page=${page}&limit=${limit}`
       )
     } catch (error) {
-      this.handleError(error, 'Get login history')
+      this.handleError(error)
     }
   }
 
@@ -378,17 +392,17 @@ export class AuthService extends BaseApiService {
    * Revoke all user sessions (logout from all devices)
    * @returns Success response
    */
-  async revokeAllSessions(): Promise<ApiResponse<null>> {
+  async revokeAllSessions(): Promise<ApiResponse<null> | undefined> {
     try {
       return await this.apiClient.post<ApiResponse<null>>(
         `${this.baseEndpoint}/revoke-sessions`
       )
     } catch (error) {
-      this.handleError(error, 'Revoke all sessions')
+      this.handleError(error)
     }
   }
 }
 
 // Export singleton instance
-export const authServiceInstance = new AuthService()
+export const authServiceInstance = new AuthService(new ApiClient('/api'))
 export default authServiceInstance

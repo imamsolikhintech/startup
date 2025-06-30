@@ -8,7 +8,6 @@ import type {
   UpdateUserData,
   UserFilters,
   UserStats,
-  BulkUserOperation,
   UserPreferences,
   LoginHistory,
   UserActivity
