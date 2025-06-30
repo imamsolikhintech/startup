@@ -49,12 +49,13 @@ export interface RegisterData {
 
 export interface User {
   id: string
+  name: string
   email: string
   firstName: string
   lastName: string
   fullName?: string
   role: string
-  avatar?: string
+  profile_picture?: string
   isEmailVerified: boolean
   isActive: boolean
   lastLoginAt?: string

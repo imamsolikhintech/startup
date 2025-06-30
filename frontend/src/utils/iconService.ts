@@ -1,5 +1,4 @@
-import { h } from 'vue'
-import { Component } from 'vue'
+import { Component, h } from 'vue'
 
 // Icon map interface
 interface IconMap {

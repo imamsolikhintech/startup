@@ -1,26 +1,33 @@
 <template>
-  <div class="callback-container">
-    <div class="callback-content">
-      <div class="callback-icon">
-        <n-spin size="large" />
-      </div>
-      
-      <h3 class="callback-title">Processing Google Authentication</h3>
-      <p class="callback-message">Please wait while we complete your sign-in...</p>
+  <div class="callback-view">
+    <div class="callback-container">
+      <n-card class="callback-card" size="large">
+        <div class="callback-content">
+          <div v-if="!error" class="loading-content">
+            <n-spin size="large" class="callback-icon" />
+            <h3 class="callback-title">Processing Google Authentication</h3>
+            <p class="callback-message">Please wait while we complete your sign-in...</p>
+          </div>
 
-      <div v-if="error" class="callback-error">
-        <div class="callback-error-title">Authentication Error</div>
-        <div class="callback-error-message">{{ error }}</div>
-        
-        <n-button
-          secondary
-          size="small"
-          @click="router.push('/auth/login')"
-          class="mt-3"
-        >
-          Try Again
-        </n-button>
-      </div>
+          <div v-else class="error-content">
+            <n-icon size="48" class="error-icon">
+              <svg viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.58L19 8l-9 9z"/>
+              </svg>
+            </n-icon>
+            <h3 class="error-title">Authentication Error</h3>
+            <p class="error-message">{{ error }}</p>
+            
+            <n-button
+              type="primary"
+              @click="router.push('/auth/login')"
+              class="retry-button"
+            >
+              Try Again
+            </n-button>
+          </div>
+        </div>
+      </n-card>
     </div>
   </div>
 </template>
@@ -29,7 +36,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { NSpin, NButton } from 'naive-ui'
+import { NSpin, NButton, NCard, NIcon } from 'naive-ui'
 
 const router = useRouter()
 const route = useRoute()
@@ -114,69 +121,32 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.callback-container {
+.callback-view {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: var(--n-color-base);
   padding: 2rem;
-  /* background: rgba(255, 255, 255, 0.95); */
-  /* backdrop-filter: blur(10px); */
+}
+
+.callback-container {
+  width: 100%;
+  max-width: 450px;
 }
 
 .callback-card {
-  width: 100%;
-  max-width: 400px;
-  padding: 3rem 2rem;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
   text-align: center;
-  transition: all 0.3s ease;
+  padding: 3rem 2rem;
 }
 
 .callback-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
 }
 
-.callback-icon {
-  color: #3b82f6;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.callback-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin: 0;
-}
-
-.callback-message {
-  color: #666;
-  font-size: 1rem;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.callback-progress {
-  width: 100%;
-  margin-top: 1rem;
-}
-
+.loading-content,
 .error-content {
   display: flex;
   flex-direction: column;
@@ -184,19 +154,37 @@ onMounted(() => {
   gap: 1.5rem;
 }
 
+.callback-icon {
+  color: var(--n-color-primary);
+}
+
+.callback-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--n-text-color-base);
+  margin: 0;
+}
+
+.callback-message {
+  color: var(--n-text-color-placeholder);
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
 .error-icon {
-  color: #ef4444;
+  color: var(--n-color-error);
 }
 
 .error-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #ef4444;
+  color: var(--n-color-error);
   margin: 0;
 }
 
 .error-message {
-  color: #666;
+  color: var(--n-text-color-placeholder);
   font-size: 1rem;
   line-height: 1.5;
   margin: 0;
@@ -204,60 +192,26 @@ onMounted(() => {
 }
 
 .retry-button {
-  margin-top: 1rem;
   min-width: 120px;
 }
 
-/* Dark Theme */
-[data-theme="dark"] .callback-card,
-.dark .callback-card {
-  background: rgba(30, 30, 30, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="dark"] .callback-title,
-.dark .callback-title {
-  color: #ffffff;
-}
-
-[data-theme="dark"] .callback-message,
-.dark .callback-message,
-[data-theme="dark"] .error-message,
-.dark .error-message {
-  color: #a1a1aa;
-}
-
-[data-theme="dark"] .callback-icon,
-.dark .callback-icon {
-  color: #60a5fa;
-}
-
-/* Responsive Design */
-@media (max-width: 480px) {
-  .callback-container {
+@media (max-width: 768px) {
+  .callback-view {
     padding: 1rem;
   }
-
+  
   .callback-card {
     padding: 2rem 1.5rem;
-    max-width: 100%;
   }
-
+  
   .callback-title,
   .error-title {
     font-size: 1.25rem;
   }
-
+  
   .callback-message,
   .error-message {
     font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 360px) {
-  .callback-card {
-    padding: 1.5rem 1rem;
   }
 }
 </style>

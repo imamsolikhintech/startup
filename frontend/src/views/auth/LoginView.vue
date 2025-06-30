@@ -1,20 +1,25 @@
 <template>
-  <div class="login-container">
-    <div class="login-card">
-      <div class="login-header">
-        <h2 class="login-title">Welcome Back</h2>
-        <p class="login-subtitle">
-          Sign in to your account to continue
-        </p>
-      </div>
+  <div class="login-view">
+    <div class="login-container">
+      <n-card class="login-card">
+        <div class="login-header">
+          <h1 class="login-title">Welcome Back</h1>
+          <p class="login-subtitle">
+            Sign in to your account to continue
+          </p>
+        </div>
 
-      <div class="login-form">
-        <form @submit.prevent="handleLogin" ref="formRef">
-          <div class="form-field mb-3">
+        <n-form
+          ref="formRef"
+          :model="credentials"
+          @submit.prevent="handleLogin"
+          class="login-form"
+        >
+          <n-form-item class="mb-3">
             <n-input
               v-model:value="credentials.email"
               placeholder="Email Address"
-              type="email"
+              type="text"
               size="large"
               clearable
               :status="emailError ? 'error' : undefined"
@@ -28,9 +33,9 @@
               </template>
             </n-input>
             <div v-if="emailError" class="error-message">{{ emailError }}</div>
-          </div>
+          </n-form-item>
 
-          <div class="form-field mb-2">
+          <n-form-item class="mb-2">
             <n-input
               v-model:value="credentials.password"
               placeholder="Password"
@@ -48,7 +53,7 @@
               </template>
             </n-input>
             <div v-if="passwordError" class="error-message">{{ passwordError }}</div>
-          </div>
+          </n-form-item>
 
           <div class="form-options mb-4">
             <n-checkbox v-model:checked="rememberMe" label="Remember me" />
@@ -72,7 +77,7 @@
           <n-alert v-if="authStore.error" type="error" class="mb-4" closable @close="clearError">
             {{ authStore.error }}
           </n-alert>
-        </form>
+        </n-form>
 
         <n-divider class="my-4">
           <span class="divider-text">or</span>
@@ -100,27 +105,13 @@
           </n-button>
         </div>
 
-        <div class="text-center mb-4">
+        <div class="text-center">
           <span class="signup-text">Don't have an account?</span>
-          <router-link to="/auth/register" class="signup-link">
+          <n-button text class="ml-1" @click="$router.push('/auth/register')">
             Sign up
-          </router-link>
+          </n-button>
         </div>
-
-        <!-- Demo Credentials Info -->
-        <!-- <v-card variant="tonal" color="info" class="demo-card">
-          <v-card-text class="text-center pa-3">
-            <div class="text-subtitle-2 mb-2">Demo Credentials</div>
-            <div class="text-caption">
-              <strong>Email:</strong> admin@example.com<br>
-              <strong>Password:</strong> password
-            </div>
-            <v-btn size="small" variant="text" color="primary" class="mt-2 text-none" @click="fillDemoCredentials">
-              Use Demo Credentials
-            </v-btn>
-          </v-card-text>
-        </v-card> -->
-      </div>
+      </n-card>
     </div>
   </div>
 </template>
@@ -129,12 +120,13 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { NInput, NButton, NCheckbox, NAlert, NDivider, NIcon } from 'naive-ui'
+import { NInput, NButton, NCheckbox, NAlert, NDivider, NIcon, NCard, NForm, NFormItem } from 'naive-ui'
+import type { FormInst } from 'naive-ui'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
-const formRef = ref()
+const formRef = ref<FormInst | null>(null)
 const credentials = ref({
   email: '',
   password: ''
@@ -209,35 +201,28 @@ const handleSocialLogin = (provider: string) => {
   }
 }
 
-const fillDemoCredentials = () => {
-  credentials.value.email = 'admin@example.com'
-  credentials.value.password = 'password'
-}
-
 const clearError = () => {
   authStore.error = null
 }
 </script>
 
 <style scoped>
-.login-container {
+.login-view {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
-  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
-  /* background: rgba(255, 255, 255, 0.95); */
-  backdrop-filter: blur(10px);
+  background: var(--n-color-base);
+  padding: 2rem;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 450px;
 }
 
 .login-card {
-  width: 100%;
-  max-width: 400px;
-  background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
 }
 
 .login-header {
@@ -246,64 +231,63 @@ const clearError = () => {
 }
 
 .login-title {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #1a1a1a;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--n-text-color-base);
   margin-bottom: 0.5rem;
 }
 
 .login-subtitle {
-  color: #666;
-  font-size: 0.875rem;
+  color: var(--n-text-color-placeholder);
+  font-size: 1rem;
   margin: 0;
 }
 
 .login-form {
-  width: 100%;
-}
-
-.form-field {
-  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .error-message {
-  color: #e74c3c;
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
-  margin-left: 0.5rem;
+  color: var(--n-color-error);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
 }
 
 .form-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin: 1rem 0;
 }
 
 .divider-text {
-  color: #999;
+  color: var(--n-text-color-placeholder);
   font-size: 0.875rem;
-  padding: 0 1rem;
 }
 
 .social-login {
-  margin-bottom: 1rem;
+  margin: 1.5rem 0;
 }
 
 .signup-text {
-  color: #666;
+  color: var(--n-text-color-placeholder);
   font-size: 0.875rem;
 }
 
-.signup-link {
-  color: #667eea;
-  text-decoration: none;
-  font-weight: 500;
-  margin-left: 0.25rem;
-}
-
-.signup-link:hover {
-  text-decoration: underline;
+@media (max-width: 768px) {
+  .login-view {
+    padding: 1rem;
+  }
+  
+  .login-card {
+    padding: 2rem;
+  }
+  
+  .login-title {
+    font-size: 1.75rem;
+  }
 }
 
 .mb-2 {

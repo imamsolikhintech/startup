@@ -1,152 +1,169 @@
 <template>
   <div class="analytics-view">
-    <div class="header-section mb-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-bold mb-2">Analytics Dashboard</h1>
-          <p class="text-gray-600">
-            Track your performance and insights
-          </p>
+    <PageHeader
+      title="Analytics"
+      subtitle="Monitor your application performance and user engagement"
+      :breadcrumbs="[
+        { label: 'Dashboard', to: '/dashboard' },
+        { label: 'Analytics', to: '/analytics' }
+      ]"
+      :actions="[
+        {
+          label: 'Export Report',
+          variant: 'primary',
+          icon: 'mdi-download'
+        },
+        {
+          label: 'Refresh',
+          variant: 'secondary',
+          icon: 'mdi-refresh'
+        }
+      ]"
+    />
+
+    <div class="analytics-content">
+      <!-- Stats Overview -->
+      <n-grid cols="1 s:2 m:4" responsive="screen" :x-gap="16" :y-gap="16" class="stats-grid">
+        <n-grid-item>
+          <StatsCard
+            title="Total Users"
+            :value="stats.totalUsers"
+            icon="mdi-account-group"
+            variant="primary"
+            :trend="{ value: 12.5, direction: 'up' }"
+            subtitle="Active users this month"
+          />
+        </n-grid-item>
+        <n-grid-item>
+          <StatsCard
+            title="Revenue"
+            :value="`$${stats.revenue.toLocaleString()}`"
+            icon="mdi-currency-usd"
+            variant="success"
+            :trend="{ value: 8.2, direction: 'up' }"
+            subtitle="Monthly recurring revenue"
+          />
+        </n-grid-item>
+        <n-grid-item>
+          <StatsCard
+            title="Conversion Rate"
+            :value="`${stats.conversionRate}%`"
+            icon="mdi-chart-line"
+            variant="warning"
+            :trend="{ value: 2.1, direction: 'down' }"
+            subtitle="Visitor to customer rate"
+          />
+        </n-grid-item>
+        <n-grid-item>
+          <StatsCard
+            title="Page Views"
+            :value="stats.pageViews.toLocaleString()"
+            icon="mdi-eye"
+            variant="info"
+            :trend="{ value: 15.3, direction: 'up' }"
+            subtitle="Total page views this month"
+          />
+        </n-grid-item>
+      </n-grid>
+
+      <!-- Charts Row -->
+      <n-grid cols="1 m:2" responsive="screen" :x-gap="16" :y-gap="16" class="charts-grid mb-6">
+        <!-- Traffic Chart -->
+        <n-grid-item>
+          <n-card class="h-full">
+            <template #header>
+              <div class="flex items-center justify-between">
+                <span class="text-lg font-semibold">Website Traffic</span>
+                <n-button-group size="small">
+                  <n-button :type="trafficView === 'visits' ? 'primary' : 'default'" @click="trafficView = 'visits'">Visits</n-button>
+                  <n-button :type="trafficView === 'pageviews' ? 'primary' : 'default'" @click="trafficView = 'pageviews'">Pageviews</n-button>
+                  <n-button :type="trafficView === 'users' ? 'primary' : 'default'" @click="trafficView = 'users'">Users</n-button>
+                </n-button-group>
+              </div>
+            </template>
+            <LineChart :data="trafficChartData" :options="chartOptions" />
+          </n-card>
+        </n-grid-item>
+
+        <!-- Device Breakdown -->
+        <n-grid-item>
+          <n-card class="h-full">
+            <template #header>
+              <span class="text-lg font-semibold">Device Breakdown</span>
+            </template>
+            <DoughnutChart :data="deviceData" :options="doughnutOptions" />
+            
+            <div class="device-list mt-4">
+              <div
+                v-for="(device, index) in deviceBreakdown"
+                :key="device.name"
+                class="device-item flex items-center justify-between py-2"
+              >
+                <div class="flex items-center">
+                  <div 
+                    class="device-indicator w-3 h-3 rounded-full mr-3"
+                    :style="{ backgroundColor: deviceColors[index] }"
+                  ></div>
+                  <span class="text-sm">{{ device.name }}</span>
+                </div>
+                <span class="text-sm font-medium">{{ device.percentage }}%</span>
+              </div>
+            </div>
+          </n-card>
+        </n-grid-item>
+      </n-grid>
+
+      <!-- Detailed Analytics -->
+      <div class="analytics-details">
+        <!-- Top Pages -->
+        <div class="top-pages">
+          <n-card>
+            <template #header>
+              <span class="text-lg font-semibold">Top Pages</span>
+            </template>
+            <div class="page-list">
+              <div
+                v-for="page in topPages"
+                :key="page.path"
+                class="page-item flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+              >
+                <div>
+                  <div class="text-sm font-medium">{{ page.path }}</div>
+                  <div class="text-xs text-gray-500">{{ page.views }} views</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-medium">{{ page.bounce }}%</div>
+                  <div class="text-xs text-gray-500">bounce</div>
+                </div>
+              </div>
+            </div>
+          </n-card>
         </div>
-        <n-button-group>
-          <n-button :type="selectedPeriod === '7' ? 'primary' : 'default'" @click="selectedPeriod = '7'">7 Days</n-button>
-          <n-button :type="selectedPeriod === '30' ? 'primary' : 'default'" @click="selectedPeriod = '30'">30 Days</n-button>
-          <n-button :type="selectedPeriod === '90' ? 'primary' : 'default'" @click="selectedPeriod = '90'">90 Days</n-button>
-        </n-button-group>
-      </div>
-    </div>
 
-    <!-- Key Metrics -->
-    <div class="metrics-grid mb-6">
-      <n-card v-for="metric in metrics" :key="metric.title" class="metric-card">
-        <div class="metric-content p-4">
-          <div class="flex items-center justify-between mb-3">
-            <n-icon :size="32" :color="getMetricColor(metric.color)">
-              <component :is="getMetricIcon(metric.icon)" />
-            </n-icon>
-            <n-tag :type="metric.trend === 'up' ? 'success' : 'error'" size="small">
-              <template #icon>
-                <n-icon :size="16">
-                  <component :is="getTrendIcon(metric.trend)" />
-                </n-icon>
-              </template>
-              {{ metric.change }}
-            </n-tag>
-          </div>
-          
-          <div class="text-2xl font-bold mb-1">{{ metric.value }}</div>
-          <div class="text-sm text-gray-600">{{ metric.title }}</div>
-          
-          <div class="mt-3">
-            <n-progress
-              :percentage="metric.progress"
-              :color="getMetricColor(metric.color)"
-              :height="4"
-              :border-radius="2"
-              :fill-border-radius="2"
-            />
-          </div>
+        <!-- Geographic Data -->
+        <div class="geo-data">
+          <n-card>
+            <template #header>
+              <span class="text-lg font-semibold">Geographic Distribution</span>
+            </template>
+            <div class="geo-list">
+              <div
+                v-for="country in geoData"
+                :key="country.code"
+                class="geo-item flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+              >
+                <div class="flex items-center">
+                  <div class="country-flag text-lg mr-3">{{ country.flag }}</div>
+                  <span class="text-sm font-medium">{{ country.name }}</span>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-medium">{{ country.users }}</div>
+                  <div class="text-xs text-gray-500">users</div>
+                </div>
+              </div>
+            </div>
+          </n-card>
         </div>
-      </n-card>
-    </div>
-
-    <!-- Charts Row -->
-    <div class="charts-row mb-6">
-      <!-- Traffic Chart -->
-      <div class="traffic-chart">
-        <n-card class="h-full">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <span class="text-lg font-semibold">Website Traffic</span>
-              <n-button-group size="small">
-                <n-button :type="trafficView === 'visits' ? 'primary' : 'default'" @click="trafficView = 'visits'">Visits</n-button>
-                <n-button :type="trafficView === 'pageviews' ? 'primary' : 'default'" @click="trafficView = 'pageviews'">Pageviews</n-button>
-                <n-button :type="trafficView === 'users' ? 'primary' : 'default'" @click="trafficView = 'users'">Users</n-button>
-              </n-button-group>
-            </div>
-          </template>
-          <LineChart :data="trafficChartData" :options="chartOptions" />
-        </n-card>
-      </div>
-
-      <!-- Device Breakdown -->
-      <div class="device-chart">
-        <n-card class="h-full">
-          <template #header>
-            <span class="text-lg font-semibold">Device Breakdown</span>
-          </template>
-          <DoughnutChart :data="deviceData" :options="doughnutOptions" />
-          
-          <div class="device-list mt-4">
-            <div
-              v-for="(device, index) in deviceBreakdown"
-              :key="device.name"
-              class="device-item flex items-center justify-between py-2"
-            >
-              <div class="flex items-center">
-                <div 
-                  class="device-indicator w-3 h-3 rounded-full mr-3"
-                  :style="{ backgroundColor: deviceColors[index] }"
-                ></div>
-                <span class="text-sm">{{ device.name }}</span>
-              </div>
-              <span class="text-sm font-medium">{{ device.percentage }}%</span>
-            </div>
-          </div>
-         </n-card>
-       </div>
-    </div>
-
-    <!-- Detailed Analytics -->
-    <div class="analytics-details">
-      <!-- Top Pages -->
-      <div class="top-pages">
-        <n-card>
-          <template #header>
-            <span class="text-lg font-semibold">Top Pages</span>
-          </template>
-          <div class="page-list">
-            <div
-              v-for="page in topPages"
-              :key="page.path"
-              class="page-item flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
-            >
-              <div>
-                <div class="text-sm font-medium">{{ page.path }}</div>
-                <div class="text-xs text-gray-500">{{ page.views }} views</div>
-              </div>
-              <div class="text-right">
-                <div class="text-sm font-medium">{{ page.bounce }}%</div>
-                <div class="text-xs text-gray-500">bounce</div>
-              </div>
-            </div>
-          </div>
-        </n-card>
-      </div>
-
-      <!-- Geographic Data -->
-      <div class="geo-data">
-        <n-card>
-          <template #header>
-            <span class="text-lg font-semibold">Geographic Distribution</span>
-          </template>
-          <div class="geo-list">
-            <div
-              v-for="country in geoData"
-              :key="country.code"
-              class="geo-item flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
-            >
-              <div class="flex items-center">
-                <div class="country-flag text-lg mr-3">{{ country.flag }}</div>
-                <span class="text-sm font-medium">{{ country.name }}</span>
-              </div>
-              <div class="text-right">
-                <div class="text-sm font-medium">{{ country.users }}</div>
-                <div class="text-xs text-gray-500">users</div>
-              </div>
-            </div>
-          </div>
-        </n-card>
       </div>
     </div>
   </div>
@@ -154,60 +171,21 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue'
+import PageHeader from '@/components/common/PageHeader.vue'
+import StatsCard from '@/components/dashboard/StatsCard.vue'
 import LineChart from '@/components/charts/LineChart.vue'
 import DoughnutChart from '@/components/charts/DoughnutChart.vue'
-
-interface MetricItem {
-  title: string
-  value: string
-  icon: string
-  color: string
-  trend: 'up' | 'down'
-  change: string
-  progress: number
-}
 
 const selectedPeriod = ref('30')
 const trafficView = ref('visits')
 
-const metrics: MetricItem[] = [
-  {
-    title: 'Total Visitors',
-    value: '24,532',
-    icon: 'mdi-account-multiple',
-    color: 'primary',
-    trend: 'up',
-    change: '+12.5%',
-    progress: 75
-  },
-  {
-    title: 'Page Views',
-    value: '87,943',
-    icon: 'mdi-chart-line',
-    color: 'success',
-    trend: 'up',
-    change: '+8.2%',
-    progress: 82
-  },
-  {
-    title: 'Bounce Rate',
-    value: '32.4%',
-    icon: 'mdi-exit-to-app',
-    color: 'warning',
-    trend: 'down',
-    change: '-2.1%',
-    progress: 32
-  },
-  {
-    title: 'Avg. Session',
-    value: '2m 34s',
-    icon: 'mdi-clock',
-    color: 'info',
-    trend: 'up',
-    change: '+15s',
-    progress: 60
-  }
-]
+// Sample stats data
+const stats = ref({
+  totalUsers: '12,543',
+  revenue: 45231,
+  conversionRate: 3.24,
+  pageViews: 89432
+})
 
 const trafficChartData = computed(() => ({
   labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
@@ -331,70 +309,86 @@ const getMetricColor = (color: string) => {
 
 <style scoped>
 .analytics-view {
-  padding: 0;
+  padding: 1.5rem;
+  margin: 0 auto;
 }
 
-.header-section {
-  margin-bottom: 24px;
+.analytics-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+.stats-grid {
+  margin-bottom: 1.5rem;
 }
 
-.metric-card {
-  border-radius: 12px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.charts-grid {
+  margin-bottom: 1.5rem;
 }
 
-.metric-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+.chart-card {
+  height: 100%;
 }
 
-.metric-content {
-  padding: 16px;
+.chart-container {
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.charts-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.traffic-chart,
-.device-chart {
-  min-height: 400px;
-}
-
-.device-list {
-  margin-top: 16px;
+.activity-card {
+  margin-top: 1.5rem;
 }
 
 .device-item {
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--n-border-color);
 }
 
 .device-item:last-child {
   border-bottom: none;
 }
 
-.device-indicator {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 12px;
+.device-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.device-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.device-stats {
+  text-align: right;
+}
+
+.device-percentage {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--n-text-color-base);
+}
+
+.device-count {
+  font-size: 0.875rem;
+  color: var(--n-text-color-placeholder);
 }
 
 .analytics-details {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 1.5rem;
 }
 
 .page-list,
@@ -405,7 +399,7 @@ const getMetricColor = (color: string) => {
 .page-item,
 .geo-item {
   padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--n-border-color);
 }
 
 .page-item:last-child,
@@ -420,24 +414,18 @@ const getMetricColor = (color: string) => {
 
 /* Mobile responsive */
 @media (max-width: 1024px) {
-  .charts-row {
-    grid-template-columns: 1fr;
+  .charts-grid {
+    grid-template-columns: 1fr !important;
   }
 }
 
 @media (max-width: 768px) {
-  .metrics-grid {
-    grid-template-columns: 1fr;
+  .analytics-view {
+    padding: 1rem;
   }
   
   .analytics-details {
     grid-template-columns: 1fr;
-  }
-  
-  .header-section .flex {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
   }
 }
 
@@ -453,7 +441,6 @@ const getMetricColor = (color: string) => {
 /* Card styling */
 .n-card {
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.2s ease;
 }
 
@@ -517,11 +504,11 @@ const getMetricColor = (color: string) => {
 }
 
 .text-gray-600 {
-  color: #6b7280;
+  color: var(--n-text-color-2);
 }
 
 .text-gray-500 {
-  color: #9ca3af;
+  color: var(--n-text-color-3);
 }
 
 .mb-2 {
@@ -579,7 +566,7 @@ const getMetricColor = (color: string) => {
 }
 
 .border-gray-100 {
-  border-color: #f3f4f6;
+  border-color: var(--n-border-color);
 }
 
 .last\:border-b-0:last-child {

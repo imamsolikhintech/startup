@@ -1,15 +1,19 @@
 <template>
-  <div class="register-container">
-    <div class="register-card">
-      <div class="register-header">
-        <h2 class="register-title">Create Account</h2>
-        <p class="register-subtitle">
-          Join us and start managing your dashboard
-        </p>
-      </div>
+  <div class="register-view">
+    <div class="register-container">
+      <n-card class="register-card">
+        <div class="register-header">
+          <h1 class="register-title">Create Account</h1>
+          <p class="register-subtitle">Join us today and get started</p>
+        </div>
 
-      <div class="register-form">
-        <n-form @submit.prevent="handleRegister" ref="formRef" :model="form" :rules="formRules">
+        <n-form
+          ref="formRef"
+          :model="form"
+          :rules="rules"
+          @submit.prevent="handleRegister"
+          class="register-form"
+        >
           <n-form-item path="name" class="mb-1">
             <n-input v-model:value="form.name" placeholder="Full Name" size="large" clearable>
               <template #prefix>
@@ -21,7 +25,7 @@
           </n-form-item>
 
           <n-form-item path="email" class="mb-1">
-            <n-input v-model:value="form.email" placeholder="Email Address" type="email" size="large" clearable>
+            <n-input v-model:value="form.email" placeholder="Email Address" type="text" size="large" clearable>
               <template #prefix>
                 <n-icon>
                   <Mail />
@@ -67,14 +71,10 @@
             </n-checkbox>
           </n-form-item>
 
-          <n-button attr-type="submit" type="primary" size="large" :loading="authStore.loading" :disabled="!isFormValid"
+          <n-button attr-type="submit" type="primary" size="large" :loading="loading"
             block class="mb-4" round>
             Create Account
           </n-button>
-
-          <n-alert v-if="authStore.error" type="error" class="mb-4" closable @close="authStore.error = null">
-            {{ authStore.error }}
-          </n-alert>
         </n-form>
 
         <n-divider class="my-4">
@@ -107,110 +107,127 @@
             Sign In
           </n-button>
         </div>
-      </div>
+      </n-card>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import { useNotificationStore } from '@/stores/notifications'
-import { NForm, NFormItem, NInput, NCheckbox, NButton, NAlert, NDivider, NIcon } from 'naive-ui'
+import { useMessage, NCard, NForm, NFormItem, NInput, NButton, NIcon, NDivider, NCheckbox, NAlert } from 'naive-ui'
+import type { FormInst, FormRules } from 'naive-ui'
 import { Person, Mail, LockClosed } from '@vicons/ionicons5'
 
 const router = useRouter()
-const authStore = useAuthStore()
+const message = useMessage()
+const formRef = ref<FormInst | null>(null)
+const loading = ref(false)
 
-const formRef = ref()
-const form = ref({
+const form = reactive({
   name: '',
   email: '',
   password: '',
   confirmPassword: '',
   acceptTerms: false
 })
-const showPassword = ref(false)
-const showConfirmPassword = ref(false)
 
 // Validation rules for Naive UI
-const formRules = {
-  name: {
-    required: true,
-    message: 'Name is required',
-    trigger: ['input', 'blur']
-  },
-  email: {
-    required: true,
-    message: 'Email is required',
-    trigger: ['input', 'blur']
-  },
-  password: {
-    required: true,
-    message: 'Password is required',
-    trigger: ['input', 'blur']
-  },
-  confirmPassword: {
-    required: true,
-    message: 'Please confirm your password',
-    trigger: ['input', 'blur']
-  },
-  acceptTerms: {
-    required: true,
-    message: 'You must accept the terms and conditions',
-    trigger: ['change']
-  }
+const rules: FormRules = {
+  name: [
+    {
+      required: true,
+      message: 'Please enter your full name',
+      trigger: ['input', 'blur']
+    },
+    {
+      min: 2,
+      message: 'Name must be at least 2 characters',
+      trigger: ['input', 'blur']
+    }
+  ],
+  email: [
+    {
+      required: true,
+      message: 'Please enter your email',
+      trigger: ['input', 'blur']
+    },
+    {
+      type: 'email',
+      message: 'Please enter a valid email address',
+      trigger: ['input', 'blur']
+    }
+  ],
+  password: [
+    {
+      required: true,
+      message: 'Please enter your password',
+      trigger: ['input', 'blur']
+    },
+    {
+      min: 8,
+      message: 'Password must be at least 8 characters',
+      trigger: ['input', 'blur']
+    }
+  ],
+  confirmPassword: [
+    {
+      required: true,
+      message: 'Please confirm your password',
+      trigger: ['input', 'blur']
+    },
+    {
+      validator: (rule: any, value: string) => {
+        return value === form.password
+      },
+      message: 'Passwords do not match',
+      trigger: ['input', 'blur']
+    }
+  ],
+  acceptTerms: [
+    {
+      required: true,
+      message: 'You must accept the terms and conditions',
+      trigger: ['change']
+    }
+  ]
 }
 
-const isFormValid = computed(() => {
-  return form.value.name &&
-    form.value.email &&
-    form.value.password &&
-    form.value.confirmPassword &&
-    form.value.acceptTerms &&
-    /.+@.+\..+/.test(form.value.email) &&
-    form.value.password.length >= 6 &&
-    form.value.password === form.value.confirmPassword
-})
-
 const handleRegister = async () => {
-  if (!isFormValid.value) return
-
-  const success = await authStore.register(
-    form.value.email,
-    form.value.password,
-    form.value.name,
-    form.value.confirmPassword
-  )
-
-  if (success) {
-    router.push('/dashboard')
+  try {
+    await formRef.value?.validate()
+    loading.value = true
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    message.success('Account created successfully!')
+    router.push('/auth/login')
+  } catch (error) {
+    message.error('Please fix the form errors')
+  } finally {
+    loading.value = false
   }
 }
 </script>
 
 <style scoped>
-.register-container {
+.register-view {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
-  /* background: rgba(255, 255, 255, 0.95); */
-  /* backdrop-filter: blur(10px); */
+  background: var(--n-color-base);
+  padding: 2rem;
+}
+
+.register-container {
+  width: 100%;
+  max-width: 450px;
 }
 
 .register-card {
-  width: 100%;
-  max-width: 450px;
   padding: 2.5rem;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
 }
 
 .register-header {
@@ -221,15 +238,14 @@ const handleRegister = async () => {
 .register-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--n-text-color-base);
   margin-bottom: 0.5rem;
-  line-height: 1.2;
 }
 
 .register-subtitle {
-  color: #666;
+  color: var(--n-text-color-placeholder);
   font-size: 1rem;
-  line-height: 1.5;
+  margin: 0;
 }
 
 .register-form {
@@ -238,147 +254,95 @@ const handleRegister = async () => {
   gap: 1.5rem;
 }
 
-.form-row {
-  display: flex;
-  gap: 1rem;
+.terms-checkbox {
+  margin: 1rem 0;
 }
 
-.form-row .n-form-item {
-  flex: 1;
-}
-
-.error-message {
-  color: #e74c3c;
+.terms-text {
   font-size: 0.875rem;
-  margin-top: 0.5rem;
-  text-align: center;
+  color: var(--n-text-color-placeholder);
 }
 
-.register-button {
-  width: 100%;
-  height: 48px;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.form-options {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 1.5rem;
-  gap: 0.5rem;
-}
-
-.login-link {
-  color: #3b82f6;
+.terms-link {
+  color: var(--n-color-primary);
   text-decoration: none;
-  font-weight: 500;
-  transition: color 0.3s ease;
 }
 
-.login-link:hover {
-  color: #2563eb;
+.terms-link:hover {
   text-decoration: underline;
 }
 
-.social-register {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+.register-actions {
+  margin-top: 1.5rem;
 }
 
-.social-register-title {
-  text-align: center;
-  color: #666;
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
-}
-
-.social-buttons {
+.divider-container {
   display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
   gap: 1rem;
 }
 
-.social-button {
+.divider-line {
   flex: 1;
-  height: 44px;
+  height: 1px;
+  background: var(--n-border-color);
+}
+
+.divider-text {
+  color: var(--n-text-color-placeholder);
+  font-size: 0.875rem;
+}
+
+.google-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--n-border-color);
   border-radius: 8px;
+  background: var(--n-color-base);
+  color: var(--n-text-color-base);
   font-weight: 500;
-  transition: all 0.3s ease;
+  text-decoration: none;
+  transition: all 0.2s ease;
 }
 
-/* Dark Theme */
-[data-theme="dark"] .register-card,
-.dark .register-card {
-  background: rgba(30, 30, 30, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+.google-button:hover {
+  background: var(--n-color-hover);
+  border-color: var(--n-border-color-hover);
 }
 
-[data-theme="dark"] .register-title,
-.dark .register-title {
-  color: #ffffff;
+.login-link {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--n-text-color-placeholder);
+  font-size: 0.875rem;
 }
 
-[data-theme="dark"] .register-subtitle,
-.dark .register-subtitle {
-  color: #a1a1aa;
+.login-link a {
+  color: var(--n-color-primary);
+  text-decoration: none;
+  font-weight: 500;
 }
 
-[data-theme="dark"] .social-register,
-.dark .social-register {
-  border-top-color: #374151;
+.login-link a:hover {
+  text-decoration: underline;
 }
 
-[data-theme="dark"] .social-register-title,
-.dark .social-register-title {
-  color: #a1a1aa;
-}
-
-[data-theme="dark"] .login-link,
-.dark .login-link {
-  color: #60a5fa;
-}
-
-[data-theme="dark"] .login-link:hover,
-.dark .login-link:hover {
-  color: #93c5fd;
-}
-
-/* Responsive Design */
-@media (max-width: 480px) {
-  .register-container {
-    padding: 0.5rem;
+@media (max-width: 768px) {
+  .register-view {
+    padding: 1rem;
   }
-
+  
   .register-card {
-    padding: 2rem 1.5rem;
-    max-width: 100%;
+    padding: 2rem;
   }
-
+  
   .register-title {
     font-size: 1.75rem;
-  }
-
-  .form-row {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .social-buttons {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 360px) {
-  .register-card {
-    padding: 1.5rem 1rem;
-  }
-
-  .register-title {
-    font-size: 1.5rem;
   }
 }
 </style>

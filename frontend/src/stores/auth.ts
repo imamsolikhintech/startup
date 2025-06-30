@@ -331,8 +331,8 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       const response = await authService.updateProfile(profileData)
-
-      if (response.data) {
+      console.log(response?.data)
+      if (response?.data) {
         const apiUser = response.data
         const userData: User = {
           id: apiUser.id,
@@ -348,7 +348,7 @@ export const useAuthStore = defineStore('auth', () => {
         console.log('Profile updated successfully:', userData)
         return true
       } else {
-        throw new Error(response.message || 'Profile update failed')
+        throw new Error(response?.message || 'Profile update failed')
       }
     } catch (err: any) {
       console.error('Profile update error:', err)

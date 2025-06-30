@@ -1,130 +1,131 @@
 <template>
   <div class="dashboard-view">
     <!-- Welcome Section -->
-    <div class="welcome-section mb-6">
-      <n-card class="welcome-card">
-        <div class="welcome-content p-6">
-          <div class="welcome-grid">
-            <div class="welcome-text">
-              <h1 class="text-2xl font-bold mb-2">
-                Welcome back, {{ authStore.user?.name }}! 👋
-              </h1>
-              <p class="text-gray-600">
-                Here's what's happening with your dashboard today.
-              </p>
-            </div>
-            <div class="welcome-image text-center">
-              <img
-                src="https://images.pexels.com/photos/3184306/pexels-photo-3184306.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1"
-                alt="Dashboard illustration"
-                class="welcome-img"
-              />
-            </div>
-          </div>
+    <n-space vertical size="large">
+      <n-card class="welcome-card" size="large">
+        <div class="welcome-content">
+          <n-grid cols="1 s:2" responsive="screen" :x-gap="24" :y-gap="16">
+            <n-grid-item>
+              <div class="welcome-text">
+                <h1 class="welcome-title">
+                  Welcome back, {{ authStore.user?.name }}! 👋
+                </h1>
+                <p class="welcome-subtitle">
+                  Here's what's happening with your dashboard today.
+                </p>
+              </div>
+            </n-grid-item>
+            <n-grid-item>
+              <div class="welcome-image">
+                <img
+                  src="https://images.pexels.com/photos/3184306/pexels-photo-3184306.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&dpr=1"
+                  alt="Dashboard illustration"
+                  class="welcome-img"
+                />
+              </div>
+            </n-grid-item>
+          </n-grid>
         </div>
       </n-card>
-    </div>
 
-    <!-- Stats Cards -->
-    <div class="stats-grid mb-6">
-      <StatsCard
-        v-for="stat in stats"
-        :key="stat.title"
-        :title="stat.title"
-        :value="stat.value"
-        :icon="stat.icon"
-        :color="stat.color"
-        :trend="stat.trend"
-        :change="stat.change"
-      />
-    </div>
+      <!-- Stats Cards -->
+      <n-grid cols="1 s:2 m:4" responsive="screen" :x-gap="16" :y-gap="16">
+        <n-grid-item v-for="stat in stats" :key="stat.title">
+          <StatsCard
+            :title="stat.title"
+            :value="stat.value"
+            :icon="stat.icon"
+            :color="stat.color"
+            :trend="stat.trend"
+            :change="stat.change"
+          />
+        </n-grid-item>
+      </n-grid>
 
-    <!-- Charts Section -->
-    <div class="charts-section mb-6">
-      <div class="revenue-chart">
-        <n-card class="h-full">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <span class="text-lg font-semibold">Revenue Overview</span>
-              <n-button-group size="small">
-                <n-button :type="chartPeriod === 'week' ? 'primary' : 'default'" @click="chartPeriod = 'week'">Week</n-button>
-                <n-button :type="chartPeriod === 'month' ? 'primary' : 'default'" @click="chartPeriod = 'month'">Month</n-button>
-                <n-button :type="chartPeriod === 'year' ? 'primary' : 'default'" @click="chartPeriod = 'year'">Year</n-button>
-              </n-button-group>
+      <!-- Charts Section -->
+      <n-grid cols="1 m:3" responsive="screen" :x-gap="16" :y-gap="16">
+        <n-grid-item span="1 m:2">
+          <n-card class="chart-card">
+            <template #header>
+              <n-space justify="space-between" align="center">
+                <span class="chart-title">Revenue Overview</span>
+                <n-button-group size="small">
+                  <n-button :type="chartPeriod === 'week' ? 'primary' : 'default'" @click="chartPeriod = 'week'">Week</n-button>
+                  <n-button :type="chartPeriod === 'month' ? 'primary' : 'default'" @click="chartPeriod = 'month'">Month</n-button>
+                  <n-button :type="chartPeriod === 'year' ? 'primary' : 'default'" @click="chartPeriod = 'year'">Year</n-button>
+                </n-button-group>
+              </n-space>
+            </template>
+            <div class="chart-container">
+              <LineChart :data="chartData" :options="chartOptions" />
             </div>
-          </template>
-          <LineChart :data="chartData" :options="chartOptions" />
-        </n-card>
-      </div>
-      
-      <div class="traffic-chart">
-        <n-card class="h-full">
-          <template #header>
-            <span class="text-lg font-semibold">Traffic Sources</span>
-          </template>
-          <DoughnutChart :data="doughnutData" :options="doughnutOptions" />
-        </n-card>
-      </div>
-    </div>
+          </n-card>
+        </n-grid-item>
+        
+        <n-grid-item>
+          <n-card class="chart-card">
+            <template #header>
+              <span class="chart-title">Traffic Sources</span>
+            </template>
+            <div class="chart-container">
+              <DoughnutChart :data="doughnutData" :options="doughnutOptions" />
+            </div>
+          </n-card>
+        </n-grid-item>
+      </n-grid>
 
-    <!-- Recent Activity & Quick Actions -->
-    <div class="bottom-section">
-      <div class="activity-section">
-        <n-card>
-          <template #header>
-            <span class="text-lg font-semibold">Recent Activity</span>
-          </template>
-          <div class="activity-list">
-            <div
-              v-for="activity in recentActivities"
-              :key="activity.id"
-              class="activity-item flex items-center py-3 border-b border-gray-100 last:border-b-0"
-            >
-              <n-avatar
-                :src="activity.avatar"
-                size="medium"
-                class="mr-3"
-              />
-              <div class="flex-1">
-                <div class="text-sm font-medium">{{ activity.title }}</div>
-                <div class="text-xs text-gray-500">{{ activity.description }}</div>
-              </div>
-              <n-tag
-                :type="activity.status === 'completed' ? 'success' : 'warning'"
-                size="small"
+      <!-- Recent Activity & Quick Actions -->
+      <n-grid cols="1 m:3" responsive="screen" :x-gap="16" :y-gap="16">
+        <n-grid-item span="1 m:2">
+          <n-card>
+            <template #header>
+              <span class="section-title">Recent Activity</span>
+            </template>
+            <n-list>
+              <n-list-item v-for="activity in recentActivities" :key="activity.id">
+                <n-space align="center">
+                  <n-avatar :src="activity.avatar" size="medium" />
+                  <div class="activity-content">
+                    <div class="activity-title">{{ activity.title }}</div>
+                    <div class="activity-description">{{ activity.description }}</div>
+                  </div>
+                  <n-tag
+                    :type="activity.status === 'completed' ? 'success' : 'warning'"
+                    size="small"
+                  >
+                    {{ activity.status }}
+                  </n-tag>
+                </n-space>
+              </n-list-item>
+            </n-list>
+          </n-card>
+        </n-grid-item>
+
+        <n-grid-item>
+          <n-card>
+            <template #header>
+              <span class="section-title">Quick Actions</span>
+            </template>
+            <n-space vertical>
+              <n-button
+                v-for="action in quickActions"
+                :key="action.title"
+                :type="getActionType(action.color)"
+                block
+                @click="handleQuickAction(action.action)"
               >
-                {{ activity.status }}
-              </n-tag>
-            </div>
-          </div>
-        </n-card>
-      </div>
-
-      <div class="actions-section">
-        <n-card>
-          <template #header>
-            <span class="text-lg font-semibold">Quick Actions</span>
-          </template>
-          <div class="actions-list">
-            <n-button
-              v-for="action in quickActions"
-              :key="action.title"
-              :type="getActionType(action.color)"
-              block
-              class="action-btn mb-3"
-              @click="handleQuickAction(action.action)"
-            >
-              <template #icon>
-                <n-icon>
-                  <component :is="getActionIcon(action.icon)" />
-                </n-icon>
-              </template>
-              {{ action.title }}
-            </n-button>
-          </div>
-        </n-card>
-      </div>
-    </div>
+                <template #icon>
+                  <n-icon>
+                    <component :is="getActionIcon(action.icon)" />
+                  </n-icon>
+                </template>
+                {{ action.title }}
+              </n-button>
+            </n-space>
+          </n-card>
+        </n-grid-item>
+      </n-grid>
+    </n-space>
   </div>
 </template>
 
@@ -136,7 +137,7 @@ import { useChatStore } from '@/stores/chat'
 import StatsCard from '@/components/dashboard/StatsCard.vue'
 import LineChart from '@/components/charts/LineChart.vue'
 import DoughnutChart from '@/components/charts/DoughnutChart.vue'
-import { NIcon } from 'naive-ui'
+import { NIcon, NCard, NSpace, NGrid, NGridItem, NButtonGroup, NButton, NList, NListItem, NAvatar, NTag } from 'naive-ui'
 import {
   PersonAdd as PersonAddIcon,
   DocumentText as DocumentTextIcon,
@@ -358,42 +359,36 @@ onMounted(() => {
 
 <style scoped>
 .dashboard-view {
-  padding: 20px;
-  /* max-width: 1200px; */
+  padding: 1.5rem;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
 /* Welcome Section */
-.welcome-section {
-  margin-bottom: 24px;
-}
-
 .welcome-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--n-color-primary) 0%, var(--n-color-primary-hover) 100%);
   color: white;
 }
 
 .welcome-content {
-  padding: 24px;
+  padding: 2rem;
 }
 
-.welcome-grid {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 24px;
-  align-items: center;
-}
-
-.welcome-text h1 {
-  font-size: 1.875rem;
+.welcome-title {
+  font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
   color: white;
 }
 
-.welcome-text p {
+.welcome-subtitle {
   color: rgba(255, 255, 255, 0.9);
-  font-size: 1rem;
+  font-size: 1.125rem;
+  margin: 0;
+}
+
+.welcome-image {
+  text-align: center;
 }
 
 .welcome-img {
@@ -402,223 +397,90 @@ onMounted(() => {
   border-radius: 8px;
 }
 
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
 /* Charts Section */
-.charts-section {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
+.chart-card {
+  height: 400px;
 }
 
-.revenue-chart,
-.traffic-chart {
-  min-height: 400px;
+.chart-container {
+  height: 320px;
 }
 
-/* Bottom Section */
-.bottom-section {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 16px;
-}
-
-.activity-section,
-.actions-section {
-  min-height: 400px;
-}
-
-/* Activity List */
-.activity-list {
-  padding: 16px;
-}
-
-.activity-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.activity-item:last-child {
-  border-bottom: none;
-}
-
-.activity-item .flex-1 {
-  flex: 1;
-  margin-left: 12px;
-}
-
-.activity-item .text-sm {
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.activity-item .text-xs {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin-top: 2px;
-}
-
-/* Actions List */
-.actions-list {
-  padding: 16px;
-}
-
-.action-btn {
-  margin-bottom: 12px;
-  justify-content: flex-start;
-}
-
-.action-btn:last-child {
-  margin-bottom: 0;
-}
-
-/* Utility Classes */
-.mb-6 {
-  margin-bottom: 24px;
-}
-
-.mb-3 {
-  margin-bottom: 12px;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.text-2xl {
-  font-size: 1.5rem;
-}
-
-.text-lg {
+.chart-title {
   font-size: 1.125rem;
-}
-
-.text-sm {
-  font-size: 0.875rem;
-}
-
-.text-xs {
-  font-size: 0.75rem;
-}
-
-.font-bold {
-  font-weight: 700;
-}
-
-.font-semibold {
   font-weight: 600;
+  color: var(--n-text-color-base);
 }
 
-.font-medium {
-  font-weight: 500;
+/* Activity Section */
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--n-text-color-base);
 }
 
-.text-gray-600 {
-  color: #6b7280;
-}
-
-.text-gray-500 {
-  color: #9ca3af;
-}
-
-.flex {
-  display: flex;
-}
-
-.flex-1 {
+.activity-content {
   flex: 1;
 }
 
-.items-center {
-  align-items: center;
+.activity-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--n-text-color-base);
+  margin-bottom: 0.25rem;
 }
 
-.justify-between {
-  justify-content: space-between;
-}
-
-.h-full {
-  height: 100%;
-}
-
-.p-6 {
-  padding: 24px;
-}
-
-.py-3 {
-  padding-top: 12px;
-  padding-bottom: 12px;
-}
-
-.mr-3 {
-  margin-right: 12px;
-}
-
-.border-b {
-  border-bottom-width: 1px;
-}
-
-.border-gray-100 {
-  border-color: #f3f4f6;
-}
-
-.last\:border-b-0:last-child {
-  border-bottom-width: 0;
+.activity-description {
+  font-size: 0.75rem;
+  color: var(--n-text-color-placeholder);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .dashboard-view {
-    padding: 16px;
+    padding: 1rem;
   }
   
-  .welcome-grid {
-    grid-template-columns: 1fr;
-    text-align: center;
+  .welcome-content {
+    padding: 1.5rem;
   }
   
   .welcome-img {
     max-width: 150px;
   }
   
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .charts-section {
-    grid-template-columns: 1fr;
-  }
-  
-  .bottom-section {
-    grid-template-columns: 1fr;
-  }
-  
-  .welcome-text h1 {
+  .welcome-title {
     font-size: 1.5rem;
+  }
+  
+  .welcome-subtitle {
+    font-size: 1rem;
+  }
+  
+  .chart-card {
+    height: 300px;
+  }
+  
+  .chart-container {
+    height: 220px;
   }
 }
 
 @media (max-width: 480px) {
   .dashboard-view {
-    padding: 12px;
+    padding: 0.75rem;
   }
   
   .welcome-content {
-    padding: 16px;
+    padding: 1rem;
   }
   
-  .activity-list,
-  .actions-list {
-    padding: 12px;
+  .welcome-title {
+    font-size: 1.25rem;
+  }
+  
+  .welcome-subtitle {
+    font-size: 0.875rem;
   }
 }
 </style>
