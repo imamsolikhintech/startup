@@ -146,8 +146,8 @@ Modifiers:
 
 #### Dependencies
 
-- `@/services/icons/iconService` - Icon management
-- `@/services/formatting/numberFormatter` - Number formatting
+- `@/utils/iconService` - Icon management
+- `@/utils/numberFormatter` - Number formatting
 - `@/assets/styles/components/stats-card.css` - Component styles
 
 ## Installation

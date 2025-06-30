@@ -95,8 +95,8 @@
 
 <script setup lang="ts">
 import { computed, type PropType } from 'vue'
-import { useIconService } from '@/services/icons/iconService'
-import { useNumberFormatter } from '@/services/formatting/numberFormatter'
+import { useIconService } from '@/utils/iconService'
+import { useNumberFormatter } from '@/utils/numberFormatter'
 
 // Types
 export interface StatItem {

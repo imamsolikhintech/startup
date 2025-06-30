@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { useIconService } from '@/services/icons/iconService'
+import { useIconService } from '@/utils/iconService'
 
 interface Action {
   key: string
