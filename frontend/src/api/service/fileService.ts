@@ -1,14 +1,12 @@
-import { BaseApiService } from './BaseApiService'
+import { ApiRequest } from '../request/ApiRequest'
 import type { ApiClient } from '../endpoint/axios'
 import type {
   ApiResponse,
   PaginatedResponse,
   FileItem,
-  FileMetadata,
   UploadOptions,
   FileFilters,
   FileStats,
-  BulkFileOperation,
   FileUploadProgress,
   FolderItem
 } from '../types'
@@ -19,7 +17,7 @@ import type {
  * Handles all file-related API operations including
  * upload, download, management, and organization.
  */
-export class FileService extends BaseApiService {
+export class FileService extends ApiRequest {
   constructor(apiClient: ApiClient) {
     super(apiClient, '/files')
   }

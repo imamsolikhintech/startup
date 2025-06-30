@@ -1,4 +1,11 @@
-// Common API Types
+// ============================================================================
+// CORE API TYPES
+// ============================================================================
+
+/**
+ * Standard API response wrapper
+ * @template T - The type of data being returned
+ */
 export interface ApiResponse<T = any> {
   success: boolean
   message: string
@@ -11,6 +18,10 @@ export interface ApiResponse<T = any> {
   }
 }
 
+/**
+ * Paginated response structure
+ * @template T - The type of items in the data array
+ */
 export interface PaginatedResponse<T = any> {
   data: T[]
   pagination: {
@@ -23,6 +34,9 @@ export interface PaginatedResponse<T = any> {
   }
 }
 
+/**
+ * Error response structure
+ */
 export interface ErrorResponse {
   success: false
   message: string
@@ -31,13 +45,51 @@ export interface ErrorResponse {
   details?: Record<string, any>
 }
 
-// Authentication Types
+/**
+ * Base entity interface with common fields
+ */
+export interface BaseEntity {
+  id: string
+  createdAt: string
+  updatedAt: string
+}
+
+/**
+ * Pagination parameters
+ */
+export interface PaginationParams {
+  page?: number
+  limit?: number
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+}
+
+/**
+ * Common filter interface
+ */
+export interface BaseFilters extends PaginationParams {
+  search?: string
+  status?: string
+  createdAfter?: string
+  createdBefore?: string
+}
+
+// ============================================================================
+// AUTHENTICATION & USER TYPES
+// ============================================================================
+
+/**
+ * Login credentials interface
+ */
 export interface LoginCredentials {
   email: string
   password: string
   rememberMe?: boolean
 }
 
+/**
+ * User registration data
+ */
 export interface RegisterData {
   email: string
   password: string
@@ -47,8 +99,27 @@ export interface RegisterData {
   acceptTerms: boolean
 }
 
-export interface User {
-  id: string
+/**
+ * Authentication tokens
+ */
+export interface AuthTokens {
+  accessToken: string
+  refreshToken: string
+  expiresIn: number
+}
+
+/**
+ * Login response
+ */
+export interface LoginResponse {
+  user: User
+  tokens: AuthTokens
+}
+
+/**
+ * User entity with all properties
+ */
+export interface User extends BaseEntity {
   name: string
   email: string
   firstName: string
@@ -59,8 +130,6 @@ export interface User {
   isEmailVerified: boolean
   isActive: boolean
   lastLoginAt?: string
-  createdAt: string
-  updatedAt: string
   permissions?: string[]
   preferences?: UserPreferences
 }
@@ -81,6 +150,9 @@ export interface UserPreferences {
   }
 }
 
+/**
+ * Data for creating a new user
+ */
 export interface CreateUserData {
   email: string
   firstName: string
@@ -90,6 +162,9 @@ export interface CreateUserData {
   sendInvitation?: boolean
 }
 
+/**
+ * Data for updating an existing user
+ */
 export interface UpdateUserData {
   firstName?: string
   lastName?: string
@@ -98,15 +173,18 @@ export interface UpdateUserData {
   avatar?: string
 }
 
-export interface UserFilters {
+/**
+ * User filters for search and pagination
+ */
+export interface UserFilters extends BaseFilters {
   role?: string
   isActive?: boolean
   isEmailVerified?: boolean
-  search?: string
-  createdAfter?: string
-  createdBefore?: string
 }
 
+/**
+ * User statistics
+ */
 export interface UserStats {
   total: number
   active: number
@@ -117,37 +195,38 @@ export interface UserStats {
   recentRegistrations: number
 }
 
-export interface BulkUserOperation {
-  userIds: string[]
-  operation: 'activate' | 'deactivate' | 'delete' | 'verify'
-  data?: any
-}
-
-export interface AuthTokens {
-  accessToken: string
-  refreshToken: string
-  expiresIn: number
-}
-
-export interface LoginResponse {
-  user: User
-  tokens: AuthTokens
-}
-
+/**
+ * Password reset data
+ */
 export interface ResetPasswordData {
   email: string
 }
 
+/**
+ * Change password data
+ */
 export interface ChangePasswordData {
   currentPassword: string
   newPassword: string
   confirmPassword: string
 }
 
+/**
+ * Update profile data
+ */
 export interface UpdateProfileData {
   firstName?: string
   lastName?: string
   avatar?: string
+}
+
+/**
+ * Bulk user operation data
+ */
+export interface BulkUserOperation {
+  userIds: string[]
+  operation: 'activate' | 'deactivate' | 'delete' | 'verify'
+  data?: any
 }
 
 export interface UserRole {

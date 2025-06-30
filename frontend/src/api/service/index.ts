@@ -1,7 +1,11 @@
-import { ApiClient } from '../endpoint/axios'
+// ============================================================================
+// SERVICE LAYER - CENTRALIZED API SERVICE MANAGEMENT
+// ============================================================================
+
 import { AuthService } from './authService'
 import { FileService } from './fileService'
 import { UserService } from './userService'
+import { ApiClient } from '../endpoint/axios'
 import {
   BaseAuth,
   BaseFile,
@@ -15,21 +19,61 @@ import {
   BaseFinance
 } from '../endpoint/base'
 
-// Create service instances
-export const authService = new AuthService(new ApiClient(BaseAuth() || 'http://localhost:8080'))
-export const userService = new UserService(new ApiClient(BaseAuth() || 'http://localhost:8080'))
-export const fileService = new FileService(new ApiClient(BaseFile() || 'http://localhost:8081/api/file'))
-export const providerService = new ApiClient(BaseProvider() || 'http://localhost:8082/api/provider')
-export const managementService = new ApiClient(BaseManagement() || 'http://localhost:8083/api/management')
-export const masterService = new ApiClient(BaseMaster() || 'http://localhost:8084/api/master')
-export const clinicService = new ApiClient(BaseClinic() || 'http://localhost:8085/api/clinic')
-export const purchaseService = new ApiClient(BasePurchase() || 'http://localhost:8086/api/purchase')
-export const salesService = new ApiClient(BaseSales() || 'http://localhost:8087/api/sales')
-export const warehouseService = new ApiClient(BaseWarehouse() || 'http://localhost:8088/api/warehouse')
-export const financeService = new ApiClient(BaseFinance() || 'http://localhost:8089/api/finance')
+// ============================================================================
+// SERVICE FACTORY
+// ============================================================================
 
-// Export all services as default
-export default {
+/**
+ * Creates an API client instance with proper configuration
+ */
+const createApiClient = (baseUrl: string): ApiClient => {
+  return new ApiClient(baseUrl)
+}
+
+/**
+ * Default service URLs with fallbacks
+ */
+const SERVICE_URLS = {
+  auth: BaseAuth() || 'http://localhost:8080',
+  file: BaseFile() || 'http://localhost:8081/api/file',
+  provider: BaseProvider() || 'http://localhost:8082/api/provider',
+  management: BaseManagement() || 'http://localhost:8083/api/management',
+  master: BaseMaster() || 'http://localhost:8084/api/master',
+  clinic: BaseClinic() || 'http://localhost:8085/api/clinic',
+  purchase: BasePurchase() || 'http://localhost:8086/api/purchase',
+  sales: BaseSales() || 'http://localhost:8087/api/sales',
+  warehouse: BaseWarehouse() || 'http://localhost:8088/api/warehouse',
+  finance: BaseFinance() || 'http://localhost:8089/api/finance'
+} as const
+
+// ============================================================================
+// SERVICE INSTANCES
+// ============================================================================
+
+// Core services with proper typing
+export const authService = new AuthService(createApiClient(SERVICE_URLS.auth))
+export const userService = new UserService(createApiClient(SERVICE_URLS.auth))
+export const fileService = new FileService(createApiClient(SERVICE_URLS.file))
+
+// Domain-specific API clients
+export const providerService = createApiClient(SERVICE_URLS.provider)
+export const managementService = createApiClient(SERVICE_URLS.management)
+export const masterService = createApiClient(SERVICE_URLS.master)
+export const clinicService = createApiClient(SERVICE_URLS.clinic)
+export const purchaseService = createApiClient(SERVICE_URLS.purchase)
+export const salesService = createApiClient(SERVICE_URLS.sales)
+export const warehouseService = createApiClient(SERVICE_URLS.warehouse)
+export const financeService = createApiClient(SERVICE_URLS.finance)
+
+// ============================================================================
+// SERVICE REGISTRY
+// ============================================================================
+
+/**
+ * Centralized service registry for easy access
+ * Provides a single point of access to all API services
+ */
+export const serviceRegistry = {
   auth: authService,
   user: userService,
   file: fileService,
@@ -41,68 +85,37 @@ export default {
   sales: salesService,
   warehouse: warehouseService,
   finance: financeService
-}
+} as const
 
-// Types for common API responses
-export interface ApiResponse<T = any> {
-  success: boolean
-  message: string
-  data: T
-  errors?: string[]
-}
+/**
+ * Default export for backward compatibility
+ */
+export default serviceRegistry
 
-export interface PaginatedResponse<T = any> {
-  data: T[]
-  pagination: {
-    page: number
-    limit: number
-    total: number
-    totalPages: number
-    hasNext: boolean
-    hasPrev: boolean
-  }
-}
+// ============================================================================
+// RE-EXPORTS
+// ============================================================================
 
-export interface LoginRequest {
-  email: string
-  password: string
-}
+// Export base service class for extending
+export { ApiRequest } from '../request/ApiRequest'
 
-export interface LoginResponse {
-  token: string
-  refreshToken: string
-  user: {
-    id: string
-    email: string
-    name: string
-    role: string
-    avatar?: string
-  }
-}
+// Export individual service classes
+export { AuthService } from './authService'
+export { UserService } from './userService'
+export { FileService } from './fileService'
 
-export interface RegisterRequest {
-  name: string
-  email: string
-  password: string
-  confirmPassword: string
-}
-
-export interface User {
-  id: string
-  name: string
-  email: string
-  role: string
-  avatar?: string
-  createdAt: string
-  updatedAt: string
-}
-
-export interface FileUploadResponse {
-  id: string
-  filename: string
-  originalName: string
-  mimeType: string
-  size: number
-  url: string
-  uploadedAt: string
-}
+// Export types from centralized types file
+export type {
+  ApiResponse,
+  PaginatedResponse,
+  ErrorResponse,
+  LoginCredentials,
+  LoginResponse,
+  RegisterData,
+  User,
+  UserFilters,
+  UserStats,
+  CreateUserData,
+  UpdateUserData,
+  AuthTokens
+} from '../types'

@@ -108,6 +108,7 @@ const processGoogleCallback = async () => {
     
     authStore.loading = false
     authStore.error = error.value
+    redirectToLogin();
   }
 }
 

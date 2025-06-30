@@ -1,13 +1,7 @@
 <template>
   <n-card class="data-table-card">
-    <n-data-table
-      :columns="tableColumns"
-      :data="filteredItems"
-      :loading="loading"
-      :pagination="paginationConfig"
-      :row-key="rowKeyFunction"
-      striped
-    />
+    <n-data-table :columns="tableColumns" :data="filteredItems" :loading="loading" :pagination="paginationConfig"
+      :row-key="rowKeyFunction" striped />
   </n-card>
 </template>
 
@@ -59,10 +53,10 @@ const rowKeyFunction = (row: any) => row[props.itemValue]
 // Computed properties
 const filteredItems = computed(() => {
   if (!props.search) return props.items
-  
+
   const searchLower = props.search.toLowerCase()
   return props.items.filter(item => {
-    return Object.values(item).some(value => 
+    return Object.values(item).some(value =>
       String(value).toLowerCase().includes(searchLower)
     )
   })
@@ -84,35 +78,35 @@ const tableColumns = computed((): DataTableColumns => {
           fallbackSrc: '/default-avatar.png'
         })
       }
-      
+
       if (header.key === 'active') {
         return h(NTag, {
           type: row.active ? 'success' : 'error',
           size: 'small'
         }, () => row.active ? 'Active' : 'Inactive')
       }
-      
+
       if (header.key === 'verified') {
         return h(NTag, {
           type: row.verified ? 'success' : 'warning',
           size: 'small'
         }, () => row.verified ? 'Verified' : 'Pending')
       }
-      
+
       if (header.key === 'role') {
         return h(NTag, {
-          type: getRoleTagType(row.role),
+          type: getRoleTagType(row.role) as 'default' | 'success' | 'error' | 'warning' | 'primary' | 'info',
           size: 'small'
         }, () => row.role)
       }
-      
+
       if (header.key === 'last_login') {
         return formatDate(row.last_login)
       }
-      
+
       if (header.key === 'actions' && props.actions.length > 0) {
-        return h('div', { class: 'action-buttons' }, 
-          props.actions.map(action => 
+        return h('div', { class: 'action-buttons' },
+          props.actions.map(action =>
             h(NButton, {
               size: 'small',
               type: getButtonType(action.color),
@@ -124,14 +118,13 @@ const tableColumns = computed((): DataTableColumns => {
           )
         )
       }
-      
+
       return row[header.key]
     }
   }))
-  
+
   return columns
 })
-
 const paginationConfig = computed(() => ({
   pageSize: props.itemsPerPage,
   showSizePicker: true,
@@ -170,9 +163,9 @@ const getIconComponent = (iconName: string) => {
     'mdi-key-outline': 'M21,18H15V15H13.3C12.2,17.4 9.7,19 7,19C3.1,19 0,15.9 0,12C0,8.1 3.1,5 7,5C9.7,5 12.2,6.6 13.3,9H24V15H21V18M19,16V13H17V16H19M7,7C4.2,7 2,9.2 2,12C2,14.8 4.2,17 7,17C9.8,17 12,14.8 12,12C12,9.2 9.8,7 7,7M7,15C5.3,15 4,13.7 4,12C4,10.3 5.3,9 7,9C8.7,9 10,10.3 10,12C10,13.7 8.7,15 7,15M7,11C6.4,11 6,11.4 6,12C6,12.6 6.4,13 7,13C7.6,13 8,12.6 8,12C8,11.4 7.6,11 7,11Z',
     'mdi-dots-vertical': 'M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z'
   }
-  
+
   const path = iconMap[iconName] || iconMap['mdi-dots-vertical']
-  
+
   return h('svg', {
     viewBox: '0 0 24 24',
     fill: 'currentColor',
@@ -224,6 +217,7 @@ const formatDate = (date: string | Date) => {
   border-bottom: 1px solid var(--n-border-color);
   white-space: nowrap;
 }
+
 :deep(.n-data-table-th) {
   border-bottom: 1px solid var(--n-border-color);
   white-space: nowrap;
@@ -258,7 +252,7 @@ const formatDate = (date: string | Date) => {
     --n-th-padding: 8px 12px;
     --n-td-padding: 8px 12px;
   }
-  
+
   .action-buttons {
     gap: 2px;
   }

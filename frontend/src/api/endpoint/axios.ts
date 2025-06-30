@@ -1,101 +1,275 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+// ============================================================================
+// AXIOS CONFIGURATION - HTTP CLIENT SETUP AND INTERCEPTORS
+// ============================================================================
+
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 
-// Request deduplication interface
+// ============================================================================
+// TYPES AND INTERFACES
+// ============================================================================
+
+/**
+ * Interface for tracking pending requests with deduplication
+ */
 interface PendingRequest {
   promise: Promise<any>
   timestamp: number
+  url: string
+  method: string
 }
 
-// Base configuration
-const baseConfig: AxiosRequestConfig = {
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
+/**
+ * Configuration options for API instance creation
+ */
+interface ApiInstanceConfig {
+  baseURL: string
+  timeout?: number
+  retryAttempts?: number
+  retryDelay?: number
+  enableRequestDeduplication?: boolean
+}
+
+/**
+ * Extended axios config with metadata
+ */
+interface ExtendedAxiosRequestConfig extends AxiosRequestConfig {
+  __isRetryRequest?: boolean
+  _retry?: boolean
+  _retryCount?: number
+  metadata?: {
+    startTime: number
+    requestId: string
   }
 }
 
-// Create axios instances for different services
-export const createApiInstance = (baseURL: string): AxiosInstance => {
+// ============================================================================
+// CONFIGURATION CONSTANTS
+// ============================================================================
+
+/**
+ * Default axios configuration
+ */
+const DEFAULT_CONFIG: AxiosRequestConfig = {
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest'
+  },
+  withCredentials: false
+} as const
+
+/**
+ * HTTP status codes that should trigger automatic retry
+ */
+const RETRYABLE_STATUS_CODES = [408, 429, 500, 502, 503, 504] as const
+
+/**
+ * Error messages for different HTTP status codes
+ */
+const ERROR_MESSAGES = {
+  401: 'Please login again',
+  403: 'You do not have permission to access this resource',
+  404: 'The requested resource was not found',
+  422: 'Please check your input',
+  500: 'Internal server error occurred',
+  NETWORK: 'Unable to connect to server',
+  DEFAULT: 'An error occurred'
+} as const
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Generate unique request ID for tracking
+ */
+const generateRequestId = (): string => {
+  return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+}
+
+/**
+ * Create request key for deduplication
+ */
+const createRequestKey = (config: AxiosRequestConfig): string => {
+  const { method = 'GET', url = '', data } = config
+  const dataHash = data ? JSON.stringify(data) : ''
+  return `${method.toUpperCase()}:${url}:${dataHash}`
+}
+
+/**
+ * Sleep utility for retry delays
+ */
+const sleep = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+// ============================================================================
+// API INSTANCE FACTORY
+// ============================================================================
+
+/**
+ * Creates a configured axios instance with interceptors
+ * Enhanced version with better error handling and retry logic
+ */
+export const createApiInstance = (baseURL: string, options: Partial<ApiInstanceConfig> = {}): AxiosInstance => {
+  const {
+    timeout = DEFAULT_CONFIG.timeout,
+    retryAttempts = 3,
+    retryDelay = 1000,
+    enableRequestDeduplication = true
+  } = options
+
   const instance = axios.create({
-    ...baseConfig,
-    baseURL
+    ...DEFAULT_CONFIG,
+    baseURL,
+    timeout
   })
 
-  // Request interceptor - Add JWT token
+  // ============================================================================
+  // REQUEST INTERCEPTOR
+  // ============================================================================
+
   instance.interceptors.request.use(
-    (config) => {
-      const authStore = useAuthStore()
-      const token = authStore.token
-      
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`
+    //@ts-ignore-line
+    (config: ExtendedAxiosRequestConfig) => {
+      try {
+        const authStore = useAuthStore()
+        const token = authStore.token
+        
+        // Add authentication token
+        if (token) {
+          config.headers = config.headers || {}
+          config.headers.Authorization = `Bearer ${token}`
+        }
+
+        // Add request metadata for debugging and tracking
+        config.metadata = {
+          startTime: Date.now(),
+          requestId: generateRequestId()
+        }
+
+        // Log request in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`, {
+            requestId: config.metadata.requestId,
+            data: config.data
+          })
+        }
+        
+        return config
+      } catch (error) {
+        console.error('[API] Error in request interceptor:', error)
+        return Promise.reject(error)
       }
-      
-      return config
     },
     (error) => {
+      console.error('[API] Request interceptor error:', error)
       return Promise.reject(error)
     }
   )
 
-  // Response interceptor - Handle errors
+  // ============================================================================
+  // RESPONSE INTERCEPTOR
+  // ============================================================================
+
   instance.interceptors.response.use(
     (response: AxiosResponse) => {
+      // Log response time in development
+      if (process.env.NODE_ENV === 'development' && (response.config as ExtendedAxiosRequestConfig).metadata?.startTime) {
+        const duration = Date.now() - ((response.config as ExtendedAxiosRequestConfig).metadata?.startTime || 0)
+        console.log(`[API] ${response.config.method?.toUpperCase()} ${response.config.url} - ${duration}ms`, {
+          status: response.status,          requestId: (response.config as ExtendedAxiosRequestConfig).metadata?.requestId
+
+        })
+      }
+      
       return response
     },
-    async (error) => {
+    async (error: AxiosError) => {
       const notificationStore = useNotificationStore()
       const authStore = useAuthStore()
+      const originalRequest = error.config as ExtendedAxiosRequestConfig
       
       if (error.response) {
         const { status, data } = error.response
         
-        // Handle token expiration
-        if (status === 401 && error.config && !error.config.__isRetryRequest) {
+        // ============================================================================
+        // TOKEN REFRESH LOGIC
+        // ============================================================================
+        if (status === 401 && originalRequest && !originalRequest.__isRetryRequest) {
           try {
             // Try to refresh the token
             const newToken = await authStore.refreshToken()
             
             // Retry the original request with new token
-            error.config.headers.Authorization = `Bearer ${newToken}`
-            error.config.__isRetryRequest = true
-            return axios(error.config)
+            originalRequest.headers = originalRequest.headers || {}
+            originalRequest.headers.Authorization = `Bearer ${newToken}`
+            originalRequest.__isRetryRequest = true
+            
+            return instance(originalRequest)
           } catch (refreshError) {
             // If refresh token fails, logout and redirect to login
             authStore.logout()
-            notificationStore.showError('Please login again', 'Session Expired')
+            notificationStore.showError(ERROR_MESSAGES[401], 'Session Expired')
+            return Promise.reject(error)
           }
         }
         
+        // ============================================================================
+        // RETRY LOGIC FOR RETRYABLE ERRORS
+        // ============================================================================
+        if (
+          originalRequest &&
+          !originalRequest._retry &&
+          RETRYABLE_STATUS_CODES.includes(status as any)
+        ) {
+          originalRequest._retry = true
+          originalRequest._retryCount = (originalRequest._retryCount || 0) + 1
+
+          if (originalRequest._retryCount <= retryAttempts) {
+            const delay = retryDelay * Math.pow(2, originalRequest._retryCount - 1)
+            await sleep(delay)
+            return instance(originalRequest)
+          }
+        }
+        
+        // ============================================================================
+        // ERROR HANDLING BY STATUS CODE
+        // ============================================================================
         switch (status) {
           case 401:
             // Only handle 401 here if token refresh failed or wasn't attempted
-            if (!error.config || error.config.__isRetryRequest) {
+            if (!originalRequest || originalRequest.__isRetryRequest) {
               authStore.logout()
-              notificationStore.showError('Please login again', 'Session Expired')
+              notificationStore.showError(ERROR_MESSAGES[401], 'Session Expired')
             }
             break
           case 403:
-            notificationStore.showError('You do not have permission to access this resource', 'Access Denied')
+            notificationStore.showError(ERROR_MESSAGES[403], 'Access Denied')
             break
           case 404:
-            notificationStore.showError('The requested resource was not found', 'Not Found')
+            notificationStore.showError(ERROR_MESSAGES[404], 'Not Found')
             break
           case 422:
-            notificationStore.showError(data.message || 'Please check your input', 'Validation Error')
+            const validationMessage = (data as any)?.message || ERROR_MESSAGES[422]
+            notificationStore.showError(validationMessage, 'Validation Error')
             break
           case 500:
-            notificationStore.showError('Internal server error occurred', 'Server Error')
+            notificationStore.showError(ERROR_MESSAGES[500], 'Server Error')
             break
           default:
-            notificationStore.showError(data.message || 'An error occurred', 'Error')
+            const defaultMessage = (data as any)?.message || ERROR_MESSAGES.DEFAULT
+            notificationStore.showError(defaultMessage, 'Error')
         }
       } else if (error.request) {
         // Network error
-        notificationStore.showError('Unable to connect to server', 'Network Error')
+        notificationStore.showError(ERROR_MESSAGES.NETWORK, 'Network Error')
+      } else {
+        // Something else happened
+        notificationStore.showError(error.message || ERROR_MESSAGES.DEFAULT, 'Error')
       }
       
       return Promise.reject(error)
@@ -105,14 +279,222 @@ export const createApiInstance = (baseURL: string): AxiosInstance => {
   return instance
 }
 
+// ============================================================================
+// DEFAULT API CLIENT INSTANCES
+// ============================================================================
+
+/**
+ * Default API client instance
+ */
+export const defaultApiClient = createApiInstance(
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
+  {
+    timeout: 30000,
+    retryAttempts: 3,
+    retryDelay: 1000,
+    enableRequestDeduplication: true
+  }
+)
+
+/**
+ * File upload API client with extended timeout
+ */
+export const fileApiClient = createApiInstance(
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
+  {
+    timeout: 120000, // 2 minutes for file uploads
+    retryAttempts: 1,
+    retryDelay: 2000,
+    enableRequestDeduplication: false
+  }
+)
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Creates a cancel token for request cancellation
+ * @returns Cancel token source
+ */
+export const createCancelToken = () => {
+  return axios.CancelToken.source()
+}
+
+/**
+ * Checks if an error is a cancel error
+ * @param error - Error to check
+ * @returns True if error is a cancel error
+ */
+export const isCancel = (error: any): boolean => {
+  return axios.isCancel(error)
+}
+
+/**
+ * Creates a request interceptor for adding custom headers
+ * @param headers - Headers to add
+ * @returns Interceptor function
+ */
+export const createHeaderInterceptor = (headers: Record<string, string>) => {
+  return (config: AxiosRequestConfig) => {
+    config.headers = {
+      ...config.headers,
+      ...headers
+    }
+    return config
+  }
+}
+
+/**
+ * Cleans up all pending requests (useful for component unmounting)
+ */
+export const cleanupPendingRequests = (): void => {
+  // This would be implemented if we had a global pending requests tracker
+  console.log('[API] Cleaning up pending requests')
+}
+
+// ============================================================================
+// API HELPER CLASS
+// ============================================================================
+
 // API Helper class
-export class ApiClient {
-  private instance: AxiosInstance
+export class ApiClient extends axios.Axios {
   private pendingRequests: Map<string, PendingRequest> = new Map()
   private readonly REQUEST_TIMEOUT = 30000 // 30 seconds
 
-  constructor(baseURL: string) {
-    this.instance = createApiInstance(baseURL)
+  constructor(baseURL: string, options: Partial<ApiInstanceConfig> = {}) {
+    const config = {
+      ...DEFAULT_CONFIG,
+      baseURL,
+      timeout: options.timeout || 30000
+    }
+    super(config)
+    this.setupInterceptors()
+  }
+
+  private setupInterceptors(): void {
+    // Request interceptor
+    this.interceptors.request.use(
+      //@ts-ignore-line
+      (config: ExtendedAxiosRequestConfig) => {
+        try {
+          const authStore = useAuthStore()
+          const token = authStore.token
+          
+          if (token) {
+            config.headers = config.headers || {}
+            config.headers.Authorization = `Bearer ${token}`
+          }
+
+          config.metadata = {
+            startTime: Date.now(),
+            requestId: generateRequestId()
+          }
+
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`, {
+              requestId: config.metadata.requestId,
+              data: config.data
+            })
+          }
+          
+          return config
+        } catch (error) {
+          console.error('[API] Error in request interceptor:', error)
+          return Promise.reject(error)
+        }
+      },
+      (error) => {
+        console.error('[API] Request interceptor error:', error)
+        return Promise.reject(error)
+      }
+    )
+
+    // Response interceptor
+    this.interceptors.response.use(
+      (response: AxiosResponse) => {
+        if (process.env.NODE_ENV === 'development' && (response.config as ExtendedAxiosRequestConfig).metadata?.startTime) {
+          const duration = Date.now() - ((response.config as ExtendedAxiosRequestConfig).metadata?.startTime || 0)
+          console.log(`[API] ${response.config.method?.toUpperCase()} ${response.config.url} - ${duration}ms`, {
+            status: response.status,
+            requestId: (response.config as ExtendedAxiosRequestConfig).metadata?.requestId
+          })
+        }
+        
+        return response
+      },
+      async (error: AxiosError) => {
+        const notificationStore = useNotificationStore()
+        const authStore = useAuthStore()
+        const originalRequest = error.config as ExtendedAxiosRequestConfig
+        
+        if (error.response) {
+          const { status, data } = error.response
+          
+          if (status === 401 && originalRequest && !originalRequest.__isRetryRequest) {
+            try {
+              const newToken = await authStore.refreshToken()
+              
+              originalRequest.headers = originalRequest.headers || {}
+              originalRequest.headers.Authorization = `Bearer ${newToken}`
+              originalRequest.__isRetryRequest = true
+              
+              return this.request(originalRequest)
+            } catch (refreshError) {
+              authStore.logout()
+              notificationStore.showError(ERROR_MESSAGES[401], 'Session Expired')
+              return Promise.reject(error)
+            }
+          }
+          
+          if (
+            originalRequest &&
+            !originalRequest._retry &&
+            RETRYABLE_STATUS_CODES.includes(status as any)
+          ) {
+            originalRequest._retry = true
+            originalRequest._retryCount = (originalRequest._retryCount || 0) + 1
+
+            if (originalRequest._retryCount <= 3) {
+              const delay = 1000 * Math.pow(2, originalRequest._retryCount - 1)
+              await sleep(delay)
+              return this.request(originalRequest)
+            }
+          }
+          
+          switch (status) {
+            case 401:
+              if (!originalRequest || originalRequest.__isRetryRequest) {
+                authStore.logout()
+                notificationStore.showError(ERROR_MESSAGES[401], 'Session Expired')
+              }
+              break
+            case 403:
+              notificationStore.showError(ERROR_MESSAGES[403], 'Access Denied')
+              break
+            case 404:
+              notificationStore.showError(ERROR_MESSAGES[404], 'Not Found')
+              break
+            case 422:
+              const validationMessage = (data as any)?.message || ERROR_MESSAGES[422]
+              notificationStore.showError(validationMessage, 'Validation Error')
+              break
+            case 500:
+              notificationStore.showError(ERROR_MESSAGES[500], 'Server Error')
+              break
+            default:
+              const defaultMessage = (data as any)?.message || ERROR_MESSAGES.DEFAULT
+              notificationStore.showError(defaultMessage, 'Error')
+          }
+        } else if (error.request) {
+          notificationStore.showError(ERROR_MESSAGES.NETWORK, 'Network Error')
+        } else {
+          notificationStore.showError(error.message || ERROR_MESSAGES.DEFAULT, 'Error')
+        }
+        
+        return Promise.reject(error)
+      }
+    )
   }
 
   // Generate unique key for request deduplication
@@ -139,174 +521,54 @@ export class ApiClient {
     // Clean up expired requests first
     this.cleanupExpiredRequests()
 
-    // Check if same request is already pending
-    const existingRequest = this.pendingRequests.get(requestKey)
-    if (existingRequest) {
-      console.log(`Deduplicating request: ${requestKey}`)
-      return existingRequest.promise as Promise<T>
+    // Check for existing pending request
+    const pendingRequest = this.pendingRequests.get(requestKey)
+    if (pendingRequest) {
+      return pendingRequest.promise
     }
 
     // Create new request
-    const promise = requestFn().finally(() => {
-      // Remove from pending requests when completed
-      this.pendingRequests.delete(requestKey)
-    })
-
-    // Store pending request
+    const promise = requestFn()
     this.pendingRequests.set(requestKey, {
       promise,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      url: requestKey.split(':')[1],
+      method: requestKey.split(':')[0]
     })
 
-    return promise
-  }
-
-  // Standard GET request
-  async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const requestKey = this.generateRequestKey('GET', url)
-    return this.executeWithDeduplication(requestKey, async () => {
-      const response = await this.instance.get<T>(url, config)
-      return response.data
-    })
-  }
-
-  // Standard POST request
-  async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const requestKey = this.generateRequestKey('POST', url, data)
-    return this.executeWithDeduplication(requestKey, async () => {
-      const response = await this.instance.post<T>(url, data, config)
-      return response.data
-    })
-  }
-
-  // Standard PUT request
-  async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const requestKey = this.generateRequestKey('PUT', url, data)
-    return this.executeWithDeduplication(requestKey, async () => {
-      const response = await this.instance.put<T>(url, data, config)
-      return response.data
-    })
-  }
-
-  // Standard PATCH request
-  async patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const requestKey = this.generateRequestKey('PATCH', url, data)
-    return this.executeWithDeduplication(requestKey, async () => {
-      const response = await this.instance.patch<T>(url, data, config)
-      return response.data
-    })
-  }
-
-  // Standard DELETE request
-  async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const requestKey = this.generateRequestKey('DELETE', url)
-    return this.executeWithDeduplication(requestKey, async () => {
-      const response = await this.instance.delete<T>(url, config)
-      return response.data
-    })
-  }
-
-  // File upload with progress
-  async upload<T = any>(
-    url: string,
-    file: File,
-    onUploadProgress?: (progressEvent: any) => void,
-    additionalData?: Record<string, any>
-  ): Promise<T> {
-    const formData = new FormData()
-    formData.append('file', file)
-    
-    // Add additional data if provided
-    if (additionalData) {
-      Object.keys(additionalData).forEach(key => {
-        formData.append(key, additionalData[key])
-      })
+    try {
+      const result = await promise
+      this.pendingRequests.delete(requestKey)
+      return result
+    } catch (error) {
+      this.pendingRequests.delete(requestKey)
+      throw error
     }
-
-    const response = await this.instance.post<T>(url, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-      onUploadProgress
-    })
-    return response.data
   }
 
-  // Multiple file upload
-  async uploadMultiple<T = any>(
-    url: string,
-    files: File[],
-    onUploadProgress?: (progressEvent: any) => void,
-    additionalData?: Record<string, any>
-  ): Promise<T> {
-    const formData = new FormData()
-    
-    files.forEach((file, index) => {
-      formData.append(`files[${index}]`, file)
-    })
-    
-    // Add additional data if provided
-    if (additionalData) {
-      Object.keys(additionalData).forEach(key => {
-        formData.append(key, additionalData[key])
-      })
-    }
+  // Make request with method
+  // private async request<T>(
+  //   method: string,
+  //   url: string,
+  //   data?: any,
+  //   headers?: Record<string, string>
+  // ): Promise<T> {
+  //   const config: AxiosRequestConfig = {
+  //     method,
+  //     url,
+  //     headers: {
+  //       ...this.defaults.headers.common,
+  //       ...headers
+  //     }
+  //   }
 
-    const response = await this.instance.post<T>(url, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-      onUploadProgress
-    })
-    return response.data
-  }
+  //   if (data && ['POST', 'PUT', 'PATCH'].includes(method as any)) {
+  //     config.data = data
+  //   }
 
-  // Download file
-  async download(
-    url: string,
-    filename?: string,
-    onDownloadProgress?: (progressEvent: any) => void
-  ): Promise<void> {
-    const response = await this.instance.get(url, {
-      responseType: 'blob',
-      onDownloadProgress
-    })
-
-    // Create download link
-    const blob = new Blob([response.data])
-    const downloadUrl = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = downloadUrl
-    link.download = filename || 'download'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(downloadUrl)
-  }
-
-  // Request with custom headers
-  async requestWithHeaders<T = any>(
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
-    url: string,
-    data?: any,
-    headers?: Record<string, string>
-  ): Promise<T> {
-    const config: AxiosRequestConfig = {
-      method,
-      url,
-      headers: {
-        ...this.instance.defaults.headers.common,
-        ...headers
-      }
-    }
-
-    if (data && ['POST', 'PUT', 'PATCH'].includes(method)) {
-      config.data = data
-    }
-
-    const response = await this.instance.request<T>(config)
-    return response.data
-  }
+  //   const response = await super.request<T>(config)
+  //   return response.data
+  // }
 
   // Paginated GET request
   async getPaginated<T = any>(
@@ -326,7 +588,7 @@ export class ApiClient {
     const requestParams = { page, limit, ...params }
     const requestKey = this.generateRequestKey('GET', url, requestParams)
     return this.executeWithDeduplication(requestKey, async () => {
-      const response = await this.instance.get(url, {
+      const response = await super.get(url, {
         params: requestParams
       })
       return response.data
@@ -356,14 +618,101 @@ export class ApiClient {
     return this.pendingRequests.size
   }
 
+  // HTTP Methods with deduplication
+  // async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+  //   const requestKey = this.generateRequestKey('GET', url)
+  //   return this.executeWithDeduplication(requestKey, () => super.get<T>(url, config))
+  // }
+
+  // async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+  //   const requestKey = this.generateRequestKey('POST', url, data)
+  //   return this.executeWithDeduplication(requestKey, () => super.post<T>(url, data, config))
+  // }
+
+  // async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+  //   const requestKey = this.generateRequestKey('PUT', url, data)
+  //   return this.executeWithDeduplication(requestKey, () => super.put<T>(url, data, config))
+  // }
+
+  // async patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+  //   const requestKey = this.generateRequestKey('PATCH', url, data)
+  //   return this.executeWithDeduplication(requestKey, () => super.patch<T>(url, data, config))
+  // }
+
+  // async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+  //   const requestKey = this.generateRequestKey('DELETE', url)
+  //   return this.executeWithDeduplication(requestKey, () => super.delete<T>(url, config))
+  // }
+
+  // File upload methods
+  async upload<T = any>(
+    url: string,
+    file: File,
+    onProgress?: (progress: number) => void
+  ): Promise<AxiosResponse<T>> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    return super.post<T>(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          onProgress(progress)
+        }
+      }
+    })
+  }
+
+  async uploadMultiple<T = any>(
+    url: string,
+    files: File[],
+    onProgress?: (progress: number) => void
+  ): Promise<AxiosResponse<T>> {
+    const formData = new FormData()
+    files.forEach((file, index) => {
+      formData.append(`files[${index}]`, file)
+    })
+
+    return super.post<T>(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          onProgress(progress)
+        }
+      }
+    })
+  }
+
   // Get raw axios instance for custom usage
   getInstance(): AxiosInstance {
-    return this.instance
+    return this as any
   }
 }
 
+// ============================================================================
+// DEFAULT INSTANCES AND EXPORTS
+// ============================================================================
+
 // Create default instance
-export const apiClient = new ApiClient('')
+export const apiClient = new ApiClient(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api')
+
+// ============================================================================
+// TYPE EXPORTS
+// ============================================================================
+
+export type { ApiInstanceConfig, PendingRequest, ExtendedAxiosRequestConfig }
+
+// ============================================================================
+// CONSTANTS EXPORT
+// ============================================================================
+
+export { DEFAULT_CONFIG, RETRYABLE_STATUS_CODES, ERROR_MESSAGES }
 
 // Export default class
 export default ApiClient

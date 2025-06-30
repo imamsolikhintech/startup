@@ -53,9 +53,9 @@ type RedisConfig struct {
 
 // JWTConfig menyimpan konfigurasi JWT
 type JWTConfig struct {
-	SecretKey           string
-	AccessTokenExpiry   time.Duration
-	RefreshTokenExpiry  time.Duration
+	SecretKey          string
+	AccessTokenExpiry  time.Duration
+	RefreshTokenExpiry time.Duration
 }
 
 // GoogleConfig menyimpan konfigurasi Google OAuth

@@ -1,7 +1,6 @@
-import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { defineStore } from 'pinia'
 import { authService } from '@/api'
-import type { User as ApiUser, LoginRequest } from '@/api/types'
 import { AUTH_CONSTANTS, ERROR_MESSAGES } from './constants'
 import { AuthError, AuthErrorType } from './errors'
 import { SecureTokenStorage, LoginRateLimit, isTokenExpired, shouldRefreshToken } from '@/utils/tokenUtils'
@@ -41,15 +40,15 @@ export const useAuthStore = defineStore('auth', () => {
     console.log('Auth store login called with:', email)
 
     try {
-      const credentials: LoginRequest = {
+      const credentials = {
         email,
         password
       }
 
       const response = await authService.login(credentials)
 
-      if (response.data) {
-        const { user: apiUser, token } = response.data
+      if (response?.data) {
+        const { user: apiUser } = response.data
 
         // Map API user to store user format
         const userData: User = {
@@ -57,17 +56,17 @@ export const useAuthStore = defineStore('auth', () => {
           email: apiUser.email,
           name: apiUser.name,
           avatar: apiUser.profile_picture,
-          role: apiUser.role || 'user'
+          role: apiUser.role || 'guest'
         }
 
         user.value = userData
 
-        // Store token and user data securely
-        if (response.data.token) {
-          SecureTokenStorage.setToken(AUTH_CONSTANTS.TOKEN_KEY, response.data.token)
+        // Store tokens and user data securely
+        if (response.data?.tokens?.accessToken) {
+          SecureTokenStorage.setToken(AUTH_CONSTANTS.TOKEN_KEY, response.data.tokens.accessToken)
         }
-        if (response.data.refreshToken) {
-          SecureTokenStorage.setToken(AUTH_CONSTANTS.REFRESH_TOKEN_KEY, response.data.refreshToken)
+        if (response.data.tokens.refreshToken) {
+          SecureTokenStorage.setToken(AUTH_CONSTANTS.REFRESH_TOKEN_KEY, response.data.tokens.refreshToken)
         }
         SecureTokenStorage.setToken(AUTH_CONSTANTS.USER_KEY, JSON.stringify(userData))
 
@@ -79,7 +78,7 @@ export const useAuthStore = defineStore('auth', () => {
         console.log('Login successful, user data:', userData)
         return true
       } else {
-        throw new AuthError(response.message || ERROR_MESSAGES.LOGIN_FAILED, AuthErrorType.INVALID_CREDENTIALS)
+        throw new AuthError(response?.message || ERROR_MESSAGES.LOGIN_FAILED, AuthErrorType.INVALID_CREDENTIALS)
       }
     } catch (err: any) {
       console.error('Login error:', err)
@@ -116,9 +115,9 @@ export const useAuthStore = defineStore('auth', () => {
         terms: true
       }
 
-      const response = await authService.register(registerData)
+      const response = await authService.register(registerData);
 
-      if (response.data) {
+      if (response?.data) {
         const apiUser = response.data
 
         // Map API user to store user format
@@ -136,7 +135,7 @@ export const useAuthStore = defineStore('auth', () => {
         console.log('Registration successful, user data:', userData)
         return true
       } else {
-        throw new Error(response.message || 'Registration failed')
+        throw new Error(response?.message || 'Registration failed')
       }
     } catch (err: any) {
       console.error('Registration error:', err)
@@ -231,8 +230,8 @@ export const useAuthStore = defineStore('auth', () => {
           // Verify token is still valid by getting fresh profile
           try {
             console.log('checkStoredAuth: Verifying token with API call')
-            const response = await authService.getProfile()
-            if (response.data) {
+            const response = await authService.getCurrentUser()
+            if (response?.data) {
               const apiUser = response.data
               const userData: User = {
                 id: apiUser.id,
@@ -276,14 +275,14 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     try {
-      const response = await authService.refreshToken(storedRefreshToken)
+      const response = await authService.refreshTokens(storedRefreshToken)
 
-      if (response.data) {
+      if (response?.data) {
         SecureTokenStorage.setToken(AUTH_CONSTANTS.TOKEN_KEY, response.data.accessToken)
         SecureTokenStorage.setToken(AUTH_CONSTANTS.REFRESH_TOKEN_KEY, response.data.refreshToken)
         return response.data.accessToken
       } else {
-        throw new AuthError(response.message || ERROR_MESSAGES.TOKEN_EXPIRED, AuthErrorType.TOKEN_EXPIRED)
+        throw new AuthError(response?.message || ERROR_MESSAGES.TOKEN_EXPIRED, AuthErrorType.TOKEN_EXPIRED)
       }
     } catch (err: any) {
       console.error('Token refresh error:', err)

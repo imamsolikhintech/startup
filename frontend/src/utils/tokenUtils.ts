@@ -1,6 +1,5 @@
-import { AUTH_CONSTANTS } from '@/stores/constants'
-
 // Token utility functions for better security and management
+import { AUTH_CONSTANTS } from '@/stores/constants'
 
 export interface TokenPayload {
   exp: number
@@ -142,7 +141,7 @@ export class LoginRateLimit {
   }
 
   static setCooldown(email: string): void {
-    const cooldownUntil = Date.now() + AUTH_CONSTANTS.LOGIN_COOLDOWN
+    const cooldownUntil = Date.now() + AUTH_CONSTANTS.COOLDOWN_DURATION
     localStorage.setItem(this.getCooldownKey(email), cooldownUntil.toString())
   }
 

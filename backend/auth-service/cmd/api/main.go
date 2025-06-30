@@ -239,14 +239,22 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 	router.Use(gin.Logger())
 
 	// CORS configuration
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     cfg.Server.CorsAllowOrigins,
+	corsConfig := cors.Config{
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"},
 		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
-	}))
+	}
+
+	// Handle wildcard origins properly
+	if len(cfg.Server.CorsAllowOrigins) == 1 && cfg.Server.CorsAllowOrigins[0] == "*" {
+		corsConfig.AllowAllOrigins = true
+	} else {
+		corsConfig.AllowOrigins = cfg.Server.CorsAllowOrigins
+		corsConfig.AllowCredentials = true
+	}
+
+	router.Use(cors.New(corsConfig))
 
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
