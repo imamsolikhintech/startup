@@ -1,268 +1,318 @@
+import { BaseApiService } from './BaseApiService'
+import type { ApiClient } from '../endpoint/axios'
 import type {
   ApiResponse,
   PaginatedResponse,
-  FileUploadResponse
+  FileItem,
+  FileMetadata,
+  UploadOptions,
+  FileFilters,
+  FileStats,
+  BulkFileOperation,
+  FileUploadProgress,
+  FolderItem
 } from '../types'
-import type { ApiClient } from '../endpoint/axios'
 
-// File Management Service
-export class FileService {
-  constructor(private apiClient: ApiClient) {}
-  // Upload single file
-  async uploadFile(
-    file: File,
-    folder?: string,
-    onProgress?: (progress: number) => void
-  ): Promise<ApiResponse<FileUploadResponse>> {
-    const additionalData = folder ? { folder } : undefined
-    
-    return await this.apiClient.upload<ApiResponse<FileUploadResponse>>(
-      '/upload',
-      file,
-      (progressEvent) => {
-        if (onProgress && progressEvent.total) {
-          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-          onProgress(progress)
-        }
-      },
-      additionalData
-    )
+/**
+ * File Management Service
+ *
+ * Handles all file-related API operations including
+ * upload, download, management, and organization.
+ */
+export class FileService extends BaseApiService {
+  constructor(apiClient: ApiClient) {
+    super(apiClient, '/files')
   }
 
-  // Upload multiple files
-  async uploadMultiple(
-    files: File[],
-    options?: {
-      folder?: string
-      onProgress?: (progress: number) => void
-      onFileProgress?: (fileIndex: number, progress: number) => void
-    }
-  ): Promise<ApiResponse<FileUploadResponse[]>> {
-    return await this.apiClient.uploadMultiple<ApiResponse<FileUploadResponse[]>>(
-      '/upload-multiple',
-      files,
-      (progressEvent) => {
-        if (options?.onProgress && progressEvent.total) {
-          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-          options.onProgress(progress)
-        }
-      },
-      options?.folder ? { folder: options.folder } : undefined
-    )
-  }
-
-  // Get file list with pagination
+  /**
+   * Get all files with pagination and filters
+   * @param page - Page number
+   * @param limit - Items per page
+   * @param filters - Filter criteria
+   * @returns Paginated files
+   */
   async getFiles(
     page: number = 1,
-    limit: number = 20,
-    filters?: {
-      folder?: string
-      mimeType?: string
-      search?: string
-      sortBy?: 'name' | 'size' | 'createdAt'
-      sortOrder?: 'asc' | 'desc'
+    limit: number = 10,
+    filters: FileFilters = {}
+  ): Promise<PaginatedResponse<FileItem>> {
+    try {
+      return await this.getAll<FileItem>(page, limit, filters)
+    } catch (error) {
+      this.handleError(error)
+      throw error
     }
-  ): Promise<PaginatedResponse<FileUploadResponse>> {
-    return await this.apiClient.getPaginated<PaginatedResponse<FileUploadResponse>>('/files', page, limit, filters)
   }
 
-  // Get file by ID
-  async getFile(fileId: string): Promise<ApiResponse<FileUploadResponse>> {
-    return await this.apiClient.get<ApiResponse<FileUploadResponse>>(`/files/${fileId}`)
+  /**
+   * Get file by ID
+   * @param fileId - File ID
+   * @returns File data
+   */
+  async getFileById(fileId: string): Promise<ApiResponse<FileItem>> {
+    try {
+      return await this.getById<FileItem>(fileId)
+    } catch (error) {
+      this.handleError(error)
+      throw error
+    }
   }
 
-  // Download file
-  async downloadFile(
-    fileId: string,
-    filename?: string,
-    onProgress?: (progress: number) => void
-  ): Promise<void> {
-    return await this.apiClient.download(
-      `/files/${fileId}/download`,
-      filename,
-      (progressEvent) => {
-        if (onProgress && progressEvent.total) {
-          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-          onProgress(progress)
-        }
+  /**
+   * Upload single file
+   * @param file - File to upload
+   * @param options - Upload options
+   * @returns Uploaded file data
+   */
+  async uploadFile(
+    file: File,
+    options: UploadOptions = {}
+  ): Promise<ApiResponse<FileItem>> {
+    try {
+      // Validate file size
+      if (options.maxSize && file.size > options.maxSize) {
+        throw new Error(
+          `File size exceeds maximum allowed size of ${options.maxSize} bytes`
+        )
       }
-    )
-  }
 
-  // Get file URL for preview
-  async getFileUrl(fileId: string): Promise<ApiResponse<{ url: string }>> {
-    return await this.apiClient.get<ApiResponse<{ url: string }>>(`/files/${fileId}/url`)
-  }
+      // Validate file type
+      if (options.allowedTypes && !options.allowedTypes.includes(file.type)) {
+        throw new Error(`File type ${file.type} is not allowed`)
+      }
 
-  // Delete file
-  async deleteFile(fileId: string): Promise<ApiResponse<null>> {
-    return await this.apiClient.delete<ApiResponse<null>>(`/files/${fileId}`)
-  }
-
-  // Delete multiple files
-  async deleteMultipleFiles(fileIds: string[]): Promise<ApiResponse<null>> {
-    return await this.apiClient.post<ApiResponse<null>>('/files/delete-multiple', { fileIds })
-  }
-
-  // Rename file
-  async renameFile(fileId: string, newName: string): Promise<ApiResponse<FileUploadResponse>> {
-    return await this.apiClient.put<ApiResponse<FileUploadResponse>>(`/files/${fileId}/rename`, {
-      name: newName
-    })
-  }
-
-  // Move file to folder
-  async moveFile(fileId: string, targetFolder: string): Promise<ApiResponse<FileUploadResponse>> {
-    return await this.apiClient.put<ApiResponse<FileUploadResponse>>(`/files/${fileId}/move`, {
-      folder: targetFolder
-    })
-  }
-
-  // Copy file
-  async copyFile(fileId: string, targetFolder?: string): Promise<ApiResponse<FileUploadResponse>> {
-    return await this.apiClient.post<ApiResponse<FileUploadResponse>>(`/files/${fileId}/copy`, {
-      folder: targetFolder
-    })
-  }
-
-  // Get file metadata
-  async getFileMetadata(fileId: string): Promise<ApiResponse<{
-    id: string
-    filename: string
-    originalName: string
-    mimeType: string
-    size: number
-    folder: string
-    checksum: string
-    createdAt: string
-    updatedAt: string
-    downloadCount: number
-    lastDownloadAt?: string
-  }>> {
-    return await this.apiClient.get(`/files/${fileId}/metadata`)
-  }
-
-  // Create folder
-  async createFolder(
-    name: string,
-    parentFolder?: string
-  ): Promise<ApiResponse<{
-    id: string
-    name: string
-    path: string
-    parentId?: string
-  }>> {
-    return await this.apiClient.post('/folders', {
-      name,
-      parentFolder
-    })
-  }
-
-  // List folders
-  async getFolders(
-    parentFolder?: string
-  ): Promise<ApiResponse<Array<{
-    id: string
-    name: string
-    path: string
-    parentId?: string
-    fileCount: number
-    size: number
-  }>>> {
-    const params = parentFolder ? { parent: parentFolder } : {}
-    return await this.apiClient.get('/folders', { params })
-  }
-
-  // Delete folder
-  async deleteFolder(folderId: string, force = false): Promise<ApiResponse<null>> {
-    return await this.apiClient.delete(`/folders/${folderId}?force=${force}`)
-  }
-
-  // Rename folder
-  async renameFolder(
-    folderId: string,
-    newName: string
-  ): Promise<ApiResponse<{
-    id: string
-    name: string
-    path: string
-  }>> {
-    return await this.apiClient.put(`/folders/${folderId}/rename`, {
-      name: newName
-    })
-  }
-
-  // Get storage statistics
-  async getStorageStats(): Promise<ApiResponse<{
-    totalSize: number
-    usedSize: number
-    availableSize: number
-    fileCount: number
-    folderCount: number
-  }>> {
-    return await this.apiClient.get('/storage/stats')
-  }
-
-  // Search files
-  async searchFiles(
-    query: string,
-    filters?: {
-      mimeType?: string
-      folder?: string
-      dateFrom?: string
-      dateTo?: string
-      sizeMin?: number
-      sizeMax?: number
-    },
-    page: number = 1,
-    limit: number = 20
-  ): Promise<PaginatedResponse<FileUploadResponse>> {
-    return await this.apiClient.getPaginated<PaginatedResponse<FileUploadResponse>>('/files/search', page, limit, {
-      q: query,
-      ...filters
-    })
-  }
-
-  // Generate shareable link
-  async generateShareLink(
-    fileId: string,
-    options?: {
-      expiresAt?: string
-      password?: string
-      downloadLimit?: number
+      return await this.upload<FileItem>(file, options)
+    } catch (error) {
+      this.handleError(error)
+      throw error
     }
-  ): Promise<ApiResponse<{
-    shareId: string
-    url: string
-    expiresAt?: string
-    downloadLimit?: number
-  }>> {
-    return await this.apiClient.post(`/files/${fileId}/share`, options)
   }
 
-  // Revoke share link
-  async revokeShareLink(shareId: string): Promise<ApiResponse<null>> {
-    return await this.apiClient.delete(`/shares/${shareId}`)
+  /**
+   * Upload multiple files
+   * @param files - Files to upload
+   * @param options - Upload options
+   * @param onProgress - Progress callback
+   * @returns Upload results
+   */
+  async uploadMultipleFiles(
+    files: File[],
+    options: UploadOptions = {},
+    onProgress?: (progress: FileUploadProgress[]) => void
+  ): Promise<ApiResponse<{ success: FileItem[]; failed: any[] }>> {
+    try {
+      if (!files.length) {
+        throw new Error('At least one file is required')
+      }
+
+      const formData = new FormData()
+
+      files.forEach((file, index) => {
+        // Validate each file
+        if (options.maxSize && file.size > options.maxSize) {
+          throw new Error(
+            `File ${file.name} exceeds maximum allowed size`
+          )
+        }
+
+        if (
+          options.allowedTypes &&
+          !options.allowedTypes.includes(file.type)
+        ) {
+          throw new Error(
+            `File type ${file.type} is not allowed for ${file.name}`
+          )
+        }
+
+        formData.append(`files`, file)
+      })
+
+      // This part needs to be adapted to your ApiClient's multi-upload method
+      // Assuming apiClient has a method like postFiles or similar
+      return await this.apiClient.post<ApiResponse<{ success: FileItem[]; failed: any[] }>>(
+        `${this.baseEndpoint}/upload-multiple`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          onUploadProgress: (progressEvent: ProgressEvent) => {
+            if (onProgress) {
+              // This is a simplified progress. You might need more complex logic
+              // to track individual file progress if your backend supports it.
+              const totalProgress = Math.round(
+                (progressEvent.loaded * 100) / (progressEvent.total || 1)
+              )
+              onProgress([
+                {
+                  fileId: 'multi-upload',
+                  fileName: 'Multiple Files',
+                  progress: totalProgress,
+                  status: totalProgress === 100 ? 'completed' : 'uploading'
+                }
+              ])
+            }
+          }
+        }
+      )
+    } catch (error) {
+      this.handleError(error)
+      throw error
+    }
   }
 
-  // Get file versions (if versioning is enabled)
-  async getFileVersions(fileId: string): Promise<ApiResponse<Array<{
-    id: string
-    version: number
-    size: number
-    checksum: string
-    createdAt: string
-    comment?: string
-  }>>> {
-    return await this.apiClient.get(`/files/${fileId}/versions`)
+  /**
+   * Download file by ID
+   * @param fileId - File ID
+   * @param filename - Optional filename for download
+   * @returns Blob of the file
+   */
+  async downloadFile(fileId: string, filename?: string): Promise<Blob> {
+    try {
+      const blob = await this.apiClient.getBlob(
+        `${this.baseEndpoint}/${fileId}/download`
+      )
+      // Create a temporary URL and trigger download
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename || fileId // Use provided filename or fileId
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+      return blob
+    } catch (error) {
+      this.handleError(error)
+      throw error
+    }
   }
 
-  // Restore file version
-  async restoreFileVersion(fileId: string, versionId: string): Promise<ApiResponse<FileUploadResponse>> {
-    return await this.apiClient.post(`/files/${fileId}/versions/${versionId}/restore`)
+  /**
+   * Delete file by ID
+   * @param fileId - File ID
+   * @returns API response
+   */
+  async deleteFile(fileId: string): Promise<ApiResponse<null>> {
+    try {
+      return await this.delete(fileId)
+    } catch (error) {
+      this.handleError(error)
+      throw error
+    }
+  }
+
+  /**
+   * Get file statistics
+   * @param filters - Filter criteria for stats
+   * @returns File statistics
+   */
+  async getFileStats(filters: FileFilters = {}): Promise<ApiResponse<FileStats>> {
+    try {
+      return await this.getStats<FileStats>(filters)
+    } catch (error) {
+      this.handleError(error)
+      throw error
+    }
+  }
+
+  /**
+   * Perform bulk file operations
+   * @param operation - Type of bulk operation
+   * @param fileIds - Array of file IDs
+   * @param data - Additional data for operation (e.g., new folder for move)
+   * @returns API response
+   */
+  async bulkFileOperation(
+    operation: 'delete' | 'makePublic' | 'makePrivate' | 'move' | 'copy',
+    fileIds: string[],
+    data?: any
+  ): Promise<ApiResponse<any>> {
+    try {
+      return await this.bulk<any>(operation, fileIds.map(id => ({ id, ...data })))
+    } catch (error) {
+      this.handleError(error)
+      throw error
+    }
+  }
+
+  /**
+   * Get all folders with pagination and filters
+   * @param page - Page number
+   * @param limit - Items per page
+   * @param filters - Filter criteria
+   * @returns Paginated folders
+   */
+  async getFolders(
+    page: number = 1,
+    limit: number = 10,
+    filters: FileFilters = {}
+  ): Promise<PaginatedResponse<FolderItem>> {
+    try {
+      return await this.getAll<FolderItem>(page, limit, filters)
+    } catch (error) {
+      this.handleError(error)
+      throw error
+    }
+  }
+
+  /**
+   * Get folder by ID
+   * @param folderId - Folder ID
+   * @returns Folder data
+   */
+  async getFolderById(folderId: string): Promise<ApiResponse<FolderItem>> {
+    try {
+      return await this.getById<FolderItem>(folderId)
+    } catch (error) {
+      this.handleError(error)
+      throw error
+    }
+  }
+
+  /**
+   * Create new folder
+   * @param data - Folder data
+   * @returns API response with created folder
+   */
+  async createFolder(data: Partial<FolderItem>): Promise<ApiResponse<FolderItem>> {
+    try {
+      return await this.create<FolderItem>(data)
+    } catch (error) {
+      this.handleError(error)
+      throw error
+    }
+  }
+
+  /**
+   * Update existing folder
+   * @param folderId - Folder ID
+   * @param data - Updated folder data
+   * @returns API response with updated folder
+   */
+  async updateFolder(
+    folderId: string,
+    data: Partial<FolderItem>
+  ): Promise<ApiResponse<FolderItem>> {
+    try {
+      return await this.update<FolderItem>(folderId, data)
+    } catch (error) {
+      this.handleError(error)
+      throw error
+    }
+  }
+
+  /**
+   * Delete folder by ID
+   * @param folderId - Folder ID
+   * @returns API response
+   */
+  async deleteFolder(folderId: string): Promise<ApiResponse<null>> {
+    try {
+      return await this.delete(folderId)
+    } catch (error) {
+      this.handleError(error)
+      throw error
+    }
   }
 }
-
-// Export singleton instance
-export const fileServiceInstance = new FileService()
-export default fileServiceInstance

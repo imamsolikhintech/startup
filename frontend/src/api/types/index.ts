@@ -32,53 +32,121 @@ export interface ErrorResponse {
 }
 
 // Authentication Types
-export interface LoginRequest {
+export interface LoginCredentials {
   email: string
   password: string
   rememberMe?: boolean
-  captcha?: string
 }
 
-export interface LoginResponse {
-  token: string
-  refreshToken: string
-  expiresIn: number
-  user: User
-}
-
-export interface RegisterRequest {
-  name: string
+export interface RegisterData {
   email: string
   password: string
   confirmPassword: string
-  terms: boolean
-  newsletter?: boolean
+  firstName: string
+  lastName: string
+  acceptTerms: boolean
 }
 
 export interface User {
   id: string
-  name: string
   email: string
+  firstName: string
+  lastName: string
+  fullName?: string
   role: string
-  role_id: string
-  profile_picture?: string
-  provider?: string
-  verified: boolean
-  active: boolean
-  last_login?: string
-  created_at: string
-  updated_at: string
-  // Legacy fields for backward compatibility
   avatar?: string
-  phone?: string
-  address?: Address
-  preferences?: UserPreferences
-  emailVerified?: boolean
-  phoneVerified?: boolean
-  twoFactorEnabled?: boolean
+  isEmailVerified: boolean
+  isActive: boolean
   lastLoginAt?: string
-  createdAt?: string
-  updatedAt?: string
+  createdAt: string
+  updatedAt: string
+  permissions?: string[]
+  preferences?: UserPreferences
+}
+
+export interface UserPreferences {
+  theme: 'light' | 'dark' | 'auto'
+  language: string
+  timezone: string
+  notifications: {
+    email: boolean
+    push: boolean
+    sms: boolean
+  }
+  privacy: {
+    profileVisibility: 'public' | 'private' | 'friends'
+    showEmail: boolean
+    showLastSeen: boolean
+  }
+}
+
+export interface CreateUserData {
+  email: string
+  firstName: string
+  lastName: string
+  role: string
+  password?: string
+  sendInvitation?: boolean
+}
+
+export interface UpdateUserData {
+  firstName?: string
+  lastName?: string
+  role?: string
+  isActive?: boolean
+  avatar?: string
+}
+
+export interface UserFilters {
+  role?: string
+  isActive?: boolean
+  isEmailVerified?: boolean
+  search?: string
+  createdAfter?: string
+  createdBefore?: string
+}
+
+export interface UserStats {
+  total: number
+  active: number
+  inactive: number
+  verified: number
+  unverified: number
+  byRole: Record<string, number>
+  recentRegistrations: number
+}
+
+export interface BulkUserOperation {
+  userIds: string[]
+  operation: 'activate' | 'deactivate' | 'delete' | 'verify'
+  data?: any
+}
+
+export interface AuthTokens {
+  accessToken: string
+  refreshToken: string
+  expiresIn: number
+}
+
+export interface LoginResponse {
+  user: User
+  tokens: AuthTokens
+}
+
+export interface ResetPasswordData {
+  email: string
+}
+
+export interface ChangePasswordData {
+  currentPassword: string
+  newPassword: string
+  confirmPassword: string
+}
+
+export interface UpdateProfileData {
+  firstName?: string
+  lastName?: string
+  avatar?: string
 }
 
 export interface UserRole {
@@ -102,18 +170,6 @@ export interface Address {
   postalCode: string
 }
 
-export interface UserPreferences {
-  theme: 'light' | 'dark' | 'auto'
-  language: string
-  timezone: string
-  notifications: {
-    email: boolean
-    push: boolean
-    sms: boolean
-  }
-}
-
-// User Activity Types
 export interface LoginHistory {
   id: number
   user_id: string
@@ -166,61 +222,109 @@ export interface UserActivityResponse {
   statistics: ActivityStats
 }
 
-export interface UserStats {
-  total_users: number
-  active_users: number
-  verified_users: number
-  new_users_today: number
-  new_users_this_week: number
-  new_users_this_month: number
-}
-
 // File Management Types
-export interface FileUploadResponse {
+export interface FileItem {
   id: string
-  filename: string
+  name: string
   originalName: string
+  path: string
+  url: string
   mimeType: string
   size: number
-  url: string
-  thumbnailUrl?: string
-  folder: string
-  checksum: string
-  metadata: FileMetadata
-  uploadedAt: string
+  extension: string
+  isPublic: boolean
   uploadedBy: string
+  uploadedAt: string
+  updatedAt: string
+  metadata?: FileMetadata
+  tags?: string[]
 }
 
 export interface FileMetadata {
   width?: number
   height?: number
   duration?: number
-  pages?: number
-  encoding?: string
-  [key: string]: any
+  bitrate?: number
+  codec?: string
+  thumbnail?: string
+  description?: string
+  alt?: string
 }
 
-export interface Folder {
+export interface UploadOptions {
+  isPublic?: boolean
+  folder?: string
+  tags?: string[]
+  metadata?: Partial<FileMetadata>
+  maxSize?: number
+  allowedTypes?: string[]
+}
+
+export interface FileFilters {
+  mimeType?: string
+  extension?: string
+  folder?: string
+  isPublic?: boolean
+  uploadedBy?: string
+  tags?: string[]
+  sizeMin?: number
+  sizeMax?: number
+  uploadedAfter?: string
+  uploadedBefore?: string
+}
+
+export interface FileStats {
+  total: number
+  totalSize: number
+  byType: Record<string, number>
+  byExtension: Record<string, number>
+  publicFiles: number
+  privateFiles: number
+  recentUploads: number
+}
+
+export interface BulkFileOperation {
+  fileIds: string[]
+  operation: 'delete' | 'makePublic' | 'makePrivate' | 'move' | 'copy'
+  data?: {
+    folder?: string
+    tags?: string[]
+  }
+}
+
+export interface FileUploadProgress {
+  fileId: string
+  fileName: string
+  progress: number
+  status: 'pending' | 'uploading' | 'completed' | 'error'
+  error?: string
+}
+
+export interface FolderItem {
   id: string
   name: string
   path: string
   parentId?: string
+  isPublic: boolean
   fileCount: number
   size: number
-  createdAt: string
   createdBy: string
+  createdAt: string
+  updatedAt: string
 }
 
-export interface ShareLink {
+export interface FileUploadResponse {
   id: string
-  fileId: string
-  url: string
-  password?: boolean
-  expiresAt?: string
-  downloadLimit?: number
-  downloadCount: number
+  filename: string
+  originalName: string
+  mimeType: string
+  size: number
+  folder: string
+  checksum: string
   createdAt: string
-  createdBy: string
+  updatedAt: string
+  downloadCount: number
+  lastDownloadAt?: string
 }
 
 // Business Entity Types
@@ -593,7 +697,7 @@ export interface AuditLog {
   resource: string
   resourceId: string
   userId: string
-  user: Pick<User, 'id' | 'name' | 'email'>
+  user: Pick<User, 'id' | 'firstName' | 'lastName' | 'email'>
   changes?: {
     before: Record<string, any>
     after: Record<string, any>

@@ -1,9 +1,8 @@
-import { ApiClient } from '@/api/endpoint/axios'
 import type { ApiResponse, PaginatedResponse } from '@/api/types'
 
 /**
  * Base API Service Class
- * 
+ *
  * Provides a standardized foundation for all API services.
  * Implements common CRUD operations and error handling patterns.
  */
@@ -150,7 +149,7 @@ export abstract class BaseApiService {
     params: Record<string, any> = {}
   ): Promise<ApiResponse<T>> {
     const queryParams = new URLSearchParams(this.serializeParams(params))
-    
+
     return await this.apiClient.get<ApiResponse<T>>(
       `${this.baseEndpoint}/stats?${queryParams}`
     )
@@ -188,7 +187,7 @@ export abstract class BaseApiService {
   ): Promise<ApiResponse<T>> {
     const formData = new FormData()
     formData.append('file', file)
-    
+
     Object.entries(additionalData).forEach(([key, value]) => {
       formData.append(key, String(value))
     })
@@ -205,125 +204,45 @@ export abstract class BaseApiService {
   }
 
   /**
-   * Serialize parameters for URL query string
-   * @param params - Parameters object
-   * @returns Serialized parameters
+   * Helper to serialize parameters for URLSearchParams
+   * Handles arrays and objects correctly.
    */
-  private serializeParams(params: Record<string, any>): Record<string, string> {
+  protected serializeParams(params: Record<string, any>): Record<string, string> {
     const serialized: Record<string, string> = {}
-    
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== null && value !== undefined && value !== '') {
+    for (const key in params) {
+      if (Object.prototype.hasOwnProperty.call(params, key)) {
+        const value = params[key]
         if (Array.isArray(value)) {
           serialized[key] = value.join(',')
-        } else if (typeof value === 'object') {
+        } else if (typeof value === 'object' && value !== null) {
           serialized[key] = JSON.stringify(value)
         } else {
           serialized[key] = String(value)
         }
       }
-    })
-    
+    }
     return serialized
   }
 
   /**
-   * Handle API errors consistently
-   * @param error - Error object
-   * @param context - Error context
-   * @throws Formatted error
+   * Handle API errors centrally
+   * @param error - The error object
+   * @returns A rejected promise with a standardized error format
    */
-  protected handleError(error: any, context: string): never {
-    console.error(`${context} failed:`, error)
-    
-    if (error.response?.data?.message) {
-      throw new Error(error.response.data.message)
-    }
-    
-    if (error.message) {
-      throw new Error(error.message)
-    }
-    
-    throw new Error(`${context} failed with unknown error`)
-  }
-
-  /**
-   * Validate required parameters
-   * @param params - Parameters to validate
-   * @param required - Required parameter names
-   * @throws Error if required parameters are missing
-   */
-  protected validateRequired(
-    params: Record<string, any>,
-    required: string[]
-  ): void {
-    const missing = required.filter(key => 
-      params[key] === null || params[key] === undefined || params[key] === ''
-    )
-    
-    if (missing.length > 0) {
-      throw new Error(`Missing required parameters: ${missing.join(', ')}`)
-    }
-  }
-
-  /**
-   * Build endpoint URL with path parameters
-   * @param path - Path template with placeholders
-   * @param params - Path parameters
-   * @returns Built URL
-   */
-  protected buildEndpoint(path: string, params: Record<string, any>): string {
-    let endpoint = `${this.baseEndpoint}${path}`
-    
-    Object.entries(params).forEach(([key, value]) => {
-      endpoint = endpoint.replace(`{${key}}`, String(value))
-    })
-    
-    return endpoint
+  protected handleError(error: any): Promise<never> {
+    console.error('API call failed:', error)
+    // You might want to throw a custom error or return a specific error structure
+    throw error
   }
 }
 
-/**
- * Service configuration interface
- */
-export interface ServiceConfig {
-  baseURL: string
-  timeout?: number
-  retries?: number
-  headers?: Record<string, string>
-}
-
-/**
- * Service factory for creating standardized API services
- */
-export class ServiceFactory {
-  private static instances = new Map<string, BaseApiService>()
-  
-  /**
-   * Create or get service instance
-   * @param ServiceClass - Service class constructor
-   * @param config - Service configuration
-   * @returns Service instance
-   */
-  static createService<T extends BaseApiService>(
-    ServiceClass: new (apiClient: ApiClient, baseEndpoint: string) => T,
-    config: ServiceConfig
-  ): T {
-    const key = `${ServiceClass.name}-${config.baseURL}`
-    
-    if (!this.instances.has(key)) {
-      const apiClient = new ApiClient(config.baseURL)
-      const instance = new ServiceClass(apiClient, '')
-      this.instances.set(key, instance)
-    }
-    
-    return this.instances.get(key) as T
-  }
-  
-  /**
-   * Clear all service instances
-   */
-  static clearInstances(): void {
-    this.instances.clear()
-  }
+// Define ApiClient interface or import it if it exists elsewhere
+// This is a placeholder, replace with your actual API client definition
+interface ApiClient {
+  get<T>(url: string, config?: any): Promise<T>
+  post<T>(url: string, data?: any, config?: any): Promise<T>
+  put<T>(url: string, data?: any, config?: any): Promise<T>
+  patch<T>(url: string, data?: any, config?: any): Promise<T>
+  delete<T>(url: string, config?: any): Promise<T>
+  getBlob(url: string, config?: any): Promise<Blob>
 }
