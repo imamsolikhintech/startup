@@ -136,7 +136,7 @@ export class FileService extends BaseApiService {
           headers: {
             'Content-Type': 'multipart/form-data'
           },
-          onUploadProgress: (progressEvent: ProgressEvent) => {
+          onUploadProgress: (progressEvent: import('axios').AxiosProgressEvent) => {
             if (onProgress) {
               // This is a simplified progress. You might need more complex logic
               // to track individual file progress if your backend supports it.
@@ -169,11 +169,11 @@ export class FileService extends BaseApiService {
    */
   async downloadFile(fileId: string, filename?: string): Promise<Blob> {
     try {
-      const blob = await this.apiClient.getBlob(
+      const response = await this.apiClient.get(
         `${this.baseEndpoint}/${fileId}/download`
       )
       // Create a temporary URL and trigger download
-      const url = window.URL.createObjectURL(blob)
+      const url = window.URL.createObjectURL(response.data)
       const a = document.createElement('a')
       a.href = url
       a.download = filename || fileId // Use provided filename or fileId
@@ -181,7 +181,7 @@ export class FileService extends BaseApiService {
       a.click()
       a.remove()
       window.URL.revokeObjectURL(url)
-      return blob
+      return response.data
     } catch (error) {
       this.handleError(error)
       throw error
@@ -229,7 +229,11 @@ export class FileService extends BaseApiService {
     data?: any
   ): Promise<ApiResponse<any>> {
     try {
-      return await this.bulk<any>(operation, fileIds.map(id => ({ id, ...data })))
+      const endpoint = `${this.baseEndpoint}/bulk/${operation}`
+      return await this.apiClient.post(endpoint, {
+        ids: fileIds,
+        ...data
+      })
     } catch (error) {
       this.handleError(error)
       throw error

@@ -1,4 +1,5 @@
 import type { ApiResponse, PaginatedResponse } from '@/api/types'
+import type { ApiClient } from '../endpoint/axios'
 
 /**
  * Base API Service Class
@@ -170,7 +171,7 @@ export abstract class BaseApiService {
       ...this.serializeParams(params)
     })
 
-    return await this.apiClient.getBlob(
+    return await this.apiClient.get(
       `${this.baseEndpoint}/export?${queryParams}`
     )
   }
@@ -238,11 +239,11 @@ export abstract class BaseApiService {
 
 // Define ApiClient interface or import it if it exists elsewhere
 // This is a placeholder, replace with your actual API client definition
-interface ApiClient {
-  get<T>(url: string, config?: any): Promise<T>
-  post<T>(url: string, data?: any, config?: any): Promise<T>
-  put<T>(url: string, data?: any, config?: any): Promise<T>
-  patch<T>(url: string, data?: any, config?: any): Promise<T>
-  delete<T>(url: string, config?: any): Promise<T>
-  getBlob(url: string, config?: any): Promise<Blob>
-}
+// interface ApiClient {
+//   get<T>(url: string, config?: any): Promise<T>
+//   post<T>(url: string, data?: any, config?: any): Promise<T>
+//   put<T>(url: string, data?: any, config?: any): Promise<T>
+//   patch<T>(url: string, data?: any, config?: any): Promise<T>
+//   delete<T>(url: string, config?: any): Promise<T>
+//   getBlob(url: string, config?: any): Promise<Blob>
+// }
