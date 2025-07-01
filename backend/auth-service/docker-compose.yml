@@ -8,4 +8,4 @@ services:
     container_name: auth-service
     restart: unless-stopped
     ports:
-      - "8181:8181"
+      - "9119:8181"
