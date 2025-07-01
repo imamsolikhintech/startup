@@ -11,7 +11,7 @@
 
         <n-form ref="formRef" :model="credentials" @submit.prevent="handleLogin" class="login-form">
           <n-input v-model:value="credentials.email" placeholder="Email Address" type="text" size="large" clearable
-            :status="emailError ? 'error' : undefined">
+            :status="emailError ? 'error' : undefined" class="mb-2">
             <template #prefix>
               <n-icon>
                 <svg viewBox="0 0 24 24">
@@ -25,7 +25,7 @@
 
           <n-input v-model:value="credentials.password" placeholder="Password"
             :type="showPassword ? 'text' : 'password'" size="large" show-password-on="click"
-            :status="passwordError ? 'error' : undefined">
+            :status="passwordError ? 'error' : undefined" class="mb-2">
             <template #prefix>
               <n-icon>
                 <svg viewBox="0 0 24 24">
@@ -194,7 +194,7 @@ const clearError = () => {
 }
 
 .login-card {
-  padding: 2.5rem;
+  padding: 0;
 }
 
 .login-header {
