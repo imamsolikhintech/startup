@@ -18,8 +18,5 @@
   "editor.quickSuggestions": {
     "strings": true
   },
-  "files.eol": "\r\n",
-  "[postcss]": {
-    "editor.defaultFormatter": "svipas.prettier-plus"
-  }
+  "files.eol": "\r\n"
 }
