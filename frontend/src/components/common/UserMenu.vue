@@ -1,32 +1,35 @@
 <template>
-  <n-dropdown 
-    :options="userMenuOptions" 
-    @select="handleUserMenuSelect"
+  <n-dropdown
+    :options="userMenuOptions"
     trigger="click"
     placement="bottom-end"
-  >
-    <n-button 
-      circle 
-      quaternary 
+    @select="handleUserMenuSelect">
+    <n-button
+      circle
+      quaternary
       class="user-menu-btn"
-      :class="{ 'mobile-hidden-info': isMobile }"
-    >
+      :class="{ 'mobile-hidden-info': isMobile }">
       <template #icon>
-        <n-avatar 
-          :size="32" 
-          :src="currentUser.avatar" 
-          :fallback-src="'/default-avatar.png'"
-        >
+        <n-avatar
+          :size="32"
+          :src="currentUser.avatar"
+          :fallback-src="'/default-avatar.png'">
           {{ currentUser.name?.charAt(0)?.toUpperCase() || 'U' }}
         </n-avatar>
       </template>
       <template v-if="!isMobile">
         <div class="user-info">
-          <div class="user-name">{{ currentUser.name || 'User' }}</div>
-          <div class="user-role">{{ currentUser.role || 'Member' }}</div>
+          <div class="user-name">
+            {{ currentUser.name || 'User' }}
+          </div>
+          <div class="user-role">
+            {{ currentUser.role || 'Member' }}
+          </div>
         </div>
-        <n-icon class="dropdown-arrow" :class="{ 'mobile-hidden': isMobile }">
-          <ChevronDownOutline />
+        <n-icon
+          class="dropdown-arrow"
+          :class="{ 'mobile-hidden': isMobile }">
+          <chevron-down-outline />
         </n-icon>
       </template>
     </n-button>
@@ -34,75 +37,74 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import { NIcon, NAvatar, NButton, NDropdown } from 'naive-ui'
-import { 
-  PersonCircleOutline, 
-  SettingsOutline, 
-  LogOutOutline,
-  ChevronDownOutline 
-} from '@vicons/ionicons5'
-import type { DropdownOption, Component } from 'naive-ui'
+  import {
+    ChevronDownOutline,
+    LogOutOutline,
+    PersonCircleOutline,
+    SettingsOutline } from '@vicons/ionicons5'
+  import type { Component, DropdownOption } from 'naive-ui'
+  import { NAvatar, NButton, NDropdown, NIcon } from 'naive-ui'
+  import { computed, h } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { useAuthStore } from '@/stores/auth'
 
-const router = useRouter()
-const authStore = useAuthStore()
+  const router = useRouter()
+  const authStore = useAuthStore()
 
-// Responsive detection
-const isMobile = computed(() => {
-  if (typeof window !== 'undefined') {
-    return window.innerWidth < 768
+  // Responsive detection
+  const isMobile = computed(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768
+    }
+    return false
+  })
+
+  // Safe user data with fallbacks
+  const currentUser = computed(() => {
+    const user = authStore.user
+    return {
+      name: user?.name || 'User',
+      email: user?.email || '',
+      role: user?.role || 'Member',
+      avatar: user?.avatar || '',
+    }
+  })
+
+  // Icon renderer function
+  function renderIcon (icon: Component) {
+    return () => {
+      return h(NIcon, null, {
+        default: () => h(icon),
+      })
+    }
   }
-  return false
-})
 
-// Safe user data with fallbacks
-const currentUser = computed(() => {
-  const user = authStore.user
-  return {
-    name: user?.name || 'User',
-    email: user?.email || '',
-    role: user?.role || 'Member',
-    avatar: user?.avatar || ''
-  }
-})
+  // User menu options
+  const userMenuOptions = computed((): DropdownOption[] => [
+    {
+      label: 'Profile',
+      key: 'profile',
+      icon: renderIcon(PersonCircleOutline),
+    },
+    {
+      label: 'Edit Profile',
+      key: 'editProfile',
+      icon: renderIcon(SettingsOutline),
+    },
+    {
+      type: 'divider',
+      key: 'divider',
+    },
+    {
+      label: 'Logout',
+      key: 'logout',
+      icon: renderIcon(LogOutOutline),
+    },
+  ])
 
-// Icon renderer function
-function renderIcon(icon: Component) {
-  return () => {
-    return h(NIcon, null, {
-      default: () => h(icon)
-    })
-  }
-}
-
-// User menu options
-const userMenuOptions = computed((): DropdownOption[] => [
-  {
-    label: 'Profile',
-    key: 'profile',
-    icon: renderIcon(PersonCircleOutline)
-  },
-  {
-    label: 'Edit Profile',
-    key: 'editProfile',
-    icon: renderIcon(SettingsOutline)
-  },
-  {
-    type: 'divider',
-    key: 'divider'
-  },
-  {
-    label: 'Logout',
-    key: 'logout',
-    icon: renderIcon(LogOutOutline)
-  }
-])
-
-// Handle menu selection
-const handleUserMenuSelect = (key: string) => {
-  switch (key) {
+  // Handle menu selection
+  const handleUserMenuSelect = (key: string) => {
+    switch (key) {
     case 'profile':
       router.push('/profile')
       break
@@ -112,18 +114,18 @@ const handleUserMenuSelect = (key: string) => {
     case 'logout':
       handleLogout()
       break
+    }
   }
-}
 
-// Handle logout
-const handleLogout = async () => {
-  try {
-    await authStore.logout()
-    router.push('/login')
-  } catch (error) {
-    console.error('Logout failed:', error)
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await authStore.logout()
+      router.push('/login')
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
   }
-}
 </script>
 
 <style scoped>
@@ -164,11 +166,11 @@ const handleLogout = async () => {
   .mobile-hidden {
     display: none;
   }
-  
+
   .mobile-hidden-info .user-info {
     display: none;
   }
-  
+
   .user-menu-btn {
     padding: 4px;
     min-height: 40px;

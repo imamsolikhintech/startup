@@ -3,16 +3,15 @@ import * as base from '../endpoint/base'
 import { ApiRequest } from '../request/ApiRequest'
 import type {
   ApiResponse,
-  PaginatedResponse,
-  User,
   CreateUserData,
-  UpdateUserData,
-  UserFilters,
-  UserStats,
-  UserPreferences,
   LoginHistory,
-  UserActivity
-} from '../types'
+  PaginatedResponse,
+  UpdateUserData,
+  User,
+  UserActivity,
+  UserFilters,
+  UserPreferences,
+  UserStats } from '../types'
 
 /**
  * User Management Service
@@ -21,8 +20,8 @@ import type {
  * user CRUD, preferences, bulk operations, and statistics.
  */
 export class UserService extends ApiRequest {
-  constructor() {
-    super(new ApiClient(base.BaseAuth()), "api/v1/users")
+  constructor () {
+    super(new ApiClient(base.BaseAuth()), 'api/v1/users')
   }
 
   /**
@@ -32,10 +31,10 @@ export class UserService extends ApiRequest {
    * @param filters - Filter criteria
    * @returns Paginated users
    */
-  async getUsers(
+  async getUsers (
     page: number = 1,
     limit: number = 10,
-    filters: UserFilters = {}
+    filters: UserFilters = {},
   ): Promise<PaginatedResponse<User>> {
     try {
       //@ts-ignore
@@ -51,7 +50,7 @@ export class UserService extends ApiRequest {
    * @param userId - User ID
    * @returns User data
    */
-  async getUserById(userId: string): Promise<ApiResponse<User>> {
+  async getUserById (userId: string): Promise<ApiResponse<User>> {
     try {
       //@ts-ignore
       return await this.getById<User>(userId)
@@ -66,7 +65,7 @@ export class UserService extends ApiRequest {
    * @param userData - User creation data
    * @returns Created user
    */
-  async createUser(userData: CreateUserData): Promise<ApiResponse<User>> {
+  async createUser (userData: CreateUserData): Promise<ApiResponse<User>> {
     try {
       //@ts-ignore
       return await this.create<User, CreateUserData>(userData)
@@ -82,9 +81,9 @@ export class UserService extends ApiRequest {
    * @param userData - User update data
    * @returns Updated user
    */
-  async updateUser(
+  async updateUser (
     userId: string,
-    userData: UpdateUserData
+    userData: UpdateUserData,
   ): Promise<ApiResponse<User>> {
     try {
       //@ts-ignore
@@ -100,7 +99,7 @@ export class UserService extends ApiRequest {
    * @param userId - User ID
    * @returns Success response
    */
-  async deleteUser(userId: string): Promise<ApiResponse<null>> {
+  async deleteUser (userId: string): Promise<ApiResponse<null>> {
     try {
       //@ts-ignore
       return await this.delete(userId)
@@ -116,9 +115,9 @@ export class UserService extends ApiRequest {
    * @param filters - Additional filters
    * @returns Search results
    */
-  async searchUsers(
+  async searchUsers (
     query: string,
-    filters: UserFilters = {}
+    filters: UserFilters = {},
   ): Promise<PaginatedResponse<User>> {
     try {
       //@ts-ignore
@@ -134,7 +133,7 @@ export class UserService extends ApiRequest {
    * @param filters - Filter criteria
    * @returns User statistics
    */
-  async getUserStats(filters: UserFilters = {}): Promise<ApiResponse<UserStats>> {
+  async getUserStats (filters: UserFilters = {}): Promise<ApiResponse<UserStats>> {
     try {
       //@ts-ignore
       return await this.getStats<UserStats>(filters)
@@ -151,10 +150,10 @@ export class UserService extends ApiRequest {
    * @param data - Additional data for operation
    * @returns API response
    */
-  async bulkUserOperation(
+  async bulkUserOperation (
     operation: 'activate' | 'deactivate' | 'delete' | 'verify',
     userIds: string[],
-    data?: any
+    data?: any,
   ): Promise<ApiResponse<any>> {
     try {
       const bulkOperation = operation === 'delete' ? 'delete' : 'update'
@@ -172,9 +171,9 @@ export class UserService extends ApiRequest {
    * @param preferences - User preferences data
    * @returns Updated user
    */
-  async updateUserPreferences(
+  async updateUserPreferences (
     userId: string,
-    preferences: UserPreferences
+    preferences: UserPreferences,
   ): Promise<ApiResponse<User>> {
     try {
       //@ts-ignore
@@ -192,16 +191,16 @@ export class UserService extends ApiRequest {
    * @param limit - Items per page
    * @returns Paginated login history
    */
-  async getLoginHistory(
+  async getLoginHistory (
     userId: string,
     page: number = 1,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<PaginatedResponse<LoginHistory>> {
     try {
       //@ts-ignore
       //@ts-ignore
       return await this.apiClient.get<PaginatedResponse<LoginHistory>>(
-        `${this.baseEndpoint}/${userId}/login-history?page=${page}&limit=${limit}`
+        `${this.baseEndpoint}/${userId}/login-history?page=${page}&limit=${limit}`,
       )
     } catch (error) {
       this.handleError(error)
@@ -216,16 +215,16 @@ export class UserService extends ApiRequest {
    * @param limit - Items per page
    * @returns Paginated activity log
    */
-  async getUserActivityLog(
+  async getUserActivityLog (
     userId: string,
     page: number = 1,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<PaginatedResponse<UserActivity>> {
     try {
       //@ts-ignore
       //@ts-ignore
       return await this.apiClient.get<PaginatedResponse<UserActivity>>(
-        `${this.baseEndpoint}/${userId}/activity-log?page=${page}&limit=${limit}`
+        `${this.baseEndpoint}/${userId}/activity-log?page=${page}&limit=${limit}`,
       )
     } catch (error) {
       this.handleError(error)

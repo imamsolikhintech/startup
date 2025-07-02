@@ -3,29 +3,41 @@
     <n-card class="not-found-card">
       <div class="not-found-content">
         <div class="error-illustration">
-          <n-icon size="120" color="var(--n-color-primary)" class="error-icon">
+          <n-icon
+            size="120"
+            color="var(--n-color-primary)"
+            class="error-icon">
             <svg viewBox="0 0 24 24">
-              <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M13,13H11V7H13M13,17H11V15H13Z"/>
+              <path
+                fill="currentColor"
+                d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M13,13H11V7H13M13,17H11V15H13Z" />
             </svg>
           </n-icon>
         </div>
-        
-        <h1 class="error-title">404</h1>
-        <h2 class="error-subtitle">Page Not Found</h2>
+
+        <h1 class="error-title">
+          404
+        </h1>
+        <h2 class="error-subtitle">
+          Page Not Found
+        </h2>
         <p class="error-description">
           The page you're looking for doesn't exist or has been moved.
         </p>
-        
-        <n-space class="action-buttons" justify="center">
+
+        <n-space
+          class="action-buttons"
+          justify="center">
           <n-button
             type="primary"
             size="large"
-            @click="$router.push('/dashboard')"
-          >
+            @click="$router.push('/dashboard')">
             <template #icon>
               <n-icon>
                 <svg viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"/>
+                  <path
+                    fill="currentColor"
+                    d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" />
                 </svg>
               </n-icon>
             </template>
@@ -34,26 +46,28 @@
           <n-button
             secondary
             size="large"
-            @click="$router.go(-1)"
-          >
+            @click="$router.go(-1)">
             <template #icon>
               <n-icon>
                 <svg viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
+                  <path
+                    fill="currentColor"
+                    d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
                 </svg>
               </n-icon>
             </template>
             Go Back
           </n-button>
         </n-space>
-        </div>
       </div>
-    </div>
+    </n-card>
+  </div>
+  </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { NButton, NIcon } from 'naive-ui'
+  import { NButton, NIcon } from 'naive-ui'
 // Component logic can be added here if needed
 </script>
 
@@ -116,15 +130,15 @@ import { NButton, NIcon } from 'naive-ui'
   .not-found-content {
     padding: 1.5rem;
   }
-  
+
   .error-title {
     font-size: 4rem;
   }
-  
+
   .error-subtitle {
     font-size: 1.5rem;
   }
-  
+
   .action-buttons {
     flex-direction: column;
     gap: 1rem;

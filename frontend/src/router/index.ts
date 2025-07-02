@@ -9,7 +9,7 @@ const router = createRouter({
       redirect: (to) => {
         const authStore = useAuthStore()
         return authStore.isAuthenticated ? '/dashboard' : '/auth/login'
-      }
+      },
     },
     {
       path: '/auth',
@@ -18,20 +18,20 @@ const router = createRouter({
         {
           path: 'login',
           name: 'Login',
-          component: () => import('@/views/auth/LoginView.vue')
+          component: () => import('@/views/auth/LoginView.vue'),
         },
         {
           path: 'register',
           name: 'Register',
-          component: () => import('@/views/auth/RegisterView.vue')
+          component: () => import('@/views/auth/RegisterView.vue'),
         },
         {
           path: 'google/callback',
           name: 'GoogleCallback',
-          component: () => import('@/views/auth/GoogleCallbackView.vue')
-        }
+          component: () => import('@/views/auth/GoogleCallbackView.vue'),
+        },
       ],
-      meta: { requiresGuest: true }
+      meta: { requiresGuest: true },
     },
     {
       path: '/',
@@ -41,36 +41,36 @@ const router = createRouter({
         {
           path: 'dashboard',
           name: 'Dashboard',
-          component: () => import('@/views/dashboard/DashboardView.vue')
+          component: () => import('@/views/dashboard/DashboardView.vue'),
         },
         {
           path: 'users',
           name: 'Users',
-          component: () => import('@/views/users/UsersView.vue')
+          component: () => import('@/views/users/UsersView.vue'),
         },
         {
           path: 'analytics',
           name: 'Analytics',
-          component: () => import('@/views/analytics/AnalyticsView.vue')
+          component: () => import('@/views/analytics/AnalyticsView.vue'),
         },
         {
           path: 'settings',
           name: 'Settings',
-          component: () => import('@/views/settings/SettingsView.vue')
+          component: () => import('@/views/settings/SettingsView.vue'),
         },
         {
           path: 'profile',
           name: 'Profile',
-          component: () => import('@/views/profile/ProfileView.vue')
-        }
-      ]
+          component: () => import('@/views/profile/ProfileView.vue'),
+        },
+      ],
     },
     {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
-      component: () => import('@/views/NotFoundView.vue')
-    }
-  ]
+      component: () => import('@/views/NotFoundView.vue'),
+    },
+  ],
 })
 
 router.beforeEach(async (to, _from, next) => {
@@ -104,8 +104,8 @@ router.beforeEach(async (to, _from, next) => {
   const requiresAuth = to.meta.requiresAuth || to.matched.some(record => record.meta.requiresAuth)
   const requiresGuest = to.meta.requiresGuest || to.matched.some(record => record.meta.requiresGuest)
 
-  console.log("requiresAuth: " + requiresAuth)
-  console.log("isAuthenticated: " + authStore.isAuthenticated)
+  console.log('requiresAuth: ' + requiresAuth)
+  console.log('isAuthenticated: ' + authStore.isAuthenticated)
   if (requiresAuth && !authStore.isAuthenticated) {
     console.log('Router guard: Redirecting to login - auth required but not authenticated')
     console.log('Router guard: Route meta:', to.meta)

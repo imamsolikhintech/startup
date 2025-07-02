@@ -1,11 +1,10 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import naive from 'naive-ui'
-import router from './router'
-import App from './App.vue'
-
 // Import all styles
 import '@/assets/styles/index.css'
+import naive from 'naive-ui'
+import { createPinia } from 'pinia'
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
 
 // Service Worker Registration removed - sw.js file not found
 

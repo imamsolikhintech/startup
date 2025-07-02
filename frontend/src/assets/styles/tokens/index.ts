@@ -1,13 +1,13 @@
 /**
  * Design Tokens - Main Export
- * 
+ *
  * Centralized export for all design tokens including colors, typography,
  * spacing, and utility functions for consistent theming.
  */
 
-import colors, { type Theme, type ThemeMode, getThemeColors } from './colors'
+import colors, { getThemeColors, type Theme, type ThemeMode } from './colors'
+import spacingTokens, { type SemanticSpacingCategory, type SpacingKey } from './spacing'
 import typography, { type TypographyScale } from './typography'
-import spacingTokens, { type SpacingKey, type SemanticSpacingCategory } from './spacing'
 
 /**
  * Complete design system tokens
@@ -15,17 +15,17 @@ import spacingTokens, { type SpacingKey, type SemanticSpacingCategory } from './
 export const designTokens = {
   colors,
   typography,
-  spacing: spacingTokens
+  spacing: spacingTokens,
 } as const
 
 /**
  * Theme configuration
  */
 export interface ThemeConfig {
-  mode: ThemeMode
-  colors: Theme
-  typography: typeof typography
-  spacing: typeof spacingTokens
+  mode: ThemeMode,
+  colors: Theme,
+  typography: typeof typography,
+  spacing: typeof spacingTokens,
 }
 
 /**
@@ -33,12 +33,12 @@ export interface ThemeConfig {
  * @param mode - Theme mode (light/dark)
  * @returns Complete theme configuration
  */
-export function createTheme(mode: ThemeMode = 'light'): ThemeConfig {
+export function createTheme (mode: ThemeMode = 'light'): ThemeConfig {
   return {
     mode,
     colors: getThemeColors(mode),
     typography,
-    spacing: spacingTokens
+    spacing: spacingTokens,
   }
 }
 
@@ -47,9 +47,9 @@ export function createTheme(mode: ThemeMode = 'light'): ThemeConfig {
  * @param theme - Theme configuration
  * @returns CSS custom properties object
  */
-export function generateCSSVars(theme: ThemeConfig): Record<string, string | number> {
+export function generateCSSVars (theme: ThemeConfig): Record<string, string | number> {
   const cssVars: Record<string, string | number> = {}
-  
+
   // Color variables
   Object.entries(theme.colors).forEach(([category, colorGroup]) => {
     if (typeof colorGroup === 'object') {
@@ -64,13 +64,13 @@ export function generateCSSVars(theme: ThemeConfig): Record<string, string | num
       })
     }
   })
-  
+
   // Typography variables
   Object.assign(cssVars, typography.cssVars)
-  
+
   // Spacing variables
   Object.assign(cssVars, spacingTokens.cssVars)
-  
+
   return cssVars
 }
 
@@ -79,11 +79,11 @@ export function generateCSSVars(theme: ThemeConfig): Record<string, string | num
  * @param cssVars - CSS variables object
  * @returns CSS string
  */
-export function generateCSSString(cssVars: Record<string, string | number>): string {
+export function generateCSSString (cssVars: Record<string, string | number>): string {
   const cssEntries = Object.entries(cssVars)
     .map(([key, value]) => `  ${key}: ${value};`)
     .join('\n')
-  
+
   return `:root {\n${cssEntries}\n}`
 }
 
@@ -100,7 +100,7 @@ export const themeUtils = {
   getColor: (theme: ThemeConfig, path: string): string => {
     const keys = path.split('.')
     let value: any = theme.colors
-    
+
     for (const key of keys) {
       value = value?.[key]
       if (value === undefined) {
@@ -108,10 +108,10 @@ export const themeUtils = {
         return '#000000'
       }
     }
-    
+
     return typeof value === 'string' ? value : '#000000'
   },
-  
+
   /**
    * Get typography styles from theme
    * @param theme - Theme configuration
@@ -122,11 +122,11 @@ export const themeUtils = {
   getTypography: (
     theme: ThemeConfig,
     scale: TypographyScale,
-    variant: string
+    variant: string,
   ): Record<string, string | number> => {
     return theme.typography.utils.getTypographyStyles(scale, variant)
   },
-  
+
   /**
    * Get spacing value from theme
    * @param theme - Theme configuration
@@ -136,7 +136,7 @@ export const themeUtils = {
   getSpacing: (theme: ThemeConfig, key: SpacingKey): string => {
     return theme.spacing.utils.getSpacing(key)
   },
-  
+
   /**
    * Get semantic spacing from theme
    * @param theme - Theme configuration
@@ -147,10 +147,10 @@ export const themeUtils = {
   getSemanticSpacing: (
     theme: ThemeConfig,
     category: SemanticSpacingCategory,
-    size: keyof typeof spacingTokens.semantic.component
+    size: keyof typeof spacingTokens.semantic.component,
   ): string => {
     return theme.spacing.utils.getSemanticSpacing(category, size)
-  }
+  },
 }
 
 /**
@@ -162,7 +162,7 @@ export const breakpoints = {
   md: '768px',
   lg: '1024px',
   xl: '1280px',
-  '2xl': '1536px'
+  '2xl': '1536px',
 } as const
 
 /**
@@ -175,30 +175,30 @@ export const mediaQueries = {
   lg: `@media (min-width: ${breakpoints.lg})`,
   xl: `@media (min-width: ${breakpoints.xl})`,
   '2xl': `@media (min-width: ${breakpoints['2xl']})`,
-  
+
   // Max width queries
   maxXs: `@media (max-width: ${breakpoints.sm})`,
   maxSm: `@media (max-width: ${breakpoints.md})`,
   maxMd: `@media (max-width: ${breakpoints.lg})`,
   maxLg: `@media (max-width: ${breakpoints.xl})`,
   maxXl: `@media (max-width: ${breakpoints['2xl']})`,
-  
+
   // Range queries
   smToMd: `@media (min-width: ${breakpoints.sm}) and (max-width: ${breakpoints.md})`,
   mdToLg: `@media (min-width: ${breakpoints.md}) and (max-width: ${breakpoints.lg})`,
   lgToXl: `@media (min-width: ${breakpoints.lg}) and (max-width: ${breakpoints.xl})`,
-  
+
   // Device queries
   mobile: '@media (max-width: 767px)',
   tablet: '@media (min-width: 768px) and (max-width: 1023px)',
   desktop: '@media (min-width: 1024px)',
-  
+
   // Orientation queries
   portrait: '@media (orientation: portrait)',
   landscape: '@media (orientation: landscape)',
-  
+
   // High DPI queries
-  retina: '@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)'
+  retina: '@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)',
 } as const
 
 /**
@@ -210,26 +210,26 @@ export const animations = {
     fast: '150ms',
     normal: '250ms',
     slow: '350ms',
-    slower: '500ms'
+    slower: '500ms',
   },
-  
+
   // Easing functions
   easing: {
     linear: 'linear',
     easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
     easeOut: 'cubic-bezier(0, 0, 0.2, 1)',
     easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
-    bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
+    bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
   },
-  
+
   // Common transitions
   transition: {
     all: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
     colors: 'color 250ms cubic-bezier(0.4, 0, 0.2, 1), background-color 250ms cubic-bezier(0.4, 0, 0.2, 1), border-color 250ms cubic-bezier(0.4, 0, 0.2, 1)',
     opacity: 'opacity 250ms cubic-bezier(0.4, 0, 0.2, 1)',
     transform: 'transform 250ms cubic-bezier(0.4, 0, 0.2, 1)',
-    shadow: 'box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1)'
-  }
+    shadow: 'box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+  },
 } as const
 
 /**
@@ -243,33 +243,29 @@ export const shadows = {
   lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
   xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
   '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-  inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)'
+  inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
 } as const
 
 /**
  * Export types
  */
 export type {
+  SemanticSpacingCategory,
+  SpacingKey,
   Theme,
   ThemeMode,
-  TypographyScale,
-  SpacingKey,
-  SemanticSpacingCategory
-} from './colors'
-
+  TypographyScale } from './colors'
+export type {
+  BorderRadiusKey,
+  SemanticSpacingSize,
+  ZIndexKey,
+} from './spacing'
 export type {
   FontFamily,
-  FontWeight,
   FontSize,
-  LineHeight,
-  LetterSpacing
-} from './typography'
-
-export type {
-  SemanticSpacingSize,
-  BorderRadiusKey,
-  ZIndexKey
-} from './spacing'
+  FontWeight,
+  LetterSpacing,
+  LineHeight } from './typography'
 
 export type Breakpoint = keyof typeof breakpoints
 export type MediaQuery = keyof typeof mediaQueries
@@ -281,8 +277,8 @@ export type Shadow = keyof typeof shadows
  * Re-export individual token modules
  */
 export { colors, getThemeColors } from './colors'
-export { typography } from './typography'
 export { spacingTokens as spacing } from './spacing'
+export { typography } from './typography'
 
 /**
  * Default export
@@ -296,5 +292,5 @@ export default {
   breakpoints,
   mediaQueries,
   animations,
-  shadows
+  shadows,
 }

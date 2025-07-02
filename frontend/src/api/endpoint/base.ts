@@ -4,7 +4,7 @@
 
 /**
  * Base URL configuration for different microservices
- * 
+ *
  * These functions return the base URLs for various services from environment variables.
  * Each service can have its own base URL to support microservice architecture.
  */
@@ -17,7 +17,7 @@
  * Authentication service base URL
  * @returns Authentication service base URL
  */
-export const  BaseAuth = (): string => import.meta.env.VITE_API_SERVICE_AUTH || '/api/v1/auth'
+export const BaseAuth = (): string => import.meta.env.VITE_API_SERVICE_AUTH || '/api/v1/auth'
 
 /**
  * File management service base URL
@@ -99,7 +99,7 @@ export const getAllServiceUrls = () => ({
   purchase: BasePurchase(),
   sales: BaseSales(),
   warehouse: BaseWarehouse(),
-  finance: BaseFinance()
+  finance: BaseFinance(),
 })
 
 /**
@@ -109,12 +109,12 @@ export const getAllServiceUrls = () => ({
 export const validateServiceUrls = (): string[] => {
   const services = getAllServiceUrls()
   const missing: string[] = []
-  
+
   Object.entries(services).forEach(([name, url]) => {
     if (!url || url === 'undefined') {
       missing.push(name)
     }
   })
-  
+
   return missing
 }

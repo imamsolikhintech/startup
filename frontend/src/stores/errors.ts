@@ -16,11 +16,11 @@ export class AuthError extends Error {
   public readonly details?: any
   public readonly timestamp: Date
 
-  constructor(
+  constructor (
     message: string,
     type: AuthErrorType = AuthErrorType.UNKNOWN_ERROR,
     statusCode?: number,
-    details?: any
+    details?: any,
   ) {
     super(message)
     this.name = 'AuthError'
@@ -30,7 +30,7 @@ export class AuthError extends Error {
     this.timestamp = new Date()
   }
 
-  static fromApiError(error: any): AuthError {
+  static fromApiError (error: any): AuthError {
     const statusCode = error.response?.status
     const message = error.response?.data?.message || error.message
     const details = error.response?.data
@@ -61,14 +61,14 @@ export class AuthError extends Error {
     return new AuthError(message, type, statusCode, details)
   }
 
-  isRetryable(): boolean {
+  isRetryable (): boolean {
     return [
       AuthErrorType.NETWORK_ERROR,
       AuthErrorType.SERVER_ERROR,
     ].includes(this.type)
   }
 
-  getUserFriendlyMessage(): string {
+  getUserFriendlyMessage (): string {
     switch (this.type) {
       case AuthErrorType.INVALID_CREDENTIALS:
         return 'Invalid email or password. Please try again.'

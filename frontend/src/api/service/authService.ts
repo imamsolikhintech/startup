@@ -1,17 +1,16 @@
 import { ApiClient } from '../endpoint/axios'
 import * as base from '../endpoint/base'
+import { ApiRequest } from '../request/ApiRequest'
 import type {
   ApiResponse,
+  AuthTokens,
+  ChangePasswordData,
   LoginCredentials,
   LoginResponse,
   RegisterData,
-  User,
-  AuthTokens,
   ResetPasswordData,
-  ChangePasswordData,
-  UpdateProfileData
-} from '../types'
-import { ApiRequest } from '../request/ApiRequest'
+  UpdateProfileData,
+  User } from '../types'
 
 /**
  * Authentication Service
@@ -21,15 +20,15 @@ import { ApiRequest } from '../request/ApiRequest'
  */
 
 export class AuthService extends ApiRequest {
-  constructor() {
-    super(new ApiClient(base.BaseAuth()), "api/v1/auth")
+  constructor () {
+    super(new ApiClient(base.BaseAuth()), 'api/v1/auth')
   }
   /**
    * Login user with credentials
    * @param credentials - User login credentials
    * @returns Login response with user data and tokens
    */
-  async login(credentials: LoginCredentials): Promise<ApiResponse<LoginResponse> | undefined> {
+  async login (credentials: LoginCredentials): Promise<ApiResponse<LoginResponse> | undefined> {
     try {
       if (!credentials.email || !credentials.password) {
         throw new Error('Email and password are required')
@@ -38,7 +37,7 @@ export class AuthService extends ApiRequest {
       //@ts-ignore
       return await this.apiClient.post<ApiResponse<LoginResponse>>(
         `${this.baseEndpoint}/login`,
-        credentials
+        credentials,
       )
     } catch (error) {
       this.handleError(error)
@@ -50,7 +49,7 @@ export class AuthService extends ApiRequest {
    * @param data - User registration data
    * @returns Registration response
    */
-  async register(data: RegisterData): Promise<ApiResponse<LoginResponse> | undefined> {
+  async register (data: RegisterData): Promise<ApiResponse<LoginResponse> | undefined> {
     try {
       if (!data.email || !data.password) {
         throw new Error('Email and password are required')
@@ -67,7 +66,7 @@ export class AuthService extends ApiRequest {
       //@ts-ignore
       return await this.apiClient.post<ApiResponse<LoginResponse>>(
         `${this.baseEndpoint}/register`,
-        data
+        data,
       )
     } catch (error) {
       this.handleError(error)
@@ -78,11 +77,11 @@ export class AuthService extends ApiRequest {
    * Logout user
    * @returns Logout response
    */
-  async logout(): Promise<ApiResponse<null> | undefined> {
+  async logout (): Promise<ApiResponse<null> | undefined> {
     try {
       //@ts-ignore
       return await this.apiClient.post<ApiResponse<null>>(
-        `${this.baseEndpoint}/logout`
+        `${this.baseEndpoint}/logout`,
       )
     } catch (error) {
       this.handleError(error)
@@ -94,7 +93,7 @@ export class AuthService extends ApiRequest {
    * @param refreshToken - Refresh token
    * @returns New tokens
    */
-  async refreshTokens(refreshToken: string): Promise<ApiResponse<AuthTokens> | undefined> {
+  async refreshTokens (refreshToken: string): Promise<ApiResponse<AuthTokens> | undefined> {
     try {
       if (!refreshToken) {
         throw new Error('Refresh token is required')
@@ -103,7 +102,7 @@ export class AuthService extends ApiRequest {
       //@ts-ignore
       return await this.apiClient.post<ApiResponse<AuthTokens>>(
         `${this.baseEndpoint}/refresh`,
-        { refreshToken }
+        { refreshToken },
       )
     } catch (error) {
       this.handleError(error)
@@ -114,11 +113,11 @@ export class AuthService extends ApiRequest {
    * Get current user profile
    * @returns Current user data
    */
-  async getCurrentUser(): Promise<ApiResponse<User> | undefined> {
+  async getCurrentUser (): Promise<ApiResponse<User> | undefined> {
     try {
       //@ts-ignore
       return await this.apiClient.get<ApiResponse<User>>(
-        `${this.baseEndpoint}/me`
+        `${this.baseEndpoint}/me`,
       )
     } catch (error) {
       this.handleError(error)
@@ -130,12 +129,12 @@ export class AuthService extends ApiRequest {
    * @param data - Profile update data
    * @returns Updated user data
    */
-  async updateProfile(data: UpdateProfileData): Promise<ApiResponse<User> | undefined> {
+  async updateProfile (data: UpdateProfileData): Promise<ApiResponse<User> | undefined> {
     try {
       //@ts-ignore
       return await this.apiClient.patch<ApiResponse<User>>(
         `${this.baseEndpoint}/me`,
-        data
+        data,
       )
     } catch (error) {
       this.handleError(error)
@@ -147,7 +146,7 @@ export class AuthService extends ApiRequest {
    * @param data - Password change data
    * @returns Success response
    */
-  async changePassword(data: ChangePasswordData): Promise<ApiResponse<null> | undefined> {
+  async changePassword (data: ChangePasswordData): Promise<ApiResponse<null> | undefined> {
     try {
       if (!data.currentPassword || !data.newPassword || !data.confirmPassword) {
         throw new Error('Current password, new password and confirm password are required')
@@ -160,7 +159,7 @@ export class AuthService extends ApiRequest {
       //@ts-ignore
       return await this.apiClient.post<ApiResponse<null>>(
         `${this.baseEndpoint}/change-password`,
-        data
+        data,
       )
     } catch (error) {
       this.handleError(error)
@@ -172,7 +171,7 @@ export class AuthService extends ApiRequest {
    * @param data - Email for password reset
    * @returns Success response
    */
-  async forgotPassword(data: ResetPasswordData): Promise<ApiResponse<null> | undefined> {
+  async forgotPassword (data: ResetPasswordData): Promise<ApiResponse<null> | undefined> {
     try {
       if (!data.email) {
         throw new Error('Email is required')
@@ -181,7 +180,7 @@ export class AuthService extends ApiRequest {
       //@ts-ignore
       return await this.apiClient.post<ApiResponse<null>>(
         `${this.baseEndpoint}/forgot-password`,
-        data
+        data,
       )
     } catch (error) {
       this.handleError(error)
@@ -194,7 +193,7 @@ export class AuthService extends ApiRequest {
    * @param data - New password data
    * @returns Success response
    */
-  async resetPassword(token: string, data: ChangePasswordData): Promise<ApiResponse<null> | undefined> {
+  async resetPassword (token: string, data: ChangePasswordData): Promise<ApiResponse<null> | undefined> {
     try {
       if (!data.newPassword || !data.confirmPassword) {
         throw new Error('New password and confirm password are required')
@@ -206,7 +205,7 @@ export class AuthService extends ApiRequest {
       //@ts-ignore
       return await this.apiClient.post<ApiResponse<null>>(
         `${this.baseEndpoint}/reset-password/${token}`,
-        data
+        data,
       )
     } catch (error) {
       this.handleError(error)
@@ -218,7 +217,7 @@ export class AuthService extends ApiRequest {
    * @param token - Verification token
    * @returns Success response
    */
-  async verifyEmail(token: string): Promise<ApiResponse<null> | undefined> {
+  async verifyEmail (token: string): Promise<ApiResponse<null> | undefined> {
     try {
       if (!token) {
         throw new Error('Token is required')
@@ -226,7 +225,7 @@ export class AuthService extends ApiRequest {
       //@ts-ignore
       return await this.apiClient.post<ApiResponse<null>>(
         `${this.baseEndpoint}/verify-email`,
-        { token }
+        { token },
       )
     } catch (error) {
       this.handleError(error)
@@ -238,7 +237,7 @@ export class AuthService extends ApiRequest {
    * @param email - User email
    * @returns Success response
    */
-  async resendVerificationEmail(email: string): Promise<ApiResponse<null> | undefined> {
+  async resendVerificationEmail (email: string): Promise<ApiResponse<null> | undefined> {
     try {
       if (!email) {
         throw new Error('Email is required')
@@ -246,7 +245,7 @@ export class AuthService extends ApiRequest {
       //@ts-ignore
       return await this.apiClient.post<ApiResponse<null>>(
         `${this.baseEndpoint}/resend-verification-email`,
-        { email }
+        { email },
       )
     } catch (error) {
       this.handleError(error)
@@ -258,14 +257,14 @@ export class AuthService extends ApiRequest {
    * @param email - Email to check
    * @returns Response indicating if email exists
    */
-  async checkEmail(email: string): Promise<ApiResponse<{ exists: boolean }> | undefined> {
+  async checkEmail (email: string): Promise<ApiResponse<{ exists: boolean }> | undefined> {
     try {
       if (!email) {
         throw new Error('Email is required')
       }
       //@ts-ignore
       return await this.apiClient.get<ApiResponse<{ exists: boolean }>>(
-        `${this.baseEndpoint}/check-email?email=${email}`
+        `${this.baseEndpoint}/check-email?email=${email}`,
       )
     } catch (error) {
       this.handleError(error)
@@ -276,11 +275,11 @@ export class AuthService extends ApiRequest {
    * Get user permissions
    * @returns Array of permissions
    */
-  async getPermissions(): Promise<ApiResponse<string[]> | undefined> {
+  async getPermissions (): Promise<ApiResponse<string[]> | undefined> {
     try {
       //@ts-ignore
       return await this.apiClient.get<ApiResponse<string[]>>(
-        `${this.baseEndpoint}/permissions`
+        `${this.baseEndpoint}/permissions`,
       )
     } catch (error) {
       this.handleError(error)
@@ -293,9 +292,9 @@ export class AuthService extends ApiRequest {
    * @param onProgress - Progress callback
    * @returns Upload response with avatar URL
    */
-  async uploadAvatar(
+  async uploadAvatar (
     file: File,
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
   ): Promise<ApiResponse<{ avatarUrl: string }> | undefined> {
     try {
       //@ts-ignore
@@ -309,7 +308,7 @@ export class AuthService extends ApiRequest {
             const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
             onProgress(progress)
           }
-        }
+        },
       )
     } catch (error) {
       this.handleError(error)
@@ -320,11 +319,11 @@ export class AuthService extends ApiRequest {
    * Delete user avatar
    * @returns Success response
    */
-  async deleteAvatar(): Promise<ApiResponse<null> | undefined> {
+  async deleteAvatar (): Promise<ApiResponse<null> | undefined> {
     try {
       //@ts-ignore
       return await this.apiClient.delete<ApiResponse<null>>(
-        `${this.baseEndpoint}/avatar`
+        `${this.baseEndpoint}/avatar`,
       )
     } catch (error) {
       this.handleError(error)
@@ -335,11 +334,11 @@ export class AuthService extends ApiRequest {
    * Enable Two-Factor Authentication (2FA)
    * @returns QR code and secret for 2FA setup
    */
-  async enable2FA(): Promise<ApiResponse<{ qrCode: string; secret: string }> | undefined> {
+  async enable2FA (): Promise<ApiResponse<{ qrCode: string, secret: string }> | undefined> {
     try {
       //@ts-ignore
-      return await this.apiClient.post<ApiResponse<{ qrCode: string; secret: string }>>(
-        `${this.baseEndpoint}/2fa/enable`
+      return await this.apiClient.post<ApiResponse<{ qrCode: string, secret: string }>>(
+        `${this.baseEndpoint}/2fa/enable`,
       )
     } catch (error) {
       this.handleError(error)
@@ -351,7 +350,7 @@ export class AuthService extends ApiRequest {
    * @param code - 2FA code from authenticator app
    * @returns Backup codes
    */
-  async verify2FA(code: string): Promise<ApiResponse<{ backupCodes: string[] }> | undefined> {
+  async verify2FA (code: string): Promise<ApiResponse<{ backupCodes: string[] }> | undefined> {
     try {
       if (!code) {
         throw new Error('2FA verification code is required')
@@ -359,7 +358,7 @@ export class AuthService extends ApiRequest {
       //@ts-ignore
       return await this.apiClient.post<ApiResponse<{ backupCodes: string[] }>>(
         `${this.baseEndpoint}/2fa/verify`,
-        { code }
+        { code },
       )
     } catch (error) {
       this.handleError(error)
@@ -371,7 +370,7 @@ export class AuthService extends ApiRequest {
    * @param password - User's current password
    * @returns Success response
    */
-  async disable2FA(password: string): Promise<ApiResponse<null> | undefined> {
+  async disable2FA (password: string): Promise<ApiResponse<null> | undefined> {
     try {
       if (!password) {
         throw new Error('Password is required')
@@ -380,7 +379,7 @@ export class AuthService extends ApiRequest {
       //@ts-ignore
       return await this.apiClient.post<ApiResponse<null>>(
         `${this.baseEndpoint}/2fa/disable`,
-        { password }
+        { password },
       )
     } catch (error) {
       this.handleError(error)
@@ -393,11 +392,11 @@ export class AuthService extends ApiRequest {
    * @param limit - Items per page
    * @returns Paginated login history
    */
-  async getLoginHistory(page: number = 1, limit: number = 10): Promise<ApiResponse<any> | undefined> {
+  async getLoginHistory (page: number = 1, limit: number = 10): Promise<ApiResponse<any> | undefined> {
     try {
       //@ts-ignore
       return await this.apiClient.get<ApiResponse<any>>(
-        `${this.baseEndpoint}/login-history?page=${page}&limit=${limit}`
+        `${this.baseEndpoint}/login-history?page=${page}&limit=${limit}`,
       )
     } catch (error) {
       this.handleError(error)
@@ -408,11 +407,11 @@ export class AuthService extends ApiRequest {
    * Revoke all user sessions (logout from all devices)
    * @returns Success response
    */
-  async revokeAllSessions(): Promise<ApiResponse<null> | undefined> {
+  async revokeAllSessions (): Promise<ApiResponse<null> | undefined> {
     try {
       //@ts-ignore
       return await this.apiClient.post<ApiResponse<null>>(
-        `${this.baseEndpoint}/revoke-sessions`
+        `${this.baseEndpoint}/revoke-sessions`,
       )
     } catch (error) {
       this.handleError(error)

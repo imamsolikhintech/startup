@@ -1,27 +1,33 @@
 <template>
-  <div v-if="loading" class="page-loader-overlay">
+  <div
+    v-if="loading"
+    class="page-loader-overlay">
     <div class="page-loader-content">
       <div class="loader-animation">
         <n-spin size="large" />
       </div>
       <div class="loader-text">
-        <h3 class="loader-title">Loading...</h3>
-        <p class="loader-subtitle">Please wait while we load the content</p>
+        <h3 class="loader-title">
+          Loading...
+        </h3>
+        <p class="loader-subtitle">
+          Please wait while we load the content
+        </p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { NSpin } from 'naive-ui'
+  import { NSpin } from 'naive-ui'
 
-interface Props {
-  loading: boolean
-}
+  interface Props {
+    loading: boolean,
+  }
 
-withDefaults(defineProps<Props>(), {
-  loading: false
-})
+  withDefaults(defineProps<Props>(), {
+    loading: false,
+  })
 </script>
 
 <style scoped>

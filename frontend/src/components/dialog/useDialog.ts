@@ -1,35 +1,35 @@
-import { ref, reactive, computed, type Ref } from 'vue'
+import { computed, reactive, type Ref, ref } from 'vue'
 import type { DialogConfig, DialogEmits } from './types'
-import { createDialogConfig, useDialogPreset, DialogPresets } from './types'
+import { createDialogConfig, DialogPresets, useDialogPreset } from './types'
 
 // Interface for dialog state management
 interface DialogState {
-  visible: Ref<boolean>
-  loading: Ref<boolean>
-  config: DialogConfig
+  visible: Ref<boolean>,
+  loading: Ref<boolean>,
+  config: DialogConfig,
 }
 
 // Interface for dialog actions
 interface DialogActions {
-  show: () => void
-  hide: () => void
-  toggle: () => void
-  setLoading: (loading: boolean) => void
-  updateConfig: (newConfig: Partial<DialogConfig>) => void
-  resetConfig: () => void
+  show: () => void,
+  hide: () => void,
+  toggle: () => void,
+  setLoading: (loading: boolean) => void,
+  updateConfig: (newConfig: Partial<DialogConfig>) => void,
+  resetConfig: () => void,
 }
 
 // Interface for dialog handlers
 interface DialogHandlers {
-  onConfirm: () => void | Promise<void>
-  onCancel: () => void
-  onClose: () => void
+  onConfirm: () => void | Promise<void>,
+  onCancel: () => void,
+  onClose: () => void,
 }
 
 // Main composable for dialog management
-export function useDialog(
+export function useDialog (
   initialConfig: Partial<DialogConfig> = {},
-  handlers: Partial<DialogHandlers> = {}
+  handlers: Partial<DialogHandlers> = {},
 ) {
   // Reactive state
   const visible = ref(false)
@@ -108,7 +108,7 @@ export function useDialog(
   const state: DialogState = {
     visible,
     loading,
-    config
+    config,
   }
 
   const actions: DialogActions = {
@@ -117,7 +117,7 @@ export function useDialog(
     toggle,
     setLoading,
     updateConfig,
-    resetConfig
+    resetConfig,
   }
 
   // Event handlers for template
@@ -125,7 +125,7 @@ export function useDialog(
     'update:show': handleUpdateShow,
     confirm: handleConfirm,
     cancel: handleCancel,
-    close: handleClose
+    close: handleClose,
   }
 
   return {
@@ -135,144 +135,144 @@ export function useDialog(
     isLoading,
     canConfirm,
     canCancel,
-    
+
     // Actions
     ...actions,
-    
+
     // Event handlers
     events,
     handleConfirm,
     handleCancel,
     handleClose,
-    handleUpdateShow
+    handleUpdateShow,
   }
 }
 
 // Specialized composable for confirmation dialogs
-export function useConfirmationDialog(
+export function useConfirmationDialog (
   title: string,
   message?: string,
-  onConfirm?: () => void | Promise<void>
+  onConfirm?: () => void | Promise<void>,
 ) {
   const config = useDialogPreset('confirmation', {}, title, message)
-  
+
   return useDialog(config, {
-    onConfirm
+    onConfirm,
   })
 }
 
 // Specialized composable for delete confirmation dialogs
-export function useDeleteConfirmationDialog(
+export function useDeleteConfirmationDialog (
   itemName?: string,
-  onDelete?: () => void | Promise<void>
+  onDelete?: () => void | Promise<void>,
 ) {
   const config = useDialogPreset('deleteConfirmation', {}, itemName)
-  
+
   return useDialog(config, {
-    onConfirm: onDelete
+    onConfirm: onDelete,
   })
 }
 
 // Specialized composable for form dialogs
-export function useFormDialog(
+export function useFormDialog (
   title: string,
   subtitle?: string,
-  onSave?: () => void | Promise<void>
+  onSave?: () => void | Promise<void>,
 ) {
   const config = useDialogPreset('form', {}, title, subtitle)
-  
+
   return useDialog(config, {
-    onConfirm: onSave
+    onConfirm: onSave,
   })
 }
 
 // Specialized composable for info dialogs
-export function useInfoDialog(
+export function useInfoDialog (
   title: string,
-  message?: string
+  message?: string,
 ) {
   const config = useDialogPreset('info', {}, title, message)
-  
+
   return useDialog(config)
 }
 
 // Specialized composable for error dialogs
-export function useErrorDialog(
+export function useErrorDialog (
   title: string = 'Error',
-  message?: string
+  message?: string,
 ) {
   const config = useDialogPreset('error', {}, title, message)
-  
+
   return useDialog(config)
 }
 
 // Specialized composable for success dialogs
-export function useSuccessDialog(
+export function useSuccessDialog (
   title: string = 'Success',
-  message?: string
+  message?: string,
 ) {
   const config = useDialogPreset('success', {}, title, message)
-  
+
   return useDialog(config)
 }
 
 // Specialized composable for warning dialogs
-export function useWarningDialog(
+export function useWarningDialog (
   title: string = 'Warning',
-  message?: string
+  message?: string,
 ) {
   const config = useDialogPreset('warning', {}, title, message)
-  
+
   return useDialog(config)
 }
 
 // Utility composable for multiple dialogs management
-export function useDialogManager() {
+export function useDialogManager () {
   const dialogs = reactive<Record<string, ReturnType<typeof useDialog>>>({})
-  
+
   const createDialog = (
     key: string,
     config: Partial<DialogConfig> = {},
-    handlers: Partial<DialogHandlers> = {}
+    handlers: Partial<DialogHandlers> = {},
   ) => {
     dialogs[key] = useDialog(config, handlers)
     return dialogs[key]
   }
-  
+
   const getDialog = (key: string) => {
     return dialogs[key]
   }
-  
+
   const showDialog = (key: string) => {
     if (dialogs[key]) {
       dialogs[key].show()
     }
   }
-  
+
   const hideDialog = (key: string) => {
     if (dialogs[key]) {
       dialogs[key].hide()
     }
   }
-  
+
   const hideAllDialogs = () => {
     Object.values(dialogs).forEach(dialog => dialog.hide())
   }
-  
+
   const removeDialog = (key: string) => {
     delete dialogs[key]
   }
-  
+
   const hasDialog = (key: string) => {
     return key in dialogs
   }
-  
+
   const getVisibleDialogs = () => {
     return Object.entries(dialogs)
       .filter(([_, dialog]) => dialog.isVisible.value)
       .map(([key, dialog]) => ({ key, dialog }))
   }
-  
+
   return {
     dialogs,
     createDialog,
@@ -282,101 +282,101 @@ export function useDialogManager() {
     hideAllDialogs,
     removeDialog,
     hasDialog,
-    getVisibleDialogs
+    getVisibleDialogs,
   }
 }
 
 // Global dialog service for app-wide dialog management
 class DialogService {
   private manager = useDialogManager()
-  
+
   // Quick methods for common dialogs
-  confirm(
+  confirm (
     title: string,
     message?: string,
-    onConfirm?: () => void | Promise<void>
+    onConfirm?: () => void | Promise<void>,
   ) {
     const key = `confirm_${Date.now()}`
     const dialog = this.manager.createDialog(
       key,
       useDialogPreset('confirmation', {}, title, message),
-      { onConfirm }
+      { onConfirm },
     )
     dialog.show()
     return dialog
   }
-  
-  deleteConfirm(
+
+  deleteConfirm (
     itemName?: string,
-    onDelete?: () => void | Promise<void>
+    onDelete?: () => void | Promise<void>,
   ) {
     const key = `delete_${Date.now()}`
     const dialog = this.manager.createDialog(
       key,
       useDialogPreset('deleteConfirmation', {}, itemName),
-      { onConfirm: onDelete }
+      { onConfirm: onDelete },
     )
     dialog.show()
     return dialog
   }
-  
-  info(title: string, message?: string) {
+
+  info (title: string, message?: string) {
     const key = `info_${Date.now()}`
     const dialog = this.manager.createDialog(
       key,
-      useDialogPreset('info', {}, title, message)
+      useDialogPreset('info', {}, title, message),
     )
     dialog.show()
     return dialog
   }
-  
-  error(title: string = 'Error', message?: string) {
+
+  error (title: string = 'Error', message?: string) {
     const key = `error_${Date.now()}`
     const dialog = this.manager.createDialog(
       key,
-      useDialogPreset('error', {}, title, message)
+      useDialogPreset('error', {}, title, message),
     )
     dialog.show()
     return dialog
   }
-  
-  success(title: string = 'Success', message?: string) {
+
+  success (title: string = 'Success', message?: string) {
     const key = `success_${Date.now()}`
     const dialog = this.manager.createDialog(
       key,
-      useDialogPreset('success', {}, title, message)
+      useDialogPreset('success', {}, title, message),
     )
     dialog.show()
     return dialog
   }
-  
-  warning(title: string = 'Warning', message?: string) {
+
+  warning (title: string = 'Warning', message?: string) {
     const key = `warning_${Date.now()}`
     const dialog = this.manager.createDialog(
       key,
-      useDialogPreset('warning', {}, title, message)
+      useDialogPreset('warning', {}, title, message),
     )
     dialog.show()
     return dialog
   }
-  
+
   // Custom dialog
-  custom(
+  custom (
     config: Partial<DialogConfig>,
-    handlers?: Partial<DialogHandlers>
+    handlers?: Partial<DialogHandlers>,
   ) {
     const key = `custom_${Date.now()}`
     const dialog = this.manager.createDialog(key, config, handlers)
     dialog.show()
     return dialog
   }
-  
+
   // Manager methods
-  hideAll() {
+  hideAll () {
     this.manager.hideAllDialogs()
   }
-  
-  getVisible() {
+
+  getVisible () {
     return this.manager.getVisibleDialogs()
   }
 }
@@ -386,8 +386,8 @@ export const dialogService = new DialogService()
 
 // Plugin for Vue app
 export default {
-  install(app: any) {
+  install (app: any) {
     app.config.globalProperties.$dialog = dialogService
     app.provide('dialog', dialogService)
-  }
+  },
 }

@@ -2,7 +2,7 @@
 // AXIOS CONFIGURATION - HTTP CLIENT SETUP AND INTERCEPTORS
 // ============================================================================
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 
@@ -14,34 +14,34 @@ import { useNotificationStore } from '@/stores/notifications'
  * Interface for tracking pending requests with deduplication
  */
 interface PendingRequest {
-  promise: Promise<any>
-  timestamp: number
-  url: string
-  method: string
+  promise: Promise<any>,
+  timestamp: number,
+  url: string,
+  method: string,
 }
 
 /**
  * Configuration options for API instance creation
  */
 interface ApiInstanceConfig {
-  baseURL: string
-  timeout?: number
-  retryAttempts?: number
-  retryDelay?: number
-  enableRequestDeduplication?: boolean
+  baseURL: string,
+  timeout?: number,
+  retryAttempts?: number,
+  retryDelay?: number,
+  enableRequestDeduplication?: boolean,
 }
 
 /**
  * Extended axios config with metadata
  */
 interface ExtendedAxiosRequestConfig extends AxiosRequestConfig {
-  __isRetryRequest?: boolean
-  _retry?: boolean
-  _retryCount?: number
+  __isRetryRequest?: boolean,
+  _retry?: boolean,
+  _retryCount?: number,
   metadata?: {
-    startTime: number
-    requestId: string
-  }
+    startTime: number,
+    requestId: string,
+  },
 }
 
 // ============================================================================
@@ -56,9 +56,9 @@ const DEFAULT_CONFIG: AxiosRequestConfig = {
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest'
+    'X-Requested-With': 'XMLHttpRequest',
   },
-  withCredentials: false
+  withCredentials: false,
 } as const
 
 /**
@@ -76,7 +76,7 @@ const ERROR_MESSAGES = {
   422: 'Please check your input',
   500: 'Internal server error occurred',
   NETWORK: 'Unable to connect to server',
-  DEFAULT: 'An error occurred'
+  DEFAULT: 'An error occurred',
 } as const
 
 // ============================================================================
@@ -119,13 +119,13 @@ export const createApiInstance = (baseURL: string, options: Partial<ApiInstanceC
     timeout = DEFAULT_CONFIG.timeout,
     retryAttempts = 3,
     retryDelay = 1000,
-    enableRequestDeduplication = true
+    enableRequestDeduplication = true,
   } = options
 
   const instance = axios.create({
     ...DEFAULT_CONFIG,
     baseURL,
-    timeout
+    timeout,
   })
 
   // ============================================================================
@@ -138,7 +138,7 @@ export const createApiInstance = (baseURL: string, options: Partial<ApiInstanceC
       try {
         const authStore = useAuthStore()
         const token = authStore.token
-        
+
         // Add authentication token
         if (token) {
           config.headers = config.headers || {}
@@ -148,17 +148,17 @@ export const createApiInstance = (baseURL: string, options: Partial<ApiInstanceC
         // Add request metadata for debugging and tracking
         config.metadata = {
           startTime: Date.now(),
-          requestId: generateRequestId()
+          requestId: generateRequestId(),
         }
 
         // Log request in development
         if (process.env.NODE_ENV === 'development') {
           console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`, {
             requestId: config.metadata.requestId,
-            data: config.data
+            data: config.data,
           })
         }
-        
+
         return config
       } catch (error) {
         console.error('[API] Error in request interceptor:', error)
@@ -168,7 +168,7 @@ export const createApiInstance = (baseURL: string, options: Partial<ApiInstanceC
     (error) => {
       console.error('[API] Request interceptor error:', error)
       return Promise.reject(error)
-    }
+    },
   )
 
   // ============================================================================
@@ -181,21 +181,21 @@ export const createApiInstance = (baseURL: string, options: Partial<ApiInstanceC
       if (process.env.NODE_ENV === 'development' && (response.config as ExtendedAxiosRequestConfig).metadata?.startTime) {
         const duration = Date.now() - ((response.config as ExtendedAxiosRequestConfig).metadata?.startTime || 0)
         console.log(`[API] ${response.config.method?.toUpperCase()} ${response.config.url} - ${duration}ms`, {
-          status: response.status,          requestId: (response.config as ExtendedAxiosRequestConfig).metadata?.requestId
+          status: response.status, requestId: (response.config as ExtendedAxiosRequestConfig).metadata?.requestId,
 
         })
       }
-      
+
       return response
     },
     async (error: AxiosError) => {
       const notificationStore = useNotificationStore()
       const authStore = useAuthStore()
       const originalRequest = error.config as ExtendedAxiosRequestConfig
-      
+
       if (error.response) {
         const { status, data } = error.response
-        
+
         // ============================================================================
         // TOKEN REFRESH LOGIC
         // ============================================================================
@@ -203,12 +203,12 @@ export const createApiInstance = (baseURL: string, options: Partial<ApiInstanceC
           try {
             // Try to refresh the token
             const newToken = await authStore.refreshToken()
-            
+
             // Retry the original request with new token
             originalRequest.headers = originalRequest.headers || {}
             originalRequest.headers.Authorization = `Bearer ${newToken}`
             originalRequest.__isRetryRequest = true
-            
+
             return instance(originalRequest)
           } catch (refreshError) {
             // If refresh token fails, logout and redirect to login
@@ -217,7 +217,7 @@ export const createApiInstance = (baseURL: string, options: Partial<ApiInstanceC
             return Promise.reject(error)
           }
         }
-        
+
         // ============================================================================
         // RETRY LOGIC FOR RETRYABLE ERRORS
         // ============================================================================
@@ -235,7 +235,7 @@ export const createApiInstance = (baseURL: string, options: Partial<ApiInstanceC
             return instance(originalRequest)
           }
         }
-        
+
         // ============================================================================
         // ERROR HANDLING BY STATUS CODE
         // ============================================================================
@@ -271,9 +271,9 @@ export const createApiInstance = (baseURL: string, options: Partial<ApiInstanceC
         // Something else happened
         notificationStore.showError(error.message || ERROR_MESSAGES.DEFAULT, 'Error')
       }
-      
+
       return Promise.reject(error)
-    }
+    },
   )
 
   return instance
@@ -292,8 +292,8 @@ export const defaultApiClient = createApiInstance(
     timeout: 30000,
     retryAttempts: 3,
     retryDelay: 1000,
-    enableRequestDeduplication: true
-  }
+    enableRequestDeduplication: true,
+  },
 )
 
 /**
@@ -305,8 +305,8 @@ export const fileApiClient = createApiInstance(
     timeout: 120000, // 2 minutes for file uploads
     retryAttempts: 1,
     retryDelay: 2000,
-    enableRequestDeduplication: false
-  }
+    enableRequestDeduplication: false,
+  },
 )
 
 // ============================================================================
@@ -339,7 +339,7 @@ export const createHeaderInterceptor = (headers: Record<string, string>) => {
   return (config: AxiosRequestConfig) => {
     config.headers = {
       ...config.headers,
-      ...headers
+      ...headers,
     }
     return config
   }
@@ -362,17 +362,17 @@ export class ApiClient extends axios.Axios {
   private pendingRequests: Map<string, PendingRequest> = new Map()
   private readonly REQUEST_TIMEOUT = 30000 // 30 seconds
 
-  constructor(baseURL: string, options: Partial<ApiInstanceConfig> = {}) {
+  constructor (baseURL: string, options: Partial<ApiInstanceConfig> = {}) {
     const config = {
       ...DEFAULT_CONFIG,
       baseURL,
-      timeout: options.timeout || 30000
+      timeout: options.timeout || 30000,
     }
     super(config)
     this.setupInterceptors()
   }
 
-  private setupInterceptors(): void {
+  private setupInterceptors (): void {
     // Request interceptor
     this.interceptors.request.use(
       //@ts-ignore-line
@@ -380,7 +380,7 @@ export class ApiClient extends axios.Axios {
         try {
           const authStore = useAuthStore()
           const token = authStore.token
-          
+
           if (token) {
             config.headers = config.headers || {}
             config.headers.Authorization = `Bearer ${token}`
@@ -388,16 +388,16 @@ export class ApiClient extends axios.Axios {
 
           config.metadata = {
             startTime: Date.now(),
-            requestId: generateRequestId()
+            requestId: generateRequestId(),
           }
 
           if (process.env.NODE_ENV === 'development') {
             console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`, {
               requestId: config.metadata.requestId,
-              data: config.data
+              data: config.data,
             })
           }
-          
+
           return config
         } catch (error) {
           console.error('[API] Error in request interceptor:', error)
@@ -407,7 +407,7 @@ export class ApiClient extends axios.Axios {
       (error) => {
         console.error('[API] Request interceptor error:', error)
         return Promise.reject(error)
-      }
+      },
     )
 
     // Response interceptor
@@ -417,28 +417,28 @@ export class ApiClient extends axios.Axios {
           const duration = Date.now() - ((response.config as ExtendedAxiosRequestConfig).metadata?.startTime || 0)
           console.log(`[API] ${response.config.method?.toUpperCase()} ${response.config.url} - ${duration}ms`, {
             status: response.status,
-            requestId: (response.config as ExtendedAxiosRequestConfig).metadata?.requestId
+            requestId: (response.config as ExtendedAxiosRequestConfig).metadata?.requestId,
           })
         }
-        
+
         return response
       },
       async (error: AxiosError) => {
         const notificationStore = useNotificationStore()
         const authStore = useAuthStore()
         const originalRequest = error.config as ExtendedAxiosRequestConfig
-        
+
         if (error.response) {
           const { status, data } = error.response
-          
+
           if (status === 401 && originalRequest && !originalRequest.__isRetryRequest) {
             try {
               const newToken = await authStore.refreshToken()
-              
+
               originalRequest.headers = originalRequest.headers || {}
               originalRequest.headers.Authorization = `Bearer ${newToken}`
               originalRequest.__isRetryRequest = true
-              
+
               return this.request(originalRequest)
             } catch (refreshError) {
               authStore.logout()
@@ -446,7 +446,7 @@ export class ApiClient extends axios.Axios {
               return Promise.reject(error)
             }
           }
-          
+
           if (
             originalRequest &&
             !originalRequest._retry &&
@@ -461,7 +461,7 @@ export class ApiClient extends axios.Axios {
               return this.request(originalRequest)
             }
           }
-          
+
           switch (status) {
             case 401:
               if (!originalRequest || originalRequest.__isRetryRequest) {
@@ -491,20 +491,20 @@ export class ApiClient extends axios.Axios {
         } else {
           notificationStore.showError(error.message || ERROR_MESSAGES.DEFAULT, 'Error')
         }
-        
+
         return Promise.reject(error)
-      }
+      },
     )
   }
 
   // Generate unique key for request deduplication
-  private generateRequestKey(method: string, url: string, data?: any): string {
+  private generateRequestKey (method: string, url: string, data?: any): string {
     const dataHash = data ? JSON.stringify(data) : ''
     return `${method.toUpperCase()}:${url}:${dataHash}`
   }
 
   // Clean up expired pending requests
-  private cleanupExpiredRequests(): void {
+  private cleanupExpiredRequests (): void {
     const now = Date.now()
     for (const [key, request] of this.pendingRequests.entries()) {
       if (now - request.timestamp > this.REQUEST_TIMEOUT) {
@@ -516,7 +516,7 @@ export class ApiClient extends axios.Axios {
   // Execute request with deduplication
   private async executeWithDeduplication<T>(
     requestKey: string,
-    requestFn: () => Promise<T>
+    requestFn: () => Promise<T>,
   ): Promise<T> {
     // Clean up expired requests first
     this.cleanupExpiredRequests()
@@ -533,7 +533,7 @@ export class ApiClient extends axios.Axios {
       promise,
       timestamp: Date.now(),
       url: requestKey.split(':')[1],
-      method: requestKey.split(':')[0]
+      method: requestKey.split(':')[0],
     })
 
     try {
@@ -575,21 +575,21 @@ export class ApiClient extends axios.Axios {
     url: string,
     page: number = 1,
     limit: number = 10,
-    params?: Record<string, any>
+    params?: Record<string, any>,
   ): Promise<{
-    data: T[]
+    data: T[],
     pagination: {
-      page: number
-      limit: number
-      total: number
-      totalPages: number
-    }
+      page: number,
+      limit: number,
+      total: number,
+      totalPages: number,
+    },
   }> {
     const requestParams = { page, limit, ...params }
     const requestKey = this.generateRequestKey('GET', url, requestParams)
     return this.executeWithDeduplication(requestKey, async () => {
       const response = await super.get(url, {
-        params: requestParams
+        params: requestParams,
       })
       return response.data
     })
@@ -608,12 +608,12 @@ export class ApiClient extends axios.Axios {
   }
 
   // Clear all pending requests (useful for cleanup)
-  clearPendingRequests(): void {
+  clearPendingRequests (): void {
     this.pendingRequests.clear()
   }
 
   // Get pending requests count (for debugging)
-  getPendingRequestsCount(): number {
+  getPendingRequestsCount (): number {
     this.cleanupExpiredRequests()
     return this.pendingRequests.size
   }
@@ -648,28 +648,28 @@ export class ApiClient extends axios.Axios {
   async upload<T = any>(
     url: string,
     file: File,
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
   ): Promise<AxiosResponse<T>> {
     const formData = new FormData()
     formData.append('file', file)
 
     return super.post<T>(url, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'multipart/form-data',
       },
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
           const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
           onProgress(progress)
         }
-      }
+      },
     })
   }
 
   async uploadMultiple<T = any>(
     url: string,
     files: File[],
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
   ): Promise<AxiosResponse<T>> {
     const formData = new FormData()
     files.forEach((file, index) => {
@@ -678,19 +678,19 @@ export class ApiClient extends axios.Axios {
 
     return super.post<T>(url, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'multipart/form-data',
       },
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
           const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
           onProgress(progress)
         }
-      }
+      },
     })
   }
 
   // Get raw axios instance for custom usage
-  getInstance(): AxiosInstance {
+  getInstance (): AxiosInstance {
     return this as any
   }
 }
@@ -706,13 +706,13 @@ export const apiClient = new ApiClient(import.meta.env.VITE_API_BASE_URL || 'htt
 // TYPE EXPORTS
 // ============================================================================
 
-export type { ApiInstanceConfig, PendingRequest, ExtendedAxiosRequestConfig }
+export type { ApiInstanceConfig, ExtendedAxiosRequestConfig, PendingRequest }
 
 // ============================================================================
 // CONSTANTS EXPORT
 // ============================================================================
 
-export { DEFAULT_CONFIG, RETRYABLE_STATUS_CODES, ERROR_MESSAGES }
+export { DEFAULT_CONFIG, ERROR_MESSAGES, RETRYABLE_STATUS_CODES }
 
 // Export default class
 export default ApiClient

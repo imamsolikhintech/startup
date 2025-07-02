@@ -1,18 +1,36 @@
 <template>
-  <n-modal :show="show" @update:show="$emit('update:show', $event)" :mask-closable="!persistent"
-    :close-on-esc="!persistent" :style="{ maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth }"
-    :transform-origin="'center'">
-    <n-card :style="{ width: '100%', maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth }"
-      :title="showHeader ? title : undefined" :closable="showCloseButton" @close="handleClose" role="dialog">
+  <n-modal
+    :show="show"
+    :mask-closable="!persistent"
+    :close-on-esc="!persistent"
+    :style="{ maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth }"
+    :transform-origin="'center'"
+    @update:show="$emit('update:show', $event)">
+    <n-card
+      :style="{ width: '100%', maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth }"
+      :title="showHeader ? title : undefined"
+      :closable="showCloseButton"
+      role="dialog"
+      @close="handleClose">
       <!-- Header Section -->
-      <template v-if="showHeader" #header>
+      <template
+        v-if="showHeader"
+        #header>
         <div class="flex items-center justify-between w-full">
           <div class="flex items-center">
-            <n-icon v-if="headerIcon" :component="getIconComponent(headerIcon)" :color="headerIconColor"
-              :size="headerIconSize" class="mr-3" />
+            <n-icon
+              v-if="headerIcon"
+              :component="getIconComponent(headerIcon)"
+              :color="headerIconColor"
+              :size="headerIconSize"
+              class="mr-3" />
             <div>
-              <div class="text-lg font-medium">{{ title }}</div>
-              <div v-if="subtitle" class="text-sm text-gray-500 mt-1">
+              <div class="text-lg font-medium">
+                {{ title }}
+              </div>
+              <div
+                v-if="subtitle"
+                class="text-sm text-gray-500 mt-1">
                 {{ subtitle }}
               </div>
             </div>
@@ -25,20 +43,35 @@
       </template>
 
       <!-- Content Section -->
-      <div :class="contentClass" :style="contentStyle">
+      <div
+        :class="contentClass"
+        :style="contentStyle">
         <slot></slot>
       </div>
 
       <!-- Footer Section -->
-      <template v-if="showFooter" #footer>
-        <div class="custom-dialog-footer" :class="footerClass" style="background: rgb(30 30 30 / 0%);">
+      <template
+        v-if="showFooter"
+        #footer>
+        <div
+          class="custom-dialog-footer"
+          :class="footerClass"
+          style="background: rgb(30 30 30 / 0%);">
           <slot name="footer">
             <!-- Default Footer Actions -->
             <n-flex justify="end">
-              <n-button v-if="showCancelButton" :type="cancelButtonVariant" @click="handleCancel" :disabled="loading">
+              <n-button
+                v-if="showCancelButton"
+                :type="cancelButtonVariant"
+                :disabled="loading"
+                @click="handleCancel">
                 {{ cancelButtonText }}
               </n-button>
-              <n-button v-if="showConfirmButton" :type="confirmButtonVariant" :loading="loading" @click="handleConfirm">
+              <n-button
+                v-if="showConfirmButton"
+                :type="confirmButtonVariant"
+                :loading="loading"
+                @click="handleConfirm">
                 {{ confirmButtonText }}
               </n-button>
             </n-flex>
@@ -50,193 +83,193 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h } from 'vue'
+  import { computed, h } from 'vue'
 
-interface Props {
-  // Dialog visibility
-  show: boolean
+  interface Props {
+    // Dialog visibility
+    show: boolean,
 
-  // Dialog configuration
-  maxWidth?: string | number
-  persistent?: boolean
-  scrollable?: boolean
-  fullscreen?: boolean
-  transition?: string
-  rounded?: string | number | boolean
+    // Dialog configuration
+    maxWidth?: string | number,
+    persistent?: boolean,
+    scrollable?: boolean,
+    fullscreen?: boolean,
+    transition?: string,
+    rounded?: string | number | boolean,
 
-  // Header configuration
-  showHeader?: boolean
-  title?: string
-  subtitle?: string
-  headerIcon?: string
-  headerIconColor?: string
-  headerIconSize?: string | number
-  headerClass?: string
-  showHeaderDivider?: boolean
+    // Header configuration
+    showHeader?: boolean,
+    title?: string,
+    subtitle?: string,
+    headerIcon?: string,
+    headerIconColor?: string,
+    headerIconSize?: string | number,
+    headerClass?: string,
+    showHeaderDivider?: boolean,
 
-  // Close button configuration
-  showCloseButton?: boolean
-  closeIcon?: string
-  closeButtonTitle?: string
+    // Close button configuration
+    showCloseButton?: boolean,
+    closeIcon?: string,
+    closeButtonTitle?: string,
 
-  // Content configuration
-  contentClass?: any
-  contentStyle?: any
+    // Content configuration
+    contentClass?: any,
+    contentStyle?: any,
 
-  // Footer configuration
-  showFooter?: boolean
-  footerClass?: string
-  showFooterDivider?: boolean
-  footerJustifyStart?: boolean
+    // Footer configuration
+    showFooter?: boolean,
+    footerClass?: string,
+    showFooterDivider?: boolean,
+    footerJustifyStart?: boolean,
 
-  // Footer buttons configuration
-  showCancelButton?: boolean
-  cancelButtonText?: string
-  cancelButtonColor?: string
-  cancelButtonVariant?: 'default' | 'tertiary' | 'primary' | 'info' | 'success' | 'warning' | 'error'
+    // Footer buttons configuration
+    showCancelButton?: boolean,
+    cancelButtonText?: string,
+    cancelButtonColor?: string,
+    cancelButtonVariant?: 'default' | 'tertiary' | 'primary' | 'info' | 'success' | 'warning' | 'error',
 
-  showConfirmButton?: boolean
-  confirmButtonText?: string
-  confirmButtonColor?: string
-  confirmButtonVariant?: 'default' | 'tertiary' | 'primary' | 'info' | 'success' | 'warning' | 'error'
+    showConfirmButton?: boolean,
+    confirmButtonText?: string,
+    confirmButtonColor?: string,
+    confirmButtonVariant?: 'default' | 'tertiary' | 'primary' | 'info' | 'success' | 'warning' | 'error',
 
-  buttonSize?: string
-  loading?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  maxWidth: 600,
-  persistent: false,
-  scrollable: true,
-  fullscreen: false,
-  transition: 'dialog-transition',
-  rounded: 'lg',
-
-  showHeader: true,
-  title: '',
-  subtitle: '',
-  headerIcon: '',
-  headerIconColor: 'primary',
-  headerIconSize: 24,
-  headerClass: '',
-  showHeaderDivider: true,
-
-  showCloseButton: true,
-  closeIcon: 'mdi-close',
-  closeButtonTitle: 'Close',
-
-  contentClass: 'pa-6',
-  contentStyle: '',
-
-  showFooter: true,
-  footerClass: 'pa-4',
-  showFooterDivider: true,
-  footerJustifyStart: false,
-
-  showCancelButton: true,
-  cancelButtonText: 'Cancel',
-  cancelButtonColor: '',
-  cancelButtonVariant: 'error',
-
-  showConfirmButton: true,
-  confirmButtonText: 'Confirm',
-  confirmButtonColor: 'primary',
-  confirmButtonVariant: 'success',
-
-  buttonSize: 'default',
-  loading: false
-})
-
-interface Emits {
-  'update:show': [value: boolean]
-  'close': []
-  'cancel': []
-  'confirm': []
-}
-
-const emit = defineEmits<Emits>()
-
-// Icon component mapper
-const getIconComponent = (iconName: string) => {
-  const iconMap: Record<string, () => any> = {
-    'mdi-account-edit': () => h('svg', {
-      viewBox: '0 0 24 24',
-      fill: 'currentColor'
-    }, [
-      h('path', {
-        d: 'M21.7,13.35L20.7,14.35L18.65,12.3L19.65,11.3C19.86,11.09 20.21,11.09 20.42,11.3L21.7,12.58C21.91,12.79 21.91,13.14 21.7,13.35M12,18.94L18.06,12.88L20.11,14.93L14.06,21H12V18.94M12,14C7.58,14 4,15.79 4,18V20H10V18.94L12,16.94V14M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4Z'
-      })
-    ]),
-    'mdi-account-plus': () => h('svg', {
-      viewBox: '0 0 24 24',
-      fill: 'currentColor'
-    }, [
-      h('path', {
-        d: 'M15,14C12.33,14 7,15.33 7,18V20H23V18C23,15.33 17.67,14 15,14M6,10V7H4V10H1V12H4V15H6V12H9V10M15,12A4,4 0 0,0 19,8A4,4 0 0,0 15,4A4,4 0 0,0 11,8A4,4 0 0,0 15,12Z'
-      })
-    ]),
-    'mdi-lock-reset': () => h('svg', {
-      viewBox: '0 0 24 24',
-      fill: 'currentColor'
-    }, [
-      h('path', {
-        d: 'M12.63,2C18.16,2 22.64,6.5 22.64,12C22.64,17.5 18.16,22 12.63,22C9.12,22 6.05,20.18 4.26,17.43L5.84,16.18C7.25,18.47 9.76,20 12.64,20A8,8 0 0,0 20.64,12A8,8 0 0,0 12.64,4C8.56,4 5.2,7.06 4.71,11H7.47L3.73,14.73L0,11H2.69C3.19,5.95 7.45,2 12.63,2M15.59,10.24C16.35,10.74 16.35,11.76 15.59,12.26L12.64,14.04A1,1 0 0,1 11.64,13.04V9.44C11.64,8.84 12.34,8.54 12.84,8.84L15.59,10.24Z'
-      })
-    ]),
-    'mdi-delete': () => h('svg', {
-      viewBox: '0 0 24 24',
-      fill: 'currentColor'
-    }, [
-      h('path', {
-        d: 'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z'
-      })
-    ]),
-    'mdi-chart-line': () => h('svg', {
-      viewBox: '0 0 24 24',
-      fill: 'currentColor'
-    }, [
-      h('path', {
-        d: 'M16,11.78L20.24,4.45L21.97,5.45L16.74,14.5L10.23,10.75L5.46,19H22V21H2V3H4V17.54L9.5,8L16,11.78Z'
-      })
-    ]),
-    'mdi-close': () => h('svg', {
-      viewBox: '0 0 24 24',
-      fill: 'currentColor'
-    }, [
-      h('path', {
-        d: 'M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z'
-      })
-    ])
+    buttonSize?: string,
+    loading?: boolean,
   }
 
-  return iconMap[iconName] || (() => h('svg', {
-    viewBox: '0 0 24 24',
-    fill: 'currentColor'
-  }, [
-    h('path', {
-      d: 'M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z'
-    })
-  ]))
-}
+  const props = withDefaults(defineProps<Props>(), {
+    maxWidth: 600,
+    persistent: false,
+    scrollable: true,
+    fullscreen: false,
+    transition: 'dialog-transition',
+    rounded: 'lg',
 
-// Computed properties
-const dialogVisible = computed({
-  get: () => props.show,
-  set: (value: boolean) => emit('update:show', value)
-})
+    showHeader: true,
+    title: '',
+    subtitle: '',
+    headerIcon: '',
+    headerIconColor: 'primary',
+    headerIconSize: 24,
+    headerClass: '',
+    showHeaderDivider: true,
 
-// Event handlers
-const handleClose = () => {
-  emit('close')
-  emit('update:show', false)
-}
+    showCloseButton: true,
+    closeIcon: 'mdi-close',
+    closeButtonTitle: 'Close',
 
-const handleCancel = () => {
-  emit('cancel')
-  emit('update:show', false)
-}
+    contentClass: 'pa-6',
+    contentStyle: '',
 
-const handleConfirm = () => {
-  emit('confirm')
-}
+    showFooter: true,
+    footerClass: 'pa-4',
+    showFooterDivider: true,
+    footerJustifyStart: false,
+
+    showCancelButton: true,
+    cancelButtonText: 'Cancel',
+    cancelButtonColor: '',
+    cancelButtonVariant: 'error',
+
+    showConfirmButton: true,
+    confirmButtonText: 'Confirm',
+    confirmButtonColor: 'primary',
+    confirmButtonVariant: 'success',
+
+    buttonSize: 'default',
+    loading: false,
+  })
+
+  interface Emits {
+    'update:show': [value: boolean],
+    'close': [],
+    'cancel': [],
+    'confirm': [],
+  }
+
+  const emit = defineEmits<Emits>()
+
+  // Icon component mapper
+  const getIconComponent = (iconName: string) => {
+    const iconMap: Record<string, () => any> = {
+      'mdi-account-edit': () => h('svg', {
+        viewBox: '0 0 24 24',
+        fill: 'currentColor',
+      }, [
+        h('path', {
+          d: 'M21.7,13.35L20.7,14.35L18.65,12.3L19.65,11.3C19.86,11.09 20.21,11.09 20.42,11.3L21.7,12.58C21.91,12.79 21.91,13.14 21.7,13.35M12,18.94L18.06,12.88L20.11,14.93L14.06,21H12V18.94M12,14C7.58,14 4,15.79 4,18V20H10V18.94L12,16.94V14M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4Z',
+        }),
+      ]),
+      'mdi-account-plus': () => h('svg', {
+        viewBox: '0 0 24 24',
+        fill: 'currentColor',
+      }, [
+        h('path', {
+          d: 'M15,14C12.33,14 7,15.33 7,18V20H23V18C23,15.33 17.67,14 15,14M6,10V7H4V10H1V12H4V15H6V12H9V10M15,12A4,4 0 0,0 19,8A4,4 0 0,0 15,4A4,4 0 0,0 11,8A4,4 0 0,0 15,12Z',
+        }),
+      ]),
+      'mdi-lock-reset': () => h('svg', {
+        viewBox: '0 0 24 24',
+        fill: 'currentColor',
+      }, [
+        h('path', {
+          d: 'M12.63,2C18.16,2 22.64,6.5 22.64,12C22.64,17.5 18.16,22 12.63,22C9.12,22 6.05,20.18 4.26,17.43L5.84,16.18C7.25,18.47 9.76,20 12.64,20A8,8 0 0,0 20.64,12A8,8 0 0,0 12.64,4C8.56,4 5.2,7.06 4.71,11H7.47L3.73,14.73L0,11H2.69C3.19,5.95 7.45,2 12.63,2M15.59,10.24C16.35,10.74 16.35,11.76 15.59,12.26L12.64,14.04A1,1 0 0,1 11.64,13.04V9.44C11.64,8.84 12.34,8.54 12.84,8.84L15.59,10.24Z',
+        }),
+      ]),
+      'mdi-delete': () => h('svg', {
+        viewBox: '0 0 24 24',
+        fill: 'currentColor',
+      }, [
+        h('path', {
+          d: 'M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z',
+        }),
+      ]),
+      'mdi-chart-line': () => h('svg', {
+        viewBox: '0 0 24 24',
+        fill: 'currentColor',
+      }, [
+        h('path', {
+          d: 'M16,11.78L20.24,4.45L21.97,5.45L16.74,14.5L10.23,10.75L5.46,19H22V21H2V3H4V17.54L9.5,8L16,11.78Z',
+        }),
+      ]),
+      'mdi-close': () => h('svg', {
+        viewBox: '0 0 24 24',
+        fill: 'currentColor',
+      }, [
+        h('path', {
+          d: 'M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z',
+        }),
+      ]),
+    }
+
+    return iconMap[iconName] || (() => h('svg', {
+      viewBox: '0 0 24 24',
+      fill: 'currentColor',
+    }, [
+      h('path', {
+        d: 'M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z',
+      }),
+    ]))
+  }
+
+  // Computed properties
+  const dialogVisible = computed({
+    get: () => props.show,
+    set: (value: boolean) => emit('update:show', value),
+  })
+
+  // Event handlers
+  const handleClose = () => {
+    emit('close')
+    emit('update:show', false)
+  }
+
+  const handleCancel = () => {
+    emit('cancel')
+    emit('update:show', false)
+  }
+
+  const handleConfirm = () => {
+    emit('confirm')
+  }
 </script>

@@ -4,7 +4,7 @@
  */
 
 // Theme color names
-export type ThemeColor = 
+export type ThemeColor =
   | 'primary'
   | 'secondary'
   | 'accent'
@@ -16,7 +16,7 @@ export type ThemeColor =
   | 'background'
 
 // Color variants (50-900 scale)
-export type ColorVariant = 
+export type ColorVariant =
   | '50'
   | '100'
   | '200'
@@ -29,7 +29,7 @@ export type ColorVariant =
   | '900'
 
 // Opacity levels
-export type OpacityLevel = 
+export type OpacityLevel =
   | '10'
   | '20'
   | '30'
@@ -46,7 +46,7 @@ export type OpacityLevel =
  * @param variant - Color variant (optional)
  * @returns CSS custom property string
  */
-export function getThemeColor(color: ThemeColor, variant?: ColorVariant): string {
+export function getThemeColor (color: ThemeColor, variant?: ColorVariant): string {
   if (variant) {
     return `var(--v-theme-${color}-${variant})`
   }
@@ -59,7 +59,7 @@ export function getThemeColor(color: ThemeColor, variant?: ColorVariant): string
  * @param variant - Color variant (optional)
  * @returns RGB values as string
  */
-export function getThemeColorRGB(color: ThemeColor, variant?: ColorVariant): string {
+export function getThemeColorRGB (color: ThemeColor, variant?: ColorVariant): string {
   if (variant) {
     return `var(--v-theme-${color}-${variant})`
   }
@@ -73,10 +73,10 @@ export function getThemeColorRGB(color: ThemeColor, variant?: ColorVariant): str
  * @param variant - Color variant (optional)
  * @returns rgba CSS string
  */
-export function getThemeColorWithOpacity(
-  color: ThemeColor, 
-  opacity: number, 
-  variant?: ColorVariant
+export function getThemeColorWithOpacity (
+  color: ThemeColor,
+  opacity: number,
+  variant?: ColorVariant,
 ): string {
   const rgbVar = variant ? `--v-theme-${color}-${variant}` : `--v-theme-${color}`
   return `rgba(var(${rgbVar}), ${opacity})`
@@ -88,9 +88,9 @@ export function getThemeColorWithOpacity(
  * @param variant - Color variant (optional)
  * @returns rgb CSS string
  */
-export function getThemeColorRgb(
-  color: ThemeColor, 
-  variant?: ColorVariant
+export function getThemeColorRgb (
+  color: ThemeColor,
+  variant?: ColorVariant,
 ): string {
   const rgbVar = variant ? `--v-theme-${color}-${variant}` : `--v-theme-${color}`
   return `rgb(var(${rgbVar}))`
@@ -104,22 +104,22 @@ export function getThemeColorRgb(
  * @param opacity - Opacity level (optional)
  * @returns CSS class name
  */
-export function getThemeColorClass(
+export function getThemeColorClass (
   type: 'text' | 'bg' | 'border',
   color: ThemeColor,
   variant?: ColorVariant,
-  opacity?: OpacityLevel
+  opacity?: OpacityLevel,
 ): string {
   let className = `${type}-${color}`
-  
+
   if (variant) {
     className += `-${variant}`
   }
-  
+
   if (opacity) {
     className += `-opacity-${opacity}`
   }
-  
+
   return className
 }
 
@@ -132,16 +132,16 @@ export function getThemeColorClass(
  * @param endVariant - End color variant (optional)
  * @returns CSS gradient string
  */
-export function createThemeGradient(
+export function createThemeGradient (
   startColor: ThemeColor,
   endColor: ThemeColor,
   direction: string = '135deg',
   startVariant?: ColorVariant,
-  endVariant?: ColorVariant
+  endVariant?: ColorVariant,
 ): string {
   const startRgb = startVariant ? `--v-theme-${startColor}-${startVariant}` : `--v-theme-${startColor}`
   const endRgb = endVariant ? `--v-theme-${endColor}-${endVariant}` : `--v-theme-${endColor}`
-  
+
   return `linear-gradient(${direction}, rgb(var(${startRgb})) 0%, rgb(var(${endRgb})) 100%)`
 }
 
@@ -156,14 +156,14 @@ export function createThemeGradient(
  * @param variant - Color variant (optional)
  * @returns CSS box-shadow string
  */
-export function createThemeShadow(
+export function createThemeShadow (
   color: ThemeColor,
   opacity: number = 0.15,
   blur: string = '20px',
   spread: string = '0px',
   offsetX: string = '0px',
   offsetY: string = '4px',
-  variant?: ColorVariant
+  variant?: ColorVariant,
 ): string {
   const rgbVar = variant ? `--v-theme-${color}-${variant}` : `--v-theme-${color}`
   return `${offsetX} ${offsetY} ${blur} ${spread} rgba(var(${rgbVar}), ${opacity})`
@@ -173,14 +173,14 @@ export function createThemeShadow(
  * Get current theme mode
  * @returns 'light' | 'dark' | 'auto'
  */
-export function getCurrentTheme(): 'light' | 'dark' | 'auto' {
+export function getCurrentTheme (): 'light' | 'dark' | 'auto' {
   if (typeof window === 'undefined') return 'light'
-  
+
   const stored = localStorage.getItem('theme')
   if (stored && ['light', 'dark', 'auto'].includes(stored)) {
     return stored as 'light' | 'dark' | 'auto'
   }
-  
+
   return 'auto'
 }
 
@@ -188,14 +188,14 @@ export function getCurrentTheme(): 'light' | 'dark' | 'auto' {
  * Check if current theme is dark
  * @returns boolean
  */
-export function isDarkTheme(): boolean {
+export function isDarkTheme (): boolean {
   if (typeof window === 'undefined') return false
-  
+
   const theme = getCurrentTheme()
-  
+
   if (theme === 'dark') return true
   if (theme === 'light') return false
-  
+
   // Auto mode - check system preference
   return window.matchMedia('(prefers-color-scheme: dark)').matches
 }
@@ -205,16 +205,16 @@ export function isDarkTheme(): boolean {
  * @param hex - Hex color string
  * @returns RGB values as string "r, g, b"
  */
-export function hexToRgb(hex: string): string {
+export function hexToRgb (hex: string): string {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   if (!result) {
     throw new Error(`Invalid hex color: ${hex}`)
   }
-  
+
   const r = parseInt(result[1], 16)
   const g = parseInt(result[2], 16)
   const b = parseInt(result[3], 16)
-  
+
   return `${r}, ${g}, ${b}`
 }
 
@@ -225,7 +225,7 @@ export function hexToRgb(hex: string): string {
  * @param b - Blue value (0-255)
  * @returns Hex color string
  */
-export function rgbToHex(r: number, g: number, b: number): string {
+export function rgbToHex (r: number, g: number, b: number): string {
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`
 }
 
@@ -282,21 +282,21 @@ export const THEME_COMBINATIONS = {
   primaryGradient: {
     start: 'primary',
     end: 'secondary',
-    direction: '135deg'
+    direction: '135deg',
   },
   successGradient: {
     start: 'success',
     end: 'info',
-    direction: '135deg'
+    direction: '135deg',
   },
   warningGradient: {
     start: 'warning',
     end: 'error',
-    direction: '135deg'
+    direction: '135deg',
   },
   neutralGradient: {
     start: 'surface',
     end: 'background',
-    direction: '135deg'
-  }
+    direction: '135deg',
+  },
 } as const

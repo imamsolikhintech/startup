@@ -16,9 +16,9 @@ const DEFAULT_CONFIG: Partial<AxiosRequestConfig> = {
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json',
   },
-  withCredentials: false
+  withCredentials: false,
 } as const
 
 /**
@@ -28,19 +28,19 @@ const DEFAULT_CONFIG: Partial<AxiosRequestConfig> = {
  */
 export const createRequestConfig = (
   options: {
-    timeout?: number
-    headers?: Record<string, string>
-    params?: Record<string, any>
-    withCredentials?: boolean
-  } = {}
+    timeout?: number,
+    headers?: Record<string, string>,
+    params?: Record<string, any>,
+    withCredentials?: boolean,
+  } = {},
 ): AxiosRequestConfig => {
   return {
     ...DEFAULT_CONFIG,
     ...options,
     headers: {
       ...DEFAULT_CONFIG.headers,
-      ...options.headers
-    }
+      ...options.headers,
+    },
   }
 }
 
@@ -52,19 +52,19 @@ export const createRequestConfig = (
  */
 export const createUploadConfig = (
   onProgress?: (progress: number) => void,
-  additionalHeaders?: Record<string, string>
+  additionalHeaders?: Record<string, string>,
 ): AxiosRequestConfig => {
   return {
     headers: {
       'Content-Type': 'multipart/form-data',
-      ...additionalHeaders
+      ...additionalHeaders,
     },
     onUploadProgress: (progressEvent) => {
       if (onProgress && progressEvent.total) {
         const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
         onProgress(progress)
       }
-    }
+    },
   }
 }
 
@@ -74,7 +74,7 @@ export const createUploadConfig = (
  * @returns Download-specific axios configuration
  */
 export const createDownloadConfig = (
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
 ): AxiosRequestConfig => {
   return {
     responseType: 'blob',
@@ -83,7 +83,7 @@ export const createDownloadConfig = (
         const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
         onProgress(progress)
       }
-    }
+    },
   }
 }
 
@@ -127,13 +127,13 @@ export const buildPaginationParams = (
   limit: number = 10,
   sortBy?: string,
   sortOrder: 'asc' | 'desc' = 'asc',
-  filters?: Record<string, any>
+  filters?: Record<string, any>,
 ) => {
   return {
     page,
     limit,
     ...(sortBy && { sortBy, sortOrder }),
-    ...filters
+    ...filters,
   }
 }
 
@@ -148,7 +148,7 @@ export const buildPaginationParams = (
  * @throws ApiError if response indicates failure
  */
 export const handleApiResponse = <T>(
-  response: ApiResponse<T>
+  response: ApiResponse<T>,
 ): T => {
   if (response.success) {
     return response.data
@@ -163,7 +163,7 @@ export const handleApiResponse = <T>(
  * @throws ApiError if response indicates failure
  */
 export const handlePaginatedResponse = <T>(
-  response: PaginatedResponse<T>
+  response: PaginatedResponse<T>,
 ): PaginatedResponse<T> => {
   if ('success' in response && response.success) {
     return response
@@ -184,11 +184,11 @@ export class ApiError extends Error {
   public readonly details?: any
   public readonly timestamp: Date
 
-  constructor(
+  constructor (
     message: string,
     status: number = 500,
     code?: string,
-    details?: any
+    details?: any,
   ) {
     super(message)
     this.name = 'ApiError'
@@ -206,7 +206,7 @@ export class ApiError extends Error {
   /**
    * Returns a formatted error message for logging
    */
-  toLogString(): string {
+  toLogString (): string {
     return `[${this.timestamp.toISOString()}] ApiError ${this.status}: ${this.message}${this.code ? ` (${this.code})` : ''}`
   }
 }
@@ -219,7 +219,7 @@ export class ApiError extends Error {
  */
 export const createApiError = (
   error: any,
-  defaultMessage: string = 'An error occurred'
+  defaultMessage: string = 'An error occurred',
 ): ApiError => {
   // Handle axios response errors
   if (error.response) {
@@ -227,7 +227,7 @@ export const createApiError = (
       error.response.data?.message || defaultMessage,
       error.response.status,
       error.response.data?.code,
-      error.response.data
+      error.response.data,
     )
   }
 
@@ -256,7 +256,7 @@ export const withRetry = async <T>(
   fn: () => Promise<T>,
   maxRetries: number = 3,
   delay: number = 1000,
-  shouldRetry?: (error: any) => boolean
+  shouldRetry?: (error: any) => boolean,
 ): Promise<T> => {
   let lastError: Error
 
@@ -293,7 +293,7 @@ export const withRetry = async <T>(
  */
 export const debounce = <T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): ((...args: Parameters<T>) => void) => {
   let timeout: NodeJS.Timeout
 
@@ -311,7 +311,7 @@ export const debounce = <T extends (...args: any[]) => any>(
  */
 export const throttle = <T extends (...args: any[]) => any>(
   func: T,
-  limit: number
+  limit: number,
 ): ((...args: Parameters<T>) => void) => {
   let inThrottle: boolean
 
@@ -332,7 +332,7 @@ export const throttle = <T extends (...args: any[]) => any>(
  */
 export const createCacheKey = (
   endpoint: string,
-  params?: Record<string, any>
+  params?: Record<string, any>,
 ): string => {
   const paramString = params ? JSON.stringify(params, Object.keys(params).sort()) : ''
   return `${endpoint}:${paramString}`
@@ -346,10 +346,10 @@ export const createCacheKey = (
  */
 export const validateRequiredFields = (
   data: Record<string, any>,
-  requiredFields: string[]
+  requiredFields: string[],
 ): void => {
   const missingFields = requiredFields.filter(field =>
-    data[field] === undefined || data[field] === null || data[field] === ''
+    data[field] === undefined || data[field] === null || data[field] === '',
   )
 
   if (missingFields.length > 0) {
@@ -357,7 +357,7 @@ export const validateRequiredFields = (
       `Missing required fields: ${missingFields.join(', ')}`,
       400,
       'VALIDATION_ERROR',
-      { missingFields }
+      { missingFields },
     )
   }
 }
@@ -370,11 +370,11 @@ export const validateRequiredFields = (
  * Interface for cache items
  */
 interface CacheItem<T = any> {
-  data: T
-  timestamp: number
-  ttl: number
-  accessCount: number
-  lastAccessed: number
+  data: T,
+  timestamp: number,
+  ttl: number,
+  accessCount: number,
+  lastAccessed: number,
 }
 
 /**
@@ -385,7 +385,7 @@ export class RequestCache {
   private readonly maxSize: number
   private readonly defaultTtl: number
 
-  constructor(maxSize: number = 100, defaultTtl: number = 300000) { // 5 minutes default
+  constructor (maxSize: number = 100, defaultTtl: number = 300000) { // 5 minutes default
     this.maxSize = maxSize
     this.defaultTtl = defaultTtl
   }
@@ -408,7 +408,7 @@ export class RequestCache {
       timestamp: now,
       ttl,
       accessCount: 0,
-      lastAccessed: now
+      lastAccessed: now,
     })
   }
 
@@ -439,7 +439,7 @@ export class RequestCache {
    * @param key - Cache key
    * @returns True if key exists and is valid
    */
-  has(key: string): boolean {
+  has (key: string): boolean {
     return this.get(key) !== null
   }
 
@@ -448,14 +448,14 @@ export class RequestCache {
    * @param key - Cache key
    * @returns True if key was deleted
    */
-  delete(key: string): boolean {
+  delete (key: string): boolean {
     return this.cache.delete(key)
   }
 
   /**
    * Clears all cache entries
    */
-  clear(): void {
+  clear (): void {
     this.cache.clear()
   }
 
@@ -463,7 +463,7 @@ export class RequestCache {
    * Gets current cache size
    * @returns Number of items in cache
    */
-  size(): number {
+  size (): number {
     return this.cache.size
   }
 
@@ -471,7 +471,7 @@ export class RequestCache {
    * Removes expired entries from cache
    * @returns Number of entries removed
    */
-  cleanup(): number {
+  cleanup (): number {
     const now = Date.now()
     let removed = 0
 
@@ -489,7 +489,7 @@ export class RequestCache {
    * Gets cache statistics
    * @returns Cache statistics object
    */
-  getStats() {
+  getStats () {
     const now = Date.now()
     let expired = 0
     let totalAccess = 0
@@ -506,7 +506,7 @@ export class RequestCache {
       maxSize: this.maxSize,
       expired,
       totalAccess,
-      hitRate: totalAccess > 0 ? (this.cache.size - expired) / this.cache.size : 0
+      hitRate: totalAccess > 0 ? (this.cache.size - expired) / this.cache.size : 0,
     }
   }
 
@@ -514,7 +514,7 @@ export class RequestCache {
    * Evicts the oldest or least accessed item
    * @private
    */
-  private evictOldest(): void {
+  private evictOldest (): void {
     let oldestKey: string | null = null
     let oldestTime = Date.now()
 
@@ -540,7 +540,7 @@ export const requestCache = new RequestCache()
 export const withCache = async <T>(
   key: string,
   fn: () => Promise<T>,
-  ttl?: number
+  ttl?: number,
 ): Promise<T> => {
   // Check cache first
   const cached = requestCache.get(key)
@@ -637,7 +637,7 @@ export const formatDate = (date: string | Date, format: string = 'YYYY-MM-DD'): 
 export const isDateInRange = (
   date: string | Date,
   startDate: string | Date,
-  endDate: string | Date
+  endDate: string | Date,
 ): boolean => {
   const d = new Date(date)
   const start = new Date(startDate)

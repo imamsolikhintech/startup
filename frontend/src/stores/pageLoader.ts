@@ -1,5 +1,5 @@
-import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
 
 export const usePageLoaderStore = defineStore('pageLoader', () => {
   const isLoading = ref(false)
@@ -23,6 +23,6 @@ export const usePageLoaderStore = defineStore('pageLoader', () => {
     loadingMessage,
     startLoading,
     stopLoading,
-    setLoadingMessage
+    setLoadingMessage,
   }
 })

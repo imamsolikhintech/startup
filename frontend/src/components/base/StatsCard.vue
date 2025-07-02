@@ -1,45 +1,58 @@
 <template>
-  <div v-if="multiple || stats.length > 0" :class="`stats-cards stats-cards--${layout} stats-cards--gap-${gap}`">
-    <div 
-      v-for="(stat, index) in stats" 
+  <div
+    v-if="multiple || stats.length > 0"
+    :class="`stats-cards stats-cards--${layout} stats-cards--gap-${gap}`">
+    <div
+      v-for="(stat, index) in stats"
       :key="stat.id || index"
       :class="[
         'stats-card',
         `stats-card--${size}`,
         `stats-card--${stat.variant || variant}`,
         { 'stats-card--loading': loading }
-      ]"
-    >
+      ]">
       <!-- Header -->
       <div class="stats-card__header">
-        <div class="stats-card__icon" v-if="stat.icon">
-          <component 
-            :is="iconService.getIconComponent(stat.icon)" 
-            :style="{ color: stat.iconColor || 'var(--color-primary-500)' }"
-          />
+        <div
+          v-if="stat.icon"
+          class="stats-card__icon">
+          <component
+            :is="iconService.getIconComponent(stat.icon)"
+            :style="{ color: stat.iconColor || 'var(--color-primary-500)' }" />
         </div>
-        <h3 class="stats-card__title">{{ stat.title }}</h3>
+        <h3 class="stats-card__title">
+          {{ stat.title }}
+        </h3>
       </div>
-      
+
       <!-- Content -->
       <div class="stats-card__content">
-        <div class="stats-card__value">{{ formatValue(stat.value) }}</div>
-        <div v-if="stat.subtitle" class="stats-card__subtitle">{{ stat.subtitle }}</div>
+        <div class="stats-card__value">
+          {{ formatValue(stat.value) }}
+        </div>
+        <div
+          v-if="stat.subtitle"
+          class="stats-card__subtitle">
+          {{ stat.subtitle }}
+        </div>
       </div>
-      
+
       <!-- Progress -->
-      <div v-if="stat.progress !== undefined" class="stats-card__progress">
-        <div 
+      <div
+        v-if="stat.progress !== undefined"
+        class="stats-card__progress">
+        <div
           class="stats-card__progress-bar"
-          :style="{ 
+          :style="{
             width: `${Math.min(Math.max(stat.progress, 0), 100)}%`,
             backgroundColor: stat.progressColor || 'var(--color-primary-500)'
-          }"
-        ></div>
+          }"></div>
       </div>
-      
+
       <!-- Footer with trend -->
-      <div v-if="stat.trend" class="stats-card__footer">
+      <div
+        v-if="stat.trend"
+        class="stats-card__footer">
         <div :class="`stats-card__trend stats-card__trend--${stat.trend}`">
           <component :is="iconService.getTrendIconComponent(stat.trend)" />
           <span v-if="stat.change">{{ stat.change }}</span>
@@ -47,44 +60,58 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Single stat card -->
-  <div v-else :class="[
-    'stats-card',
-    `stats-card--${size}`,
-    `stats-card--${variant}`,
-    { 'stats-card--loading': loading }
-  ]">
+  <div
+    v-else
+    :class="[
+      'stats-card',
+      `stats-card--${size}`,
+      `stats-card--${variant}`,
+      { 'stats-card--loading': loading }
+    ]">
     <!-- Header -->
     <div class="stats-card__header">
-      <div class="stats-card__icon" v-if="icon">
-        <component 
-          :is="iconService.getIconComponent(icon)" 
-          :style="{ color: iconColor || 'var(--color-primary-500)' }"
-        />
+      <div
+        v-if="icon"
+        class="stats-card__icon">
+        <component
+          :is="iconService.getIconComponent(icon)"
+          :style="{ color: iconColor || 'var(--color-primary-500)' }" />
       </div>
-      <h3 class="stats-card__title">{{ title }}</h3>
+      <h3 class="stats-card__title">
+        {{ title }}
+      </h3>
     </div>
-    
+
     <!-- Content -->
     <div class="stats-card__content">
-      <div class="stats-card__value">{{ formattedValue }}</div>
-      <div v-if="subtitle" class="stats-card__subtitle">{{ subtitle }}</div>
+      <div class="stats-card__value">
+        {{ formattedValue }}
+      </div>
+      <div
+        v-if="subtitle"
+        class="stats-card__subtitle">
+        {{ subtitle }}
+      </div>
     </div>
-    
+
     <!-- Progress -->
-    <div v-if="progress !== undefined" class="stats-card__progress">
-      <div 
+    <div
+      v-if="progress !== undefined"
+      class="stats-card__progress">
+      <div
         class="stats-card__progress-bar"
-        :style="{ 
+        :style="{
           width: `${Math.min(Math.max(progress, 0), 100)}%`,
           backgroundColor: progressColor
-        }"
-      ></div>
+        }"></div>
     </div>
-    
+
     <!-- Footer with trend -->
-    <div v-if="trend" class="stats-card__footer">
+    <div
+      v-if="trend"
+      class="stats-card__footer">
       <div :class="`stats-card__trend stats-card__trend--${trend}`">
         <component :is="iconService.getTrendIconComponent(trend)" />
         <span v-if="change">{{ change }}</span>
@@ -94,115 +121,115 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type PropType } from 'vue'
-import { useIconService } from '@/utils/iconService'
-import { useNumberFormatter } from '@/utils/numberFormatter'
+  import { computed, type PropType } from 'vue'
+  import { useIconService } from '@/utils/iconService'
+  import { useNumberFormatter } from '@/utils/numberFormatter'
 
-// Types
-export interface StatItem {
-  id?: string | number
-  title: string
-  value: number | string
-  subtitle?: string
-  icon?: string
-  iconColor?: string
-  variant?: 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info'
-  progress?: number
-  progressColor?: string
-  trend?: 'up' | 'down' | 'neutral'
-  change?: string
-}
-
-// Props
-const props = defineProps({
-  // Single stat mode
-  title: {
-    type: String,
-    default: ''
-  },
-  value: {
-    type: [Number, String],
-    default: 0
-  },
-  subtitle: {
-    type: String,
-    default: ''
-  },
-  icon: {
-    type: String,
-    default: ''
-  },
-  iconColor: {
-    type: String,
-    default: ''
-  },
-  progress: {
-    type: Number,
-    default: undefined
-  },
-  progressColor: {
-    type: String,
-    default: 'var(--color-primary-500)'
-  },
-  trend: {
-    type: String as PropType<'up' | 'down' | 'neutral'>,
-    default: undefined
-  },
-  change: {
-    type: String,
-    default: ''
-  },
-  
-  // Multiple stats mode
-  stats: {
-    type: Array as PropType<StatItem[]>,
-    default: () => []
-  },
-  multiple: {
-    type: Boolean,
-    default: false
-  },
-  
-  // Layout options
-  layout: {
-    type: String as PropType<'grid' | 'row' | 'column' | 'grid-1' | 'grid-2' | 'grid-3' | 'grid-4'>,
-    default: 'grid'
-  },
-  gap: {
-    type: String as PropType<'small' | 'medium' | 'large'>,
-    default: 'medium'
-  },
-  size: {
-    type: String as PropType<'small' | 'medium' | 'large'>,
-    default: 'medium'
-  },
-  variant: {
-    type: String as PropType<'default' | 'primary' | 'success' | 'warning' | 'error' | 'info'>,
-    default: 'default'
-  },
-  loading: {
-    type: Boolean,
-    default: false
+  // Types
+  export interface StatItem {
+    id?: string | number,
+    title: string,
+    value: number | string,
+    subtitle?: string,
+    icon?: string,
+    iconColor?: string,
+    variant?: 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info',
+    progress?: number,
+    progressColor?: string,
+    trend?: 'up' | 'down' | 'neutral',
+    change?: string,
   }
-})
 
-// Services
-const iconService = useIconService()
-const numberFormatter = useNumberFormatter()
+  // Props
+  const props = defineProps({
+    // Single stat mode
+    title: {
+      type: String,
+      default: '',
+    },
+    value: {
+      type: [Number, String],
+      default: 0,
+    },
+    subtitle: {
+      type: String,
+      default: '',
+    },
+    icon: {
+      type: String,
+      default: '',
+    },
+    iconColor: {
+      type: String,
+      default: '',
+    },
+    progress: {
+      type: Number,
+      default: undefined,
+    },
+    progressColor: {
+      type: String,
+      default: 'var(--color-primary-500)',
+    },
+    trend: {
+      type: String as PropType<'up' | 'down' | 'neutral'>,
+      default: undefined,
+    },
+    change: {
+      type: String,
+      default: '',
+    },
 
-// Computed
-const formattedValue = computed(() => {
-  return formatValue(props.value)
-})
+    // Multiple stats mode
+    stats: {
+      type: Array as PropType<StatItem[]>,
+      default: () => [],
+    },
+    multiple: {
+      type: Boolean,
+      default: false,
+    },
 
-// Methods
-const formatValue = (value: number | string): string => {
-  if (typeof value === 'string') return value
-  if (typeof value === 'number') {
-    return numberFormatter.formatNumber(value)
+    // Layout options
+    layout: {
+      type: String as PropType<'grid' | 'row' | 'column' | 'grid-1' | 'grid-2' | 'grid-3' | 'grid-4'>,
+      default: 'grid',
+    },
+    gap: {
+      type: String as PropType<'small' | 'medium' | 'large'>,
+      default: 'medium',
+    },
+    size: {
+      type: String as PropType<'small' | 'medium' | 'large'>,
+      default: 'medium',
+    },
+    variant: {
+      type: String as PropType<'default' | 'primary' | 'success' | 'warning' | 'error' | 'info'>,
+      default: 'default',
+    },
+    loading: {
+      type: Boolean,
+      default: false,
+    },
+  })
+
+  // Services
+  const iconService = useIconService()
+  const numberFormatter = useNumberFormatter()
+
+  // Computed
+  const formattedValue = computed(() => {
+    return formatValue(props.value)
+  })
+
+  // Methods
+  const formatValue = (value: number | string): string => {
+    if (typeof value === 'string') return value
+    if (typeof value === 'number') {
+      return numberFormatter.formatNumber(value)
+    }
+    return String(value)
   }
-  return String(value)
-}
 </script>
 
 <style scoped>
@@ -333,7 +360,7 @@ const formatValue = (value: number | string): string => {
   .stats-card-container--grid {
     grid-template-columns: 1fr;
   }
-  
+
   .stats-card-container--row {
     flex-direction: column;
   }
@@ -343,7 +370,7 @@ const formatValue = (value: number | string): string => {
   .stats-card__value {
     font-size: 1.5rem;
   }
-  
+
   .stats-card--large .stats-card__value {
     font-size: 2rem;
   }

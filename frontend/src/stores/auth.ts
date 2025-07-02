@@ -1,16 +1,16 @@
-import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
 import { authService } from '@/api'
+import { isTokenExpired, LoginRateLimit, SecureTokenStorage, shouldRefreshToken } from '@/utils/tokenUtils'
 import { AUTH_CONSTANTS, ERROR_MESSAGES } from './constants'
 import { AuthError, AuthErrorType } from './errors'
-import { SecureTokenStorage, LoginRateLimit, isTokenExpired, shouldRefreshToken } from '@/utils/tokenUtils'
 
 export interface User {
-  id: string
-  email: string
-  name: string
-  avatar?: string
-  role: string
+  id: string,
+  email: string,
+  name: string,
+  avatar?: string,
+  role: string,
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -42,7 +42,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const credentials = {
         email,
-        password
+        password,
       }
 
       const response = await authService.login(credentials)
@@ -56,7 +56,7 @@ export const useAuthStore = defineStore('auth', () => {
           email: apiUser.email,
           name: apiUser.name,
           avatar: apiUser.profile_picture,
-          role: apiUser.role || 'guest'
+          role: apiUser.role || 'guest',
         }
 
         user.value = userData
@@ -112,10 +112,10 @@ export const useAuthStore = defineStore('auth', () => {
         password,
         confirmPassword,
         name,
-        terms: true
+        terms: true,
       }
 
-      const response = await authService.register(registerData);
+      const response = await authService.register(registerData)
 
       if (response?.data) {
         const apiUser = response.data
@@ -126,7 +126,7 @@ export const useAuthStore = defineStore('auth', () => {
           email: apiUser.email,
           name: apiUser.name,
           avatar: apiUser.profile_picture,
-          role: apiUser.role || 'user'
+          role: apiUser.role || 'user',
         }
 
         user.value = userData
@@ -238,7 +238,7 @@ export const useAuthStore = defineStore('auth', () => {
                 email: apiUser.email,
                 name: apiUser.name,
                 avatar: apiUser.profile_picture,
-                role: apiUser.role || 'user'
+                role: apiUser.role || 'user',
               }
               user.value = userData
               SecureTokenStorage.setToken(AUTH_CONSTANTS.USER_KEY, JSON.stringify(userData))
@@ -338,7 +338,7 @@ export const useAuthStore = defineStore('auth', () => {
           email: apiUser.email,
           name: apiUser.name,
           avatar: apiUser.profile_picture,
-          role: apiUser.role || 'user'
+          role: apiUser.role || 'user',
         }
 
         user.value = userData
@@ -436,6 +436,6 @@ export const useAuthStore = defineStore('auth', () => {
     setupAutoRefresh,
     showSessionWarning,
     hideSessionWarning,
-    setRememberMe
+    setRememberMe,
   }
 })

@@ -1,6 +1,8 @@
 <template>
   <div class="notification-container">
-    <transition-group name="notification" tag="div">
+    <transition-group
+      name="notification"
+      tag="div">
       <div
         v-for="notification in displayNotifications"
         :key="notification.id"
@@ -8,23 +10,27 @@
           'notification-item',
           `notification-item--${notification.type}`
         ]"
-        :style="{ 'z-index': 9999 + displayNotifications.indexOf(notification) }"
-      >
+        :style="{ 'z-index': 9999 + displayNotifications.indexOf(notification) }">
         <div class="notification-content">
-          <n-icon :size="20" class="notification-icon">
+          <n-icon
+            :size="20"
+            class="notification-icon">
             <component :is="getNotificationIcon(notification.type)" />
           </n-icon>
           <div class="notification-text">
-            <div class="notification-title">{{ notification.title }}</div>
-            <div class="notification-message">{{ notification.message }}</div>
+            <div class="notification-title">
+              {{ notification.title }}
+            </div>
+            <div class="notification-message">
+              {{ notification.message }}
+            </div>
           </div>
           <n-button
             quaternary
             circle
             size="small"
             class="notification-close"
-            @click="removeNotification(notification.id)"
-          >
+            @click="removeNotification(notification.id)">
             <template #icon>
               <n-icon :size="16">
                 <component :is="getCloseIcon()" />
@@ -38,67 +44,67 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import { NIcon, NButton } from 'naive-ui'
-import { h } from 'vue'
-import { useNotificationStore } from '@/stores/notifications'
+  import { NButton, NIcon } from 'naive-ui'
+  import { computed, onMounted, ref, watch } from 'vue'
+  import { h } from 'vue'
+  import { useNotificationStore } from '@/stores/notifications'
 
-const notificationStore = useNotificationStore()
+  const notificationStore = useNotificationStore()
 
-const displayNotifications = ref<Array<any>>([])
+  const displayNotifications = ref<Array<any>>([])
 
-const visibleNotifications = computed(() => 
-  notificationStore.notifications.slice(0, 5) // Show max 5 notifications
-)
+  const visibleNotifications = computed(() =>
+    notificationStore.notifications.slice(0, 5), // Show max 5 notifications
+  )
 
-const getNotificationIcon = (type: string) => {
-  const iconMap: Record<string, any> = {
-    success: () => h('svg', { viewBox: '0 0 24 24' }, [
-      h('path', { fill: 'currentColor', d: 'M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M11,16.5L18,9.5L16.59,8.09L11,13.67L7.41,10.09L6,11.5L11,16.5Z' })
-    ]),
-    error: () => h('svg', { viewBox: '0 0 24 24' }, [
-      h('path', { fill: 'currentColor', d: 'M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z' })
-    ]),
-    warning: () => h('svg', { viewBox: '0 0 24 24' }, [
-      h('path', { fill: 'currentColor', d: 'M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z' })
-    ]),
-    info: () => h('svg', { viewBox: '0 0 24 24' }, [
-      h('path', { fill: 'currentColor', d: 'M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z' })
+  const getNotificationIcon = (type: string) => {
+    const iconMap: Record<string, any> = {
+      success: () => h('svg', { viewBox: '0 0 24 24' }, [
+        h('path', { fill: 'currentColor', d: 'M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M11,16.5L18,9.5L16.59,8.09L11,13.67L7.41,10.09L6,11.5L11,16.5Z' }),
+      ]),
+      error: () => h('svg', { viewBox: '0 0 24 24' }, [
+        h('path', { fill: 'currentColor', d: 'M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z' }),
+      ]),
+      warning: () => h('svg', { viewBox: '0 0 24 24' }, [
+        h('path', { fill: 'currentColor', d: 'M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z' }),
+      ]),
+      info: () => h('svg', { viewBox: '0 0 24 24' }, [
+        h('path', { fill: 'currentColor', d: 'M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z' }),
+      ]),
+    }
+    return iconMap[type] || iconMap.info
+  }
+
+  const getCloseIcon = () => {
+    return () => h('svg', { viewBox: '0 0 24 24' }, [
+      h('path', { fill: 'currentColor', d: 'M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' }),
     ])
   }
-  return iconMap[type] || iconMap.info
-}
 
-const getCloseIcon = () => {
-  return () => h('svg', { viewBox: '0 0 24 24' }, [
-    h('path', { fill: 'currentColor', d: 'M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z' })
-  ])
-}
+  const removeNotification = (id: string) => {
+    notificationStore.removeNotification(id)
+    displayNotifications.value = displayNotifications.value.filter(n => n.id !== id)
+  }
 
-const removeNotification = (id: string) => {
-  notificationStore.removeNotification(id)
-  displayNotifications.value = displayNotifications.value.filter(n => n.id !== id)
-}
+  // Auto remove notifications after timeout
+  const autoRemoveNotification = (notification: any) => {
+    setTimeout(() => {
+      removeNotification(notification.id)
+    }, 5000) // 5 seconds timeout
+  }
 
-// Auto remove notifications after timeout
-const autoRemoveNotification = (notification: any) => {
-  setTimeout(() => {
-    removeNotification(notification.id)
-  }, 5000) // 5 seconds timeout
-}
-
-watch(visibleNotifications, (newNotifications) => {
-  newNotifications.forEach(notification => {
-    if (!displayNotifications.value.find(n => n.id === notification.id)) {
-      const newNotif = {
-        ...notification,
-        show: true
+  watch(visibleNotifications, (newNotifications) => {
+    newNotifications.forEach(notification => {
+      if (!displayNotifications.value.find(n => n.id === notification.id)) {
+        const newNotif = {
+          ...notification,
+          show: true,
+        }
+        displayNotifications.value.push(newNotif)
+        autoRemoveNotification(newNotif)
       }
-      displayNotifications.value.push(newNotif)
-      autoRemoveNotification(newNotif)
-    }
-  })
-}, { immediate: true, deep: true })
+    })
+  }, { immediate: true, deep: true })
 </script>
 
 <style scoped>
@@ -224,20 +230,20 @@ watch(visibleNotifications, (newNotifications) => {
     right: 0.5rem;
     left: 0.5rem;
   }
-  
+
   .notification-item {
     min-width: auto;
     max-width: none;
   }
-  
+
   .notification-content {
     padding: 0.875rem;
   }
-  
+
   .notification-title {
     font-size: 0.8125rem;
   }
-  
+
   .notification-message {
     font-size: 0.75rem;
   }

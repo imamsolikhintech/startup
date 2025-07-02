@@ -1,18 +1,21 @@
 <template>
-<div class="chat-widget" :class="{ 'minimized': chatStore.isMinimized }">
+  <div
+    class="chat-widget"
+    :class="{ 'minimized': chatStore.isMinimized }">
     <!-- Minimized State -->
     <n-card
       v-if="chatStore.isMinimized"
       class="chat-toggle"
-      @click="chatStore.minimizeChat()"
-    >
+      @click="chatStore.minimizeChat()">
       <div class="pa-3">
         <n-badge
           :value="unreadCount"
           :show="unreadCount > 0"
-          type="error"
-        >
-          <n-icon :component="getChatIcon" color="white" size="24" />
+          type="error">
+          <n-icon
+            :component="getChatIcon"
+            color="white"
+            size="24" />
         </n-badge>
       </div>
     </n-card>
@@ -21,28 +24,38 @@
     <n-card
       v-else
       class="chat-card"
-      :class="{ 'expanded': !chatStore.isMinimized }"
-    >
+      :class="{ 'expanded': !chatStore.isMinimized }">
       <!-- Chat Header -->
       <div class="chat-header">
         <div class="chat-title">
-          <div v-if="chatStore.activeChat" class="chat-user-info">
+          <div
+            v-if="chatStore.activeChat"
+            class="chat-user-info">
             <n-avatar
               size="small"
               :src="chatStore.activeUser?.avatar"
-              class="mr-2"
-            >
+              class="mr-2">
               {{ chatStore.activeUser?.name?.charAt(0) }}
             </n-avatar>
             <div class="user-details">
-              <div class="user-name">{{ chatStore.activeUser?.name }}</div>
-              <div class="user-status" :class="{ 'online': chatStore.activeUser?.online }">
+              <div class="user-name">
+                {{ chatStore.activeUser?.name }}
+              </div>
+              <div
+                class="user-status"
+                :class="{ 'online': chatStore.activeUser?.online }">
                 {{ chatStore.activeUser?.online ? 'Online' : 'Offline' }}
               </div>
             </div>
           </div>
-          <div v-else class="default-title">
-            <n-icon :component="getChatIcon" color="#1976d2" size="20" class="mr-2" />
+          <div
+            v-else
+            class="default-title">
+            <n-icon
+              :component="getChatIcon"
+              color="#1976d2"
+              size="20"
+              class="mr-2" />
             <span>Chat</span>
           </div>
         </div>
@@ -50,12 +63,13 @@
           <n-button
             text
             size="small"
-            @click="chatStore.minimizeChat()"
-          >
+            @click="chatStore.minimizeChat()">
             <template #icon>
               <n-icon size="16">
                 <svg viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M19,13H5V11H19V13Z"/>
+                  <path
+                    fill="currentColor"
+                    d="M19,13H5V11H19V13Z" />
                 </svg>
               </n-icon>
             </template>
@@ -63,12 +77,13 @@
           <n-button
             text
             size="small"
-            @click="chatStore.closeChat()"
-          >
+            @click="chatStore.closeChat()">
             <template #icon>
               <n-icon size="16">
                 <svg viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                  <path
+                    fill="currentColor"
+                    d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
                 </svg>
               </n-icon>
             </template>
@@ -81,16 +96,26 @@
       <!-- Chat Content -->
       <div class="chat-content">
         <!-- Active Chat View -->
-        <div v-if="chatStore.activeChat" class="active-chat">
+        <div
+          v-if="chatStore.activeChat"
+          class="active-chat">
           <!-- Error Message -->
-          <div v-if="chatStore.error" class="error-banner">
-            <n-alert type="error" :show-icon="false" closable @close="chatStore.clearError()">
+          <div
+            v-if="chatStore.error"
+            class="error-banner">
+            <n-alert
+              type="error"
+              :show-icon="false"
+              closable
+              @close="chatStore.clearError()">
               {{ chatStore.error }}
             </n-alert>
           </div>
 
           <!-- Messages Area -->
-          <div class="messages-area" ref="messagesContainer">
+          <div
+            ref="messagesContainer"
+            class="messages-area">
             <div
               v-for="msg in chatStore.chatMessages"
               :key="msg.id"
@@ -98,30 +123,49 @@
               :class="{
                 'own-message': msg.sender_id === authStore.user?.id,
                 'other-message': msg.sender_id !== authStore.user?.id
-              }"
-            >
-              <div class="message-bubble"
-                   :class="{
-                     'message-failed': msg.status === 'failed',
-                     'message-sending': msg.status === 'sending'
-                   }">
-                <div class="message-text">{{ msg.content }}</div>
+              }">
+              <div
+                class="message-bubble"
+                :class="{
+                  'message-failed': msg.status === 'failed',
+                  'message-sending': msg.status === 'sending'
+                }">
+                <div class="message-text">
+                  {{ msg.content }}
+                </div>
                 <div class="message-footer">
                   <span class="message-time">{{ formatTime(msg.created_at) }}</span>
-                  <div v-if="msg.sender_id === authStore.user?.id" class="message-status">
-                    <n-icon v-if="msg.status === 'sending'" size="14" class="status-sending">
+                  <div
+                    v-if="msg.sender_id === authStore.user?.id"
+                    class="message-status">
+                    <n-icon
+                      v-if="msg.status === 'sending'"
+                      size="14"
+                      class="status-sending">
                       <svg viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"/>
+                        <path
+                          fill="currentColor"
+                          d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" />
                       </svg>
                     </n-icon>
-                    <n-icon v-else-if="msg.status === 'sent'" size="14" class="status-sent">
+                    <n-icon
+                      v-else-if="msg.status === 'sent'"
+                      size="14"
+                      class="status-sent">
                       <svg viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/>
+                        <path
+                          fill="currentColor"
+                          d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
                       </svg>
                     </n-icon>
-                    <n-icon v-else-if="msg.status === 'read'" size="14" class="status-read">
+                    <n-icon
+                      v-else-if="msg.status === 'read'"
+                      size="14"
+                      class="status-read">
                       <svg viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M18,7L16.59,5.59L10.25,11.93L11.66,13.34L18,7M22.24,5.59L11.66,16.17L7.48,12L6.07,13.41L11.66,19L23.66,7L22.24,5.59Z"/>
+                        <path
+                          fill="currentColor"
+                          d="M18,7L16.59,5.59L10.25,11.93L11.66,13.34L18,7M22.24,5.59L11.66,16.17L7.48,12L6.07,13.41L11.66,19L23.66,7L22.24,5.59Z" />
                       </svg>
                     </n-icon>
                     <n-button
@@ -129,13 +173,14 @@
                       text
                       size="tiny"
                       type="error"
-                      @click="retryMessage(msg.id)"
                       class="retry-button"
-                    >
+                      @click="retryMessage(msg.id)">
                       <template #icon>
                         <n-icon size="12">
                           <svg viewBox="0 0 24 24">
-                            <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
+                            <path
+                              fill="currentColor"
+                              d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z" />
                           </svg>
                         </n-icon>
                       </template>
@@ -144,9 +189,11 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Typing indicator -->
-            <div v-if="isTyping && newMessage.trim()" class="typing-indicator">
+            <div
+              v-if="isTyping && newMessage.trim()"
+              class="typing-indicator">
               <span>You are typing</span>
               <div class="typing-dots">
                 <div class="typing-dot"></div>
@@ -154,9 +201,11 @@
                 <div class="typing-dot"></div>
               </div>
             </div>
-            
+
             <!-- Loading indicator -->
-            <div v-if="chatStore.isLoading" class="loading-indicator">
+            <div
+              v-if="chatStore.isLoading"
+              class="loading-indicator">
               <n-spin size="small" />
               <span class="ml-2">Sending...</span>
             </div>
@@ -167,22 +216,22 @@
             <n-input
               v-model:value="newMessage"
               placeholder="Type a message..."
-              @keyup.enter="sendMessage"
               :disabled="chatStore.isLoading"
               :loading="chatStore.isLoading"
-            >
+              @keyup.enter="sendMessage">
               <template #suffix>
                 <n-button
                   text
                   size="small"
-                  @click="sendMessage"
                   :disabled="!newMessage.trim() || chatStore.isLoading"
                   :loading="chatStore.isLoading"
-                >
+                  @click="sendMessage">
                   <template #icon>
                     <n-icon size="16">
                       <svg viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/>
+                        <path
+                          fill="currentColor"
+                          d="M2,21L23,12L2,3V10L17,12L2,14V21Z" />
                       </svg>
                     </n-icon>
                   </template>
@@ -196,40 +245,45 @@
         <n-dropdown
           v-if="!chatStore.activeChat"
           :show="showUserList"
-          @update:show="showUserList = $event"
           placement="top"
           trigger="click"
-        >
+          @update:show="showUserList = $event">
           <template #trigger>
             <n-card
               class="chat-toggle"
-              @click="showUserList = !showUserList"
-            >
+              @click="showUserList = !showUserList">
               <div class="pa-3">
-                <n-icon :component="getChatIcon" color="#1976d2" size="24" />
+                <n-icon
+                  :component="getChatIcon"
+                  color="#1976d2"
+                  size="24" />
               </div>
             </n-card>
           </template>
 
           <template #default>
             <n-card style="min-width: 250px;">
-              <div class="text-subtitle-1 pa-3">Start a conversation</div>
+              <div class="text-subtitle-1 pa-3">
+                Start a conversation
+              </div>
               <n-list>
                 <n-list-item
                   v-for="user in chatStore.users"
                   :key="user.id"
                   clickable
-                  @click="startChat(user)"
-                >
+                  @click="startChat(user)">
                   <template #prefix>
                     <n-avatar
                       size="small"
-                      :src="user.avatar"
-                    />
+                      :src="user.avatar" />
                   </template>
                   <div>
-                    <div class="font-weight-medium">{{ user.name }}</div>
-                    <div class="text-caption text-grey">{{ user.email }}</div>
+                    <div class="font-weight-medium">
+                      {{ user.name }}
+                    </div>
+                    <div class="text-caption text-grey">
+                      {{ user.email }}
+                    </div>
                   </div>
                 </n-list-item>
               </n-list>
@@ -238,21 +292,31 @@
         </n-dropdown>
 
         <!-- No Chat Selected State -->
-        <div v-if="!chatStore.activeChat && !showUserList" class="no-chat-state">
+        <div
+          v-if="!chatStore.activeChat && !showUserList"
+          class="no-chat-state">
           <div class="text-center pa-4">
-            <n-icon size="48" color="#ccc" class="mb-3">
+            <n-icon
+              size="48"
+              color="#ccc"
+              class="mb-3">
               <svg viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12,3C17.5,3 22,6.58 22,11C22,15.42 17.5,19 12,19C10.76,19 9.57,18.82 8.47,18.5C5.55,21 2,21 2,21C4.33,18.67 4.7,17.1 4.75,16.5C3.05,15.07 2,13.13 2,11C2,6.58 6.5,3 12,3Z"/>
+                <path
+                  fill="currentColor"
+                  d="M12,3C17.5,3 22,6.58 22,11C22,15.42 17.5,19 12,19C10.76,19 9.57,18.82 8.47,18.5C5.55,21 2,21 2,21C4.33,18.67 4.7,17.1 4.75,16.5C3.05,15.07 2,13.13 2,11C2,6.58 6.5,3 12,3Z" />
               </svg>
             </n-icon>
-            <div class="text-subtitle-2 mb-2">No conversation selected</div>
-            <div class="text-caption text-grey">Choose a user to start chatting</div>
+            <div class="text-subtitle-2 mb-2">
+              No conversation selected
+            </div>
+            <div class="text-caption text-grey">
+              Choose a user to start chatting
+            </div>
             <n-button
               type="primary"
               size="small"
               class="mt-3"
-              @click="showUserList = true"
-            >
+              @click="showUserList = true">
               Start Chat
             </n-button>
           </div>
@@ -263,145 +327,145 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onUnmounted, watch, h } from 'vue'
-import { useChatStore } from '@/stores/chat'
-import { useAuthStore } from '@/stores/auth'
-import type { ChatUser } from '@/stores/chat'
-import { createDiscreteApi } from 'naive-ui'
+  import { createDiscreteApi } from 'naive-ui'
+  import { computed, h, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+  import { useAuthStore } from '@/stores/auth'
+  import type { ChatUser } from '@/stores/chat'
+  import { useChatStore } from '@/stores/chat'
 
-const chatStore = useChatStore()
-const authStore = useAuthStore()
-const { message } = createDiscreteApi(['message'])
+  const chatStore = useChatStore()
+  const authStore = useAuthStore()
+  const { message } = createDiscreteApi(['message'])
 
-const newMessage = ref('')
-const showUserList = ref(false)
-const messagesContainer = ref<HTMLElement>()
-const isTyping = ref(false)
+  const newMessage = ref('')
+  const showUserList = ref(false)
+  const messagesContainer = ref<HTMLElement>()
+  const isTyping = ref(false)
 
-const unreadCount = computed(() => {
-  return chatStore.chatMessages.filter(msg => 
-    msg.receiver_id === authStore.user?.id && 
-    msg.status !== 'read'
-  ).length
-})
+  const unreadCount = computed(() => {
+    return chatStore.chatMessages.filter(msg =>
+      msg.receiver_id === authStore.user?.id &&
+      msg.status !== 'read',
+    ).length
+  })
 
-const getChatIcon = computed(() => {
-  return () => h('svg', {
-    viewBox: '0 0 24 24',
-    fill: 'currentColor'
-  }, [
-    h('path', {
-      d: 'M12,3C6.5,3 2,6.58 2,11C2.05,13.15 3.06,15.17 4.75,16.5C4.75,17.1 4.33,18.67 2,21C4.37,20.89 6.64,20 8.47,18.5C9.61,18.83 10.81,19 12,19C17.5,19 22,15.42 22,11C22,6.58 17.5,3 12,3M8.5,9.5A1.5,1.5 0 0,1 10,11A1.5,1.5 0 0,1 8.5,12.5A1.5,1.5 0 0,1 7,11A1.5,1.5 0 0,1 8.5,9.5M12,9.5A1.5,1.5 0 0,1 13.5,11A1.5,1.5 0 0,1 12,12.5A1.5,1.5 0 0,1 10.5,11A1.5,1.5 0 0,1 12,9.5M15.5,9.5A1.5,1.5 0 0,1 17,11A1.5,1.5 0 0,1 15.5,12.5A1.5,1.5 0 0,1 14,11A1.5,1.5 0 0,1 15.5,9.5Z'
-    })
-  ])
-})
+  const getChatIcon = computed(() => {
+    return () => h('svg', {
+      viewBox: '0 0 24 24',
+      fill: 'currentColor',
+    }, [
+      h('path', {
+        d: 'M12,3C6.5,3 2,6.58 2,11C2.05,13.15 3.06,15.17 4.75,16.5C4.75,17.1 4.33,18.67 2,21C4.37,20.89 6.64,20 8.47,18.5C9.61,18.83 10.81,19 12,19C17.5,19 22,15.42 22,11C22,6.58 17.5,3 12,3M8.5,9.5A1.5,1.5 0 0,1 10,11A1.5,1.5 0 0,1 8.5,12.5A1.5,1.5 0 0,1 7,11A1.5,1.5 0 0,1 8.5,9.5M12,9.5A1.5,1.5 0 0,1 13.5,11A1.5,1.5 0 0,1 12,12.5A1.5,1.5 0 0,1 10.5,11A1.5,1.5 0 0,1 12,9.5M15.5,9.5A1.5,1.5 0 0,1 17,11A1.5,1.5 0 0,1 15.5,12.5A1.5,1.5 0 0,1 14,11A1.5,1.5 0 0,1 15.5,9.5Z',
+      }),
+    ])
+  })
 
-const sendMessage = async () => {
-  if (!newMessage.value.trim() || !chatStore.activeChat || chatStore.isLoading) return
-  
-  const messageContent = newMessage.value.trim()
-  newMessage.value = ''
-  isTyping.value = false
-  
-  try {
-    const success = await chatStore.sendMessage(messageContent, chatStore.activeChat)
-    if (!success) {
-      message.error('Failed to send message. Please try again.')
-      newMessage.value = messageContent // Restore message on failure
+  const sendMessage = async () => {
+    if (!newMessage.value.trim() || !chatStore.activeChat || chatStore.isLoading) return
+
+    const messageContent = newMessage.value.trim()
+    newMessage.value = ''
+    isTyping.value = false
+
+    try {
+      const success = await chatStore.sendMessage(messageContent, chatStore.activeChat)
+      if (!success) {
+        message.error('Failed to send message. Please try again.')
+        newMessage.value = messageContent // Restore message on failure
+      }
+    } catch (error) {
+      console.error('Error sending message:', error)
+      message.error('An error occurred while sending the message.')
+      newMessage.value = messageContent // Restore message on error
     }
-  } catch (error) {
-    console.error('Error sending message:', error)
-    message.error('An error occurred while sending the message.')
-    newMessage.value = messageContent // Restore message on error
-  }
-  
-  await nextTick()
-  scrollToBottom()
-}
 
-const retryMessage = async (messageId: string) => {
-  try {
-    const success = await chatStore.retryMessage(messageId)
-    if (success) {
-      message.success('Message sent successfully!')
-    } else {
-      message.error('Failed to retry message.')
-    }
-  } catch (error) {
-    console.error('Error retrying message:', error)
-    message.error('An error occurred while retrying the message.')
-  }
-}
-
-const startChat = async (user: ChatUser) => {
-  try {
-    chatStore.startChat(user.id)
-    showUserList.value = false
     await nextTick()
     scrollToBottom()
-  } catch (error) {
-    console.error('Error starting chat:', error)
-    message.error('Failed to start chat with user.')
   }
-}
 
-const formatTime = (timestamp: string) => {
-  return new Date(timestamp).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-const scrollToBottom = () => {
-  if (messagesContainer.value) {
-    // Force scroll to bottom with smooth behavior
-    messagesContainer.value.scrollTo({
-      top: messagesContainer.value.scrollHeight,
-      behavior: 'smooth'
-    })
-    // Fallback for immediate scroll
-    setTimeout(() => {
-      if (messagesContainer.value) {
-        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  const retryMessage = async (messageId: string) => {
+    try {
+      const success = await chatStore.retryMessage(messageId)
+      if (success) {
+        message.success('Message sent successfully!')
+      } else {
+        message.error('Failed to retry message.')
       }
-    }, 100)
+    } catch (error) {
+      console.error('Error retrying message:', error)
+      message.error('An error occurred while retrying the message.')
+    }
   }
-}
 
-// Watch for new messages and auto-scroll
-watch(() => chatStore.chatMessages.length, () => {
-  nextTick(() => {
-    scrollToBottom()
-  })
-})
+  const startChat = async (user: ChatUser) => {
+    try {
+      chatStore.startChat(user.id)
+      showUserList.value = false
+      await nextTick()
+      scrollToBottom()
+    } catch (error) {
+      console.error('Error starting chat:', error)
+      message.error('Failed to start chat with user.')
+    }
+  }
 
-// Watch for active chat changes
-watch(() => chatStore.activeChat, (newChat) => {
-  if (newChat) {
+  const formatTime = (timestamp: string) => {
+    return new Date(timestamp).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
+  const scrollToBottom = () => {
+    if (messagesContainer.value) {
+      // Force scroll to bottom with smooth behavior
+      messagesContainer.value.scrollTo({
+        top: messagesContainer.value.scrollHeight,
+        behavior: 'smooth',
+      })
+      // Fallback for immediate scroll
+      setTimeout(() => {
+        if (messagesContainer.value) {
+          messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+        }
+      }, 100)
+    }
+  }
+
+  // Watch for new messages and auto-scroll
+  watch(() => chatStore.chatMessages.length, () => {
     nextTick(() => {
       scrollToBottom()
     })
-  }
-}, { immediate: true })
-
-// Watch for typing indicator
-watch(newMessage, (value) => {
-  isTyping.value = value.length > 0
-})
-
-// Initialize component
-onMounted(() => {
-  chatStore.isMinimized = true
-  chatStore.clearError()
-  nextTick(() => {
-    scrollToBottom()
   })
-})
 
-onUnmounted(() => {
-  // Clear any pending states
-  chatStore.clearError()
-})
+  // Watch for active chat changes
+  watch(() => chatStore.activeChat, (newChat) => {
+    if (newChat) {
+      nextTick(() => {
+        scrollToBottom()
+      })
+    }
+  }, { immediate: true })
+
+  // Watch for typing indicator
+  watch(newMessage, (value) => {
+    isTyping.value = value.length > 0
+  })
+
+  // Initialize component
+  onMounted(() => {
+    chatStore.isMinimized = true
+    chatStore.clearError()
+    nextTick(() => {
+      scrollToBottom()
+    })
+  })
+
+  onUnmounted(() => {
+    // Clear any pending states
+    chatStore.clearError()
+  })
 </script>
 
 <style scoped>
@@ -929,12 +993,12 @@ onUnmounted(() => {
     bottom: 16px;
     right: 16px;
   }
-  
+
   .chat-card {
     width: 300px;
     height: 400px;
   }
-  
+
   .message {
     max-width: 90%;
   }
@@ -945,16 +1009,16 @@ onUnmounted(() => {
     bottom: 12px;
     right: 12px;
   }
-  
+
   .chat-card {
     width: 280px;
     height: 350px;
   }
-  
+
   .message {
     max-width: 95%;
   }
-  
+
   .message-meta {
     flex-direction: column;
     align-items: flex-start;

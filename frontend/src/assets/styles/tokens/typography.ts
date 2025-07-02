@@ -1,6 +1,6 @@
 /**
  * Design Tokens - Typography
- * 
+ *
  * Centralized typography system for consistent text styling across the application.
  * Includes font families, sizes, weights, line heights, and letter spacing.
  */
@@ -21,14 +21,14 @@ export const fontFamilies = {
     'Fira Sans',
     'Droid Sans',
     'Helvetica Neue',
-    'sans-serif'
+    'sans-serif',
   ],
   serif: [
     'Georgia',
     'Cambria',
     'Times New Roman',
     'Times',
-    'serif'
+    'serif',
   ],
   mono: [
     'JetBrains Mono',
@@ -37,8 +37,8 @@ export const fontFamilies = {
     'Consolas',
     'Liberation Mono',
     'Courier New',
-    'monospace'
-  ]
+    'monospace',
+  ],
 } as const
 
 /**
@@ -53,26 +53,26 @@ export const fontWeights = {
   semiBold: 600,
   bold: 700,
   extraBold: 800,
-  black: 900
+  black: 900,
 } as const
 
 /**
  * Font sizes (in rem)
  */
 export const fontSizes = {
-  xs: '0.75rem',    // 12px
-  sm: '0.875rem',   // 14px
-  base: '1rem',     // 16px
-  lg: '1.125rem',   // 18px
-  xl: '1.25rem',    // 20px
-  '2xl': '1.5rem',  // 24px
+  xs: '0.75rem', // 12px
+  sm: '0.875rem', // 14px
+  base: '1rem', // 16px
+  lg: '1.125rem', // 18px
+  xl: '1.25rem', // 20px
+  '2xl': '1.5rem', // 24px
   '3xl': '1.875rem', // 30px
   '4xl': '2.25rem', // 36px
-  '5xl': '3rem',    // 48px
+  '5xl': '3rem', // 48px
   '6xl': '3.75rem', // 60px
-  '7xl': '4.5rem',  // 72px
-  '8xl': '6rem',    // 96px
-  '9xl': '8rem'     // 128px
+  '7xl': '4.5rem', // 72px
+  '8xl': '6rem', // 96px
+  '9xl': '8rem', // 128px
 } as const
 
 /**
@@ -84,7 +84,7 @@ export const lineHeights = {
   snug: 1.375,
   normal: 1.5,
   relaxed: 1.625,
-  loose: 2
+  loose: 2,
 } as const
 
 /**
@@ -96,7 +96,7 @@ export const letterSpacing = {
   normal: '0em',
   wide: '0.025em',
   wider: '0.05em',
-  widest: '0.1em'
+  widest: '0.1em',
 } as const
 
 /**
@@ -109,146 +109,146 @@ export const typographyScale = {
       fontSize: fontSizes['8xl'],
       fontWeight: fontWeights.bold,
       lineHeight: lineHeights.none,
-      letterSpacing: letterSpacing.tight
+      letterSpacing: letterSpacing.tight,
     },
     xl: {
       fontSize: fontSizes['7xl'],
       fontWeight: fontWeights.bold,
       lineHeight: lineHeights.none,
-      letterSpacing: letterSpacing.tight
+      letterSpacing: letterSpacing.tight,
     },
     lg: {
       fontSize: fontSizes['6xl'],
       fontWeight: fontWeights.bold,
       lineHeight: lineHeights.none,
-      letterSpacing: letterSpacing.tight
+      letterSpacing: letterSpacing.tight,
     },
     md: {
       fontSize: fontSizes['5xl'],
       fontWeight: fontWeights.bold,
       lineHeight: lineHeights.tight,
-      letterSpacing: letterSpacing.tight
+      letterSpacing: letterSpacing.tight,
     },
     sm: {
       fontSize: fontSizes['4xl'],
       fontWeight: fontWeights.semiBold,
       lineHeight: lineHeights.tight,
-      letterSpacing: letterSpacing.normal
-    }
+      letterSpacing: letterSpacing.normal,
+    },
   },
-  
+
   // Heading styles
   heading: {
     h1: {
       fontSize: fontSizes['4xl'],
       fontWeight: fontWeights.bold,
       lineHeight: lineHeights.tight,
-      letterSpacing: letterSpacing.tight
+      letterSpacing: letterSpacing.tight,
     },
     h2: {
       fontSize: fontSizes['3xl'],
       fontWeight: fontWeights.bold,
       lineHeight: lineHeights.tight,
-      letterSpacing: letterSpacing.normal
+      letterSpacing: letterSpacing.normal,
     },
     h3: {
       fontSize: fontSizes['2xl'],
       fontWeight: fontWeights.semiBold,
       lineHeight: lineHeights.snug,
-      letterSpacing: letterSpacing.normal
+      letterSpacing: letterSpacing.normal,
     },
     h4: {
       fontSize: fontSizes.xl,
       fontWeight: fontWeights.semiBold,
       lineHeight: lineHeights.snug,
-      letterSpacing: letterSpacing.normal
+      letterSpacing: letterSpacing.normal,
     },
     h5: {
       fontSize: fontSizes.lg,
       fontWeight: fontWeights.medium,
       lineHeight: lineHeights.normal,
-      letterSpacing: letterSpacing.normal
+      letterSpacing: letterSpacing.normal,
     },
     h6: {
       fontSize: fontSizes.base,
       fontWeight: fontWeights.medium,
       lineHeight: lineHeights.normal,
-      letterSpacing: letterSpacing.normal
-    }
+      letterSpacing: letterSpacing.normal,
+    },
   },
-  
+
   // Body text styles
   body: {
     xl: {
       fontSize: fontSizes.xl,
       fontWeight: fontWeights.normal,
       lineHeight: lineHeights.relaxed,
-      letterSpacing: letterSpacing.normal
+      letterSpacing: letterSpacing.normal,
     },
     lg: {
       fontSize: fontSizes.lg,
       fontWeight: fontWeights.normal,
       lineHeight: lineHeights.relaxed,
-      letterSpacing: letterSpacing.normal
+      letterSpacing: letterSpacing.normal,
     },
     md: {
       fontSize: fontSizes.base,
       fontWeight: fontWeights.normal,
       lineHeight: lineHeights.normal,
-      letterSpacing: letterSpacing.normal
+      letterSpacing: letterSpacing.normal,
     },
     sm: {
       fontSize: fontSizes.sm,
       fontWeight: fontWeights.normal,
       lineHeight: lineHeights.normal,
-      letterSpacing: letterSpacing.normal
+      letterSpacing: letterSpacing.normal,
     },
     xs: {
       fontSize: fontSizes.xs,
       fontWeight: fontWeights.normal,
       lineHeight: lineHeights.normal,
-      letterSpacing: letterSpacing.wide
-    }
+      letterSpacing: letterSpacing.wide,
+    },
   },
-  
+
   // Label styles
   label: {
     lg: {
       fontSize: fontSizes.base,
       fontWeight: fontWeights.medium,
       lineHeight: lineHeights.normal,
-      letterSpacing: letterSpacing.normal
+      letterSpacing: letterSpacing.normal,
     },
     md: {
       fontSize: fontSizes.sm,
       fontWeight: fontWeights.medium,
       lineHeight: lineHeights.normal,
-      letterSpacing: letterSpacing.normal
+      letterSpacing: letterSpacing.normal,
     },
     sm: {
       fontSize: fontSizes.xs,
       fontWeight: fontWeights.medium,
       lineHeight: lineHeights.normal,
-      letterSpacing: letterSpacing.wide
-    }
+      letterSpacing: letterSpacing.wide,
+    },
   },
-  
+
   // Caption styles
   caption: {
     lg: {
       fontSize: fontSizes.sm,
       fontWeight: fontWeights.normal,
       lineHeight: lineHeights.normal,
-      letterSpacing: letterSpacing.normal
+      letterSpacing: letterSpacing.normal,
     },
     md: {
       fontSize: fontSizes.xs,
       fontWeight: fontWeights.normal,
       lineHeight: lineHeights.normal,
-      letterSpacing: letterSpacing.wide
-    }
+      letterSpacing: letterSpacing.wide,
+    },
   },
-  
+
   // Code styles
   code: {
     lg: {
@@ -256,23 +256,23 @@ export const typographyScale = {
       fontWeight: fontWeights.normal,
       lineHeight: lineHeights.normal,
       letterSpacing: letterSpacing.normal,
-      fontFamily: fontFamilies.mono.join(', ')
+      fontFamily: fontFamilies.mono.join(', '),
     },
     md: {
       fontSize: fontSizes.sm,
       fontWeight: fontWeights.normal,
       lineHeight: lineHeights.normal,
       letterSpacing: letterSpacing.normal,
-      fontFamily: fontFamilies.mono.join(', ')
+      fontFamily: fontFamilies.mono.join(', '),
     },
     sm: {
       fontSize: fontSizes.xs,
       fontWeight: fontWeights.normal,
       lineHeight: lineHeights.normal,
       letterSpacing: letterSpacing.normal,
-      fontFamily: fontFamilies.mono.join(', ')
-    }
-  }
+      fontFamily: fontFamilies.mono.join(', '),
+    },
+  },
 } as const
 
 /**
@@ -287,7 +287,7 @@ export const typographyUtils = {
   getFontFamily: (family: keyof typeof fontFamilies): string => {
     return fontFamilies[family].join(', ')
   },
-  
+
   /**
    * Generate typography CSS properties
    * @param scale - Typography scale
@@ -296,25 +296,25 @@ export const typographyUtils = {
    */
   getTypographyStyles: (
     scale: keyof typeof typographyScale,
-    variant: string
+    variant: string,
   ): Record<string, string | number> => {
     const scaleObj = typographyScale[scale] as any
     const styles = scaleObj?.[variant]
-    
+
     if (!styles) {
       console.warn(`Typography variant '${variant}' not found in scale '${scale}'`)
       return {}
     }
-    
+
     return {
       fontSize: styles.fontSize,
       fontWeight: styles.fontWeight,
       lineHeight: styles.lineHeight,
       letterSpacing: styles.letterSpacing,
-      ...(styles.fontFamily && { fontFamily: styles.fontFamily })
+      ...(styles.fontFamily && { fontFamily: styles.fontFamily }),
     }
   },
-  
+
   /**
    * Generate responsive typography
    * @param baseVariant - Base typography variant
@@ -322,53 +322,53 @@ export const typographyUtils = {
    * @returns CSS with media queries
    */
   getResponsiveTypography: (
-    baseVariant: { scale: keyof typeof typographyScale; variant: string },
+    baseVariant: { scale: keyof typeof typographyScale, variant: string },
     responsiveVariants?: {
-      sm?: { scale: keyof typeof typographyScale; variant: string }
-      md?: { scale: keyof typeof typographyScale; variant: string }
-      lg?: { scale: keyof typeof typographyScale; variant: string }
-      xl?: { scale: keyof typeof typographyScale; variant: string }
-    }
+      sm?: { scale: keyof typeof typographyScale, variant: string },
+      md?: { scale: keyof typeof typographyScale, variant: string },
+      lg?: { scale: keyof typeof typographyScale, variant: string },
+      xl?: { scale: keyof typeof typographyScale, variant: string },
+    },
   ): Record<string, any> => {
     const baseStyles = typographyUtils.getTypographyStyles(
       baseVariant.scale,
-      baseVariant.variant
+      baseVariant.variant,
     )
-    
+
     const result: Record<string, any> = { ...baseStyles }
-    
+
     if (responsiveVariants) {
       if (responsiveVariants.sm) {
         result['@media (min-width: 640px)'] = typographyUtils.getTypographyStyles(
           responsiveVariants.sm.scale,
-          responsiveVariants.sm.variant
+          responsiveVariants.sm.variant,
         )
       }
-      
+
       if (responsiveVariants.md) {
         result['@media (min-width: 768px)'] = typographyUtils.getTypographyStyles(
           responsiveVariants.md.scale,
-          responsiveVariants.md.variant
+          responsiveVariants.md.variant,
         )
       }
-      
+
       if (responsiveVariants.lg) {
         result['@media (min-width: 1024px)'] = typographyUtils.getTypographyStyles(
           responsiveVariants.lg.scale,
-          responsiveVariants.lg.variant
+          responsiveVariants.lg.variant,
         )
       }
-      
+
       if (responsiveVariants.xl) {
         result['@media (min-width: 1280px)'] = typographyUtils.getTypographyStyles(
           responsiveVariants.xl.scale,
-          responsiveVariants.xl.variant
+          responsiveVariants.xl.variant,
         )
       }
     }
-    
+
     return result
-  }
+  },
 }
 
 /**
@@ -379,7 +379,7 @@ export const typographyCSSVars = {
   '--font-family-sans': fontFamilies.sans.join(', '),
   '--font-family-serif': fontFamilies.serif.join(', '),
   '--font-family-mono': fontFamilies.mono.join(', '),
-  
+
   // Font sizes
   '--font-size-xs': fontSizes.xs,
   '--font-size-sm': fontSizes.sm,
@@ -394,7 +394,7 @@ export const typographyCSSVars = {
   '--font-size-7xl': fontSizes['7xl'],
   '--font-size-8xl': fontSizes['8xl'],
   '--font-size-9xl': fontSizes['9xl'],
-  
+
   // Font weights
   '--font-weight-thin': fontWeights.thin,
   '--font-weight-extralight': fontWeights.extraLight,
@@ -405,7 +405,7 @@ export const typographyCSSVars = {
   '--font-weight-bold': fontWeights.bold,
   '--font-weight-extrabold': fontWeights.extraBold,
   '--font-weight-black': fontWeights.black,
-  
+
   // Line heights
   '--line-height-none': lineHeights.none,
   '--line-height-tight': lineHeights.tight,
@@ -413,14 +413,14 @@ export const typographyCSSVars = {
   '--line-height-normal': lineHeights.normal,
   '--line-height-relaxed': lineHeights.relaxed,
   '--line-height-loose': lineHeights.loose,
-  
+
   // Letter spacing
   '--letter-spacing-tighter': letterSpacing.tighter,
   '--letter-spacing-tight': letterSpacing.tight,
   '--letter-spacing-normal': letterSpacing.normal,
   '--letter-spacing-wide': letterSpacing.wide,
   '--letter-spacing-wider': letterSpacing.wider,
-  '--letter-spacing-widest': letterSpacing.widest
+  '--letter-spacing-widest': letterSpacing.widest,
 } as const
 
 /**
@@ -444,7 +444,7 @@ export const typography = {
   letterSpacing,
   scale: typographyScale,
   utils: typographyUtils,
-  cssVars: typographyCSSVars
+  cssVars: typographyCSSVars,
 } as const
 
 export default typography

@@ -1,5 +1,5 @@
 // Authentication constants
-export const AUTH_CONSTANTS = {  
+export const AUTH_CONSTANTS = {
   TOKEN_KEY: 'auth_token',
   REFRESH_TOKEN_KEY: 'refresh_token',
   USER_KEY: 'auth_user',

@@ -1,19 +1,19 @@
 /**
  * Number Formatting Service
- * 
+ *
  * Provides consistent number formatting across the application.
  * Supports various formatting options including currency, percentages,
  * and human-readable large numbers.
  */
 
 export interface NumberFormatOptions {
-  locale?: string
-  currency?: string
-  minimumFractionDigits?: number
-  maximumFractionDigits?: number
-  notation?: 'standard' | 'scientific' | 'engineering' | 'compact'
-  compactDisplay?: 'short' | 'long'
-  useGrouping?: boolean
+  locale?: string,
+  currency?: string,
+  minimumFractionDigits?: number,
+  maximumFractionDigits?: number,
+  notation?: 'standard' | 'scientific' | 'engineering' | 'compact',
+  compactDisplay?: 'short' | 'long',
+  useGrouping?: boolean,
 }
 
 /**
@@ -22,9 +22,9 @@ export interface NumberFormatOptions {
  * @param options - Formatting options
  * @returns Formatted number string
  */
-export function formatNumber(
+export function formatNumber (
   value: number,
-  options: NumberFormatOptions = {}
+  options: NumberFormatOptions = {},
 ): string {
   const {
     locale = 'en-US',
@@ -32,7 +32,7 @@ export function formatNumber(
     maximumFractionDigits = 2,
     notation = 'standard',
     compactDisplay = 'short',
-    useGrouping = true
+    useGrouping = true,
   } = options
 
   try {
@@ -48,7 +48,7 @@ export function formatNumber(
         compactDisplay,
         minimumFractionDigits: 0,
         maximumFractionDigits: 1,
-        useGrouping
+        useGrouping,
       }).format(value)
     }
 
@@ -67,7 +67,7 @@ export function formatNumber(
       compactDisplay,
       minimumFractionDigits,
       maximumFractionDigits,
-      useGrouping
+      useGrouping,
     }).format(value)
   } catch (error) {
     console.warn('Number formatting failed:', error)
@@ -82,17 +82,17 @@ export function formatNumber(
  * @param locale - Locale for formatting
  * @returns Formatted currency string
  */
-export function formatCurrency(
+export function formatCurrency (
   value: number,
   currency: string = 'USD',
-  locale: string = 'en-US'
+  locale: string = 'en-US',
 ): string {
   try {
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
       minimumFractionDigits: 0,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     }).format(value)
   } catch (error) {
     console.warn('Currency formatting failed:', error)
@@ -107,16 +107,16 @@ export function formatCurrency(
  * @param decimals - Number of decimal places
  * @returns Formatted percentage string
  */
-export function formatPercentage(
+export function formatPercentage (
   value: number,
   locale: string = 'en-US',
-  decimals: number = 1
+  decimals: number = 1,
 ): string {
   try {
     return new Intl.NumberFormat(locale, {
       style: 'percent',
       minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
+      maximumFractionDigits: decimals,
     }).format(value)
   } catch (error) {
     console.warn('Percentage formatting failed:', error)
@@ -131,10 +131,10 @@ export function formatPercentage(
  * @param options - Formatting options
  * @returns Formatted number with suffix
  */
-export function formatWithSuffix(
+export function formatWithSuffix (
   value: number,
   suffix: string,
-  options: NumberFormatOptions = {}
+  options: NumberFormatOptions = {},
 ): string {
   const formattedNumber = formatNumber(value, options)
   return `${formattedNumber}${suffix}`
@@ -146,7 +146,7 @@ export function formatWithSuffix(
  * @param decimals - Number of decimal places
  * @returns Formatted bytes string
  */
-export function formatBytes(bytes: number, decimals: number = 2): string {
+export function formatBytes (bytes: number, decimals: number = 2): string {
   if (bytes === 0) return '0 Bytes'
 
   const k = 1024
@@ -163,7 +163,7 @@ export function formatBytes(bytes: number, decimals: number = 2): string {
  * @param milliseconds - Duration in milliseconds
  * @returns Formatted duration string
  */
-export function formatDuration(milliseconds: number): string {
+export function formatDuration (milliseconds: number): string {
   const seconds = Math.floor(milliseconds / 1000)
   const minutes = Math.floor(seconds / 60)
   const hours = Math.floor(minutes / 60)
@@ -186,7 +186,7 @@ export function formatDuration(milliseconds: number): string {
  * @param formattedValue - The formatted string
  * @returns Parsed number or NaN if invalid
  */
-export function parseFormattedNumber(formattedValue: string): number {
+export function parseFormattedNumber (formattedValue: string): number {
   // Remove common formatting characters
   const cleaned = formattedValue
     .replace(/[,\s]/g, '') // Remove commas and spaces
@@ -201,7 +201,7 @@ export function parseFormattedNumber(formattedValue: string): number {
  * @param value - Value to check
  * @returns True if valid number
  */
-export function isValidNumber(value: any): value is number {
+export function isValidNumber (value: any): value is number {
   return typeof value === 'number' && isFinite(value)
 }
 
@@ -211,7 +211,7 @@ export function isValidNumber(value: any): value is number {
  * @param decimals - Number of decimal places
  * @returns Rounded number
  */
-export function roundToDecimals(value: number, decimals: number): number {
+export function roundToDecimals (value: number, decimals: number): number {
   const factor = Math.pow(10, decimals)
   return Math.round(value * factor) / factor
 }
@@ -221,7 +221,7 @@ export function roundToDecimals(value: number, decimals: number): number {
  * @param value - Number to format
  * @returns Number with ordinal suffix
  */
-export function formatOrdinal(value: number): string {
+export function formatOrdinal (value: number): string {
   const suffixes = ['th', 'st', 'nd', 'rd']
   const v = value % 100
   return value + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0])
@@ -233,7 +233,7 @@ export const defaultFormatter = {
   currency: (value: number, currency?: string) => formatCurrency(value, currency),
   percentage: (value: number) => formatPercentage(value),
   bytes: (value: number) => formatBytes(value),
-  duration: (value: number) => formatDuration(value)
+  duration: (value: number) => formatDuration(value),
 }
 
 /**
@@ -241,7 +241,7 @@ export const defaultFormatter = {
  * Provides reactive number formatting functionality for Vue components
  * @returns Object with formatting methods
  */
-export function useNumberFormatter() {
+export function useNumberFormatter () {
   return {
     formatNumber: (value: number, options?: NumberFormatOptions) => formatNumber(value, options),
     formatCurrency: (value: number, currency?: string, locale?: string) => formatCurrency(value, currency, locale),
@@ -252,6 +252,6 @@ export function useNumberFormatter() {
     formatOrdinal: (value: number) => formatOrdinal(value),
     parseFormattedNumber: (formattedValue: string) => parseFormattedNumber(formattedValue),
     isValidNumber: (value: any) => isValidNumber(value),
-    roundToDecimals: (value: number, decimals: number) => roundToDecimals(value, decimals)
+    roundToDecimals: (value: number, decimals: number) => roundToDecimals(value, decimals),
   }
 }

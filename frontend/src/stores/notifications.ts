@@ -1,17 +1,17 @@
-import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
 
 export interface Notification {
-  id: string
-  title: string
-  message: string
-  type: 'info' | 'success' | 'warning' | 'error'
-  timestamp: Date
-  read: boolean
+  id: string,
+  title: string,
+  message: string,
+  type: 'info' | 'success' | 'warning' | 'error',
+  timestamp: Date,
+  read: boolean,
   actions?: Array<{
-    label: string
-    action: () => void
-  }>
+    label: string,
+    action: () => void,
+  }>,
 }
 
 export const useNotificationStore = defineStore('notifications', () => {
@@ -23,9 +23,9 @@ export const useNotificationStore = defineStore('notifications', () => {
       ...notification,
       id: Math.random().toString(36).substr(2, 9),
       timestamp: new Date(),
-      read: false
+      read: false,
     }
-    
+
     notifications.value.unshift(newNotification)
     unreadCount.value++
 
@@ -33,7 +33,7 @@ export const useNotificationStore = defineStore('notifications', () => {
     if (Notification.permission === 'granted') {
       new Notification(notification.title, {
         body: notification.message,
-        icon: '/icon-192x192.png'
+        icon: '/icon-192x192.png',
       })
     }
 
@@ -85,7 +85,7 @@ export const useNotificationStore = defineStore('notifications', () => {
     return addNotification({
       title,
       message,
-      type: 'success'
+      type: 'success',
     })
   }
 
@@ -93,7 +93,7 @@ export const useNotificationStore = defineStore('notifications', () => {
     return addNotification({
       title,
       message,
-      type: 'error'
+      type: 'error',
     })
   }
 
@@ -101,7 +101,7 @@ export const useNotificationStore = defineStore('notifications', () => {
     return addNotification({
       title,
       message,
-      type: 'warning'
+      type: 'warning',
     })
   }
 
@@ -109,7 +109,7 @@ export const useNotificationStore = defineStore('notifications', () => {
     return addNotification({
       title,
       message,
-      type: 'info'
+      type: 'info',
     })
   }
 
@@ -124,6 +124,6 @@ export const useNotificationStore = defineStore('notifications', () => {
     showSuccess,
     showError,
     showWarning,
-    showInfo
+    showInfo,
   }
 })

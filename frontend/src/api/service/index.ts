@@ -2,22 +2,21 @@
 // SERVICE LAYER - CENTRALIZED API SERVICE MANAGEMENT
 // ============================================================================
 
-import { AuthService } from './authService'
-import { FileService } from './fileService'
-import { UserService } from './userService'
 import { ApiClient } from '../endpoint/axios'
 import {
   BaseAuth,
+  BaseClinic,
   BaseFile,
-  BaseProvider,
+  BaseFinance,
   BaseManagement,
   BaseMaster,
-  BaseClinic,
+  BaseProvider,
   BasePurchase,
   BaseSales,
-  BaseWarehouse,
-  BaseFinance
-} from '../endpoint/base'
+  BaseWarehouse } from '../endpoint/base'
+import { AuthService } from './authService'
+import { FileService } from './fileService'
+import { UserService } from './userService'
 
 // ============================================================================
 // SERVICE FACTORY
@@ -43,7 +42,7 @@ const SERVICE_URLS = {
   purchase: BasePurchase() || 'http://localhost:8086/api/purchase',
   sales: BaseSales() || 'http://localhost:8087/api/sales',
   warehouse: BaseWarehouse() || 'http://localhost:8088/api/warehouse',
-  finance: BaseFinance() || 'http://localhost:8089/api/finance'
+  finance: BaseFinance() || 'http://localhost:8089/api/finance',
 } as const
 
 // ============================================================================
@@ -84,7 +83,7 @@ export const serviceRegistry = {
   purchase: purchaseService,
   sales: salesService,
   warehouse: warehouseService,
-  finance: financeService
+  finance: financeService,
 } as const
 
 /**
@@ -101,21 +100,20 @@ export { ApiRequest } from '../request/ApiRequest'
 
 // Export individual service classes
 export { AuthService } from './authService'
-export { UserService } from './userService'
 export { FileService } from './fileService'
+export { UserService } from './userService'
 
 // Export types from centralized types file
 export type {
   ApiResponse,
-  PaginatedResponse,
+  AuthTokens,
+  CreateUserData,
   ErrorResponse,
   LoginCredentials,
   LoginResponse,
+  PaginatedResponse,
   RegisterData,
+  UpdateUserData,
   User,
   UserFilters,
-  UserStats,
-  CreateUserData,
-  UpdateUserData,
-  AuthTokens
-} from '../types'
+  UserStats } from '../types'

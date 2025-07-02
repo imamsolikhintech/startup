@@ -1,24 +1,36 @@
 <template>
-  <CustomDialog :show="show" :max-width="800" :persistent="true"
+  <custom-dialog
+    :show="show"
+    :max-width="800"
+    :persistent="true"
     :title="isEditing ? 'Edit User Profile' : 'Create New User'"
     :subtitle="isEditing ? 'Update user information and settings' : 'Add a new user to the system'"
-    :header-icon="isEditing ? 'mdi-account-edit' : 'mdi-account-plus'" header-icon-color="primary" :loading="loading"
-    confirm-button-text="Save User" cancel-button-text="Cancel" @update:show="$emit('update:show', $event)"
-    @confirm="$emit('save')" @cancel="$emit('cancel')" @close="$emit('cancel')"
-    header-class="bg-gradient-primary text-white">
+    :header-icon="isEditing ? 'mdi-account-edit' : 'mdi-account-plus'"
+    header-icon-color="primary"
+    :loading="loading"
+    confirm-button-text="Save User"
+    cancel-button-text="Cancel"
+    header-class="bg-gradient-primary text-white"
+    @update:show="$emit('update:show', $event)"
+    @confirm="$emit('save')"
+    @cancel="$emit('cancel')"
+    @close="$emit('cancel')">
     <n-form ref="userForm">
       <!-- Profile Picture Section -->
       <div class="profile-section">
-        <n-avatar size="large" class="profile-avatar">
-          <img :src="formData.profile_picture || getDefaultAvatar(formData.name)" :alt="formData.name" />
+        <n-avatar
+          size="large"
+          class="profile-avatar">
+          <img
+            :src="formData.profile_picture || getDefaultAvatar(formData.name)"
+            :alt="formData.name">
         </n-avatar>
         <div class="profile-input">
           <n-input
             :value="formData.profile_picture"
-            @update:value="updateField('profile_picture', $event)"
             placeholder="https://example.com/avatar.jpg"
             class="mb-2"
-          >
+            @update:value="updateField('profile_picture', $event)">
             <template #prefix>
               <n-icon><component :is="ImageIcon" /></n-icon>
             </template>
@@ -33,35 +45,41 @@
 
       <!-- Basic Information -->
       <h3 class="section-title">
-        <n-icon class="section-icon"><component :is="PersonIcon" /></n-icon>
+        <n-icon class="section-icon">
+          <component :is="PersonIcon" />
+        </n-icon>
         Basic Information
       </h3>
 
       <div class="form-row">
-        <n-form-item label="Full Name" required>
+        <n-form-item
+          label="Full Name"
+          required>
           <n-input
             :value="formData.name"
-            @update:value="updateField('name', $event)"
             placeholder="Enter full name"
-          >
+            @update:value="updateField('name', $event)">
             <template #prefix>
               <n-icon><component :is="PersonIcon" /></n-icon>
             </template>
           </n-input>
         </n-form-item>
-        <n-form-item label="Email Address" required>
+        <n-form-item
+          label="Email Address"
+          required>
           <n-input
             :value="formData.email"
-            @update:value="updateField('email', $event)"
             type="email"
             placeholder="Enter email address"
             :disabled="isEditing"
-          >
+            @update:value="updateField('email', $event)">
             <template #prefix>
               <n-icon><component :is="MailIcon" /></n-icon>
             </template>
           </n-input>
-          <template #feedback v-if="isEditing">
+          <template
+            v-if="isEditing"
+            #feedback>
             Email cannot be changed after user creation
           </template>
         </n-form-item>
@@ -71,32 +89,35 @@
 
       <!-- Role & Status -->
       <h3 class="section-title">
-        <n-icon class="section-icon"><component :is="ShieldIcon" /></n-icon>
+        <n-icon class="section-icon">
+          <component :is="ShieldIcon" />
+        </n-icon>
         Role & Permissions
       </h3>
 
       <div class="form-row">
-        <n-form-item label="User Role" required>
+        <n-form-item
+          label="User Role"
+          required>
           <n-select
             :value="formData.role"
-            @update:value="updateField('role', $event)"
             :options="roles"
             placeholder="Select user role"
-          />
+            @update:value="updateField('role', $event)" />
         </n-form-item>
-        <n-form-item label="Account Status" required>
+        <n-form-item
+          label="Account Status"
+          required>
           <n-select
             :value="formData.status"
-            @update:value="updateField('status', $event)"
             :options="statuses"
             placeholder="Select account status"
-          />
+            @update:value="updateField('status', $event)" />
         </n-form-item>
         <n-form-item label="Email Verified">
           <n-switch
             :value="formData.verified"
-            @update:value="updateField('verified', $event)"
-          >
+            @update:value="updateField('verified', $event)">
             <template #checked>
               Verified
             </template>
@@ -111,32 +132,38 @@
 
       <!-- Password Section -->
       <h3 class="section-title">
-        <n-icon class="section-icon"><component :is="LockIcon" /></n-icon>
+        <n-icon class="section-icon">
+          <component :is="LockIcon" />
+        </n-icon>
         Security Settings
       </h3>
 
-      <div v-if="!isEditing" class="form-row">
-        <n-form-item label="Password" required>
+      <div
+        v-if="!isEditing"
+        class="form-row">
+        <n-form-item
+          label="Password"
+          required>
           <n-input
             :value="formData.password"
-            @update:value="updateField('password', $event)"
             type="password"
             placeholder="Enter password"
             show-password-on="click"
-          >
+            @update:value="updateField('password', $event)">
             <template #prefix>
               <n-icon><component :is="LockIcon" /></n-icon>
             </template>
           </n-input>
         </n-form-item>
-        <n-form-item label="Confirm Password" required>
+        <n-form-item
+          label="Confirm Password"
+          required>
           <n-input
             :value="formData.confirmPassword"
-            @update:value="updateField('confirmPassword', $event)"
             type="password"
             placeholder="Confirm password"
             show-password-on="click"
-          >
+            @update:value="updateField('confirmPassword', $event)">
             <template #prefix>
               <n-icon><component :is="LockIcon" /></n-icon>
             </template>
@@ -147,9 +174,19 @@
       <div v-else>
         <n-card class="password-management">
           <div class="password-reset-section">
-            <n-icon size="48" class="reset-icon"><component :is="LockIcon" /></n-icon>
-            <h4 class="reset-title">Password Management</h4>
-            <n-button v-if="isEditing" type="warning" ghost @click="$emit('reset-password')">
+            <n-icon
+              size="48"
+              class="reset-icon">
+              <component :is="LockIcon" />
+            </n-icon>
+            <h4 class="reset-title">
+              Password Management
+            </h4>
+            <n-button
+              v-if="isEditing"
+              type="warning"
+              ghost
+              @click="$emit('reset-password')">
               <template #icon>
                 <n-icon><component :is="LockIcon" /></n-icon>
               </template>
@@ -159,76 +196,76 @@
         </n-card>
       </div>
     </n-form>
-  </CustomDialog>
+  </custom-dialog>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { NForm, NFormItem, NInput, NSelect, NSwitch, NAvatar, NIcon, NCard, NButton, NDivider } from 'naive-ui'
-import { Person as PersonIcon, Mail as MailIcon, Shield as ShieldIcon, LockClosed as LockIcon, Image as ImageIcon } from '@vicons/ionicons5'
-import CustomDialog from '@/components/dialog/CustomDialog.vue'
+  import { Image as ImageIcon, LockClosed as LockIcon, Mail as MailIcon, Person as PersonIcon, Shield as ShieldIcon } from '@vicons/ionicons5'
+  import { NAvatar, NButton, NCard, NDivider, NForm, NFormItem, NIcon, NInput, NSelect, NSwitch } from 'naive-ui'
+  import { computed } from 'vue'
+  import CustomDialog from '@/components/dialog/CustomDialog.vue'
 
-interface UserFormData {
-  name: string
-  email: string
-  role: string
-  status: string
-  password: string
-  profile_picture: string
-  verified: boolean
-  confirmPassword: string
-}
+  interface UserFormData {
+    name: string,
+    email: string,
+    role: string,
+    status: string,
+    password: string,
+    profile_picture: string,
+    verified: boolean,
+    confirmPassword: string,
+  }
 
-interface Props {
-  show: boolean
-  formData: UserFormData
-  isEditing: boolean
-  roles: { label: string; value: string }[]
-  statuses: { label: string; value: string }[]
-  loading?: boolean
-}
+  interface Props {
+    show: boolean,
+    formData: UserFormData,
+    isEditing: boolean,
+    roles: { label: string, value: string }[],
+    statuses: { label: string, value: string }[],
+    loading?: boolean,
+  }
 
-const props = defineProps<Props>()
+  const props = defineProps<Props>()
 
-const emit = defineEmits<{
-  'update:show': [value: boolean]
-  'update:formData': [data: UserFormData]
-  save: []
-  cancel: []
-  'reset-password': []
-}>()
+  const emit = defineEmits<{
+    'update:show': [value: boolean],
+    'update:formData': [data: UserFormData],
+    save: [],
+    cancel: [],
+    'reset-password': [],
+  }>()
 
-const getDefaultAvatar = (name: string) => {
-  const initial = name ? name.charAt(0).toUpperCase() : 'U'
-  return `https://toppng.com/uploads/preview/avatar-png-115540218987bthtxfhls.png?text=${initial}`
-}
+  const getDefaultAvatar = (name: string) => {
+    const initial = name ? name.charAt(0).toUpperCase() : 'U'
+    return `https://toppng.com/uploads/preview/avatar-png-115540218987bthtxfhls.png?text=${initial}`
+  }
 
-const updateField = (field: keyof UserFormData, value: any) => {
-  const updatedData = { ...props.formData, [field]: value }
-  // Emit the updated form data
-  emit('update:formData', updatedData)
-}
+  const updateField = (field: keyof UserFormData, value: any) => {
+    const updatedData = { ...props.formData, [field]: value }
+    // Emit the updated form data
+    emit('update:formData', updatedData)
+  }
 
-const nameRules = [
-  (v: string) => !!v || 'Name is required',
-  (v: string) => v.length >= 2 || 'Name must be at least 2 characters'
-]
+  const nameRules = [
+    (v: string) => !!v || 'Name is required',
+    (v: string) => v.length >= 2 || 'Name must be at least 2 characters',
+  ]
 
-const emailRules = [
-  (v: string) => !!v || 'Email is required',
-  (v: string) => /.+@.+\..+/.test(v) || 'Email must be valid'
-]
+  const emailRules = [
+    (v: string) => !!v || 'Email is required',
+    (v: string) => /.+@.+\..+/.test(v) || 'Email must be valid',
+  ]
 
-const passwordRules = [
-  (v: string) => !!v || 'Password is required',
-  (v: string) => v.length >= 6 || 'Password must be at least 6 characters',
-  (v: string) => /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(v) || 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
-]
+  const passwordRules = [
+    (v: string) => !!v || 'Password is required',
+    (v: string) => v.length >= 6 || 'Password must be at least 6 characters',
+    (v: string) => /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(v) || 'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+  ]
 
-const confirmPasswordRules = computed(() => [
-  (v: string) => !!v || 'Please confirm your password',
-  (v: string) => v === props.formData.password || 'Passwords do not match'
-])
+  const confirmPasswordRules = computed(() => [
+    (v: string) => !!v || 'Please confirm your password',
+    (v: string) => v === props.formData.password || 'Passwords do not match',
+  ])
 </script>
 
 <style scoped>
@@ -308,7 +345,7 @@ const confirmPasswordRules = computed(() => [
   .form-row {
     grid-template-columns: 1fr;
   }
-  
+
   .profile-section {
     padding: 0 16px;
   }

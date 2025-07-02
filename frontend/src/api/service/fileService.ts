@@ -1,15 +1,14 @@
-import { ApiRequest } from '../request/ApiRequest'
 import type { ApiClient } from '../endpoint/axios'
+import { ApiRequest } from '../request/ApiRequest'
 import type {
   ApiResponse,
-  PaginatedResponse,
-  FileItem,
-  UploadOptions,
   FileFilters,
+  FileItem,
   FileStats,
   FileUploadProgress,
-  FolderItem
-} from '../types'
+  FolderItem,
+  PaginatedResponse,
+  UploadOptions } from '../types'
 
 /**
  * File Management Service
@@ -18,7 +17,7 @@ import type {
  * upload, download, management, and organization.
  */
 export class FileService extends ApiRequest {
-  constructor(apiClient: ApiClient) {
+  constructor (apiClient: ApiClient) {
     super(apiClient, '/files')
   }
 
@@ -29,10 +28,10 @@ export class FileService extends ApiRequest {
    * @param filters - Filter criteria
    * @returns Paginated files
    */
-  async getFiles(
+  async getFiles (
     page: number = 1,
     limit: number = 10,
-    filters: FileFilters = {}
+    filters: FileFilters = {},
   ): Promise<PaginatedResponse<FileItem>> {
     try {
       return await this.getAll<FileItem>(page, limit, filters)
@@ -47,7 +46,7 @@ export class FileService extends ApiRequest {
    * @param fileId - File ID
    * @returns File data
    */
-  async getFileById(fileId: string): Promise<ApiResponse<FileItem>> {
+  async getFileById (fileId: string): Promise<ApiResponse<FileItem>> {
     try {
       return await this.getById<FileItem>(fileId)
     } catch (error) {
@@ -62,15 +61,15 @@ export class FileService extends ApiRequest {
    * @param options - Upload options
    * @returns Uploaded file data
    */
-  async uploadFile(
+  async uploadFile (
     file: File,
-    options: UploadOptions = {}
+    options: UploadOptions = {},
   ): Promise<ApiResponse<FileItem>> {
     try {
       // Validate file size
       if (options.maxSize && file.size > options.maxSize) {
         throw new Error(
-          `File size exceeds maximum allowed size of ${options.maxSize} bytes`
+          `File size exceeds maximum allowed size of ${options.maxSize} bytes`,
         )
       }
 
@@ -93,11 +92,11 @@ export class FileService extends ApiRequest {
    * @param onProgress - Progress callback
    * @returns Upload results
    */
-  async uploadMultipleFiles(
+  async uploadMultipleFiles (
     files: File[],
     options: UploadOptions = {},
-    onProgress?: (progress: FileUploadProgress[]) => void
-  ): Promise<ApiResponse<{ success: FileItem[]; failed: any[] }>> {
+    onProgress?: (progress: FileUploadProgress[]) => void,
+  ): Promise<ApiResponse<{ success: FileItem[], failed: any[] }>> {
     try {
       if (!files.length) {
         throw new Error('At least one file is required')
@@ -109,7 +108,7 @@ export class FileService extends ApiRequest {
         // Validate each file
         if (options.maxSize && file.size > options.maxSize) {
           throw new Error(
-            `File ${file.name} exceeds maximum allowed size`
+            `File ${file.name} exceeds maximum allowed size`,
           )
         }
 
@@ -118,40 +117,40 @@ export class FileService extends ApiRequest {
           !options.allowedTypes.includes(file.type)
         ) {
           throw new Error(
-            `File type ${file.type} is not allowed for ${file.name}`
+            `File type ${file.type} is not allowed for ${file.name}`,
           )
         }
 
-        formData.append(`files`, file)
+        formData.append('files', file)
       })
 
       // This part needs to be adapted to your ApiClient's multi-upload method
       // Assuming apiClient has a method like postFiles or similar
-      return await this.apiClient.post<ApiResponse<{ success: FileItem[]; failed: any[] }>>(
+      return await this.apiClient.post<ApiResponse<{ success: FileItem[], failed: any[] }>>(
         `${this.baseEndpoint}/upload-multiple`,
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'multipart/form-data',
           },
           onUploadProgress: (progressEvent: import('axios').AxiosProgressEvent) => {
             if (onProgress) {
               // This is a simplified progress. You might need more complex logic
               // to track individual file progress if your backend supports it.
               const totalProgress = Math.round(
-                (progressEvent.loaded * 100) / (progressEvent.total || 1)
+                (progressEvent.loaded * 100) / (progressEvent.total || 1),
               )
               onProgress([
                 {
                   fileId: 'multi-upload',
                   fileName: 'Multiple Files',
                   progress: totalProgress,
-                  status: totalProgress === 100 ? 'completed' : 'uploading'
-                }
+                  status: totalProgress === 100 ? 'completed' : 'uploading',
+                },
               ])
             }
-          }
-        }
+          },
+        },
       )
     } catch (error) {
       this.handleError(error)
@@ -165,10 +164,10 @@ export class FileService extends ApiRequest {
    * @param filename - Optional filename for download
    * @returns Blob of the file
    */
-  async downloadFile(fileId: string, filename?: string): Promise<Blob> {
+  async downloadFile (fileId: string, filename?: string): Promise<Blob> {
     try {
       const response = await this.apiClient.get(
-        `${this.baseEndpoint}/${fileId}/download`
+        `${this.baseEndpoint}/${fileId}/download`,
       )
       // Create a temporary URL and trigger download
       const url = window.URL.createObjectURL(response.data)
@@ -191,7 +190,7 @@ export class FileService extends ApiRequest {
    * @param fileId - File ID
    * @returns API response
    */
-  async deleteFile(fileId: string): Promise<ApiResponse<null>> {
+  async deleteFile (fileId: string): Promise<ApiResponse<null>> {
     try {
       return await this.delete(fileId)
     } catch (error) {
@@ -205,7 +204,7 @@ export class FileService extends ApiRequest {
    * @param filters - Filter criteria for stats
    * @returns File statistics
    */
-  async getFileStats(filters: FileFilters = {}): Promise<ApiResponse<FileStats>> {
+  async getFileStats (filters: FileFilters = {}): Promise<ApiResponse<FileStats>> {
     try {
       return await this.getStats<FileStats>(filters)
     } catch (error) {
@@ -221,16 +220,16 @@ export class FileService extends ApiRequest {
    * @param data - Additional data for operation (e.g., new folder for move)
    * @returns API response
    */
-  async bulkFileOperation(
+  async bulkFileOperation (
     operation: 'delete' | 'makePublic' | 'makePrivate' | 'move' | 'copy',
     fileIds: string[],
-    data?: any
+    data?: any,
   ): Promise<ApiResponse<any>> {
     try {
       const endpoint = `${this.baseEndpoint}/bulk/${operation}`
       return await this.apiClient.post(endpoint, {
         ids: fileIds,
-        ...data
+        ...data,
       })
     } catch (error) {
       this.handleError(error)
@@ -245,10 +244,10 @@ export class FileService extends ApiRequest {
    * @param filters - Filter criteria
    * @returns Paginated folders
    */
-  async getFolders(
+  async getFolders (
     page: number = 1,
     limit: number = 10,
-    filters: FileFilters = {}
+    filters: FileFilters = {},
   ): Promise<PaginatedResponse<FolderItem>> {
     try {
       return await this.getAll<FolderItem>(page, limit, filters)
@@ -263,7 +262,7 @@ export class FileService extends ApiRequest {
    * @param folderId - Folder ID
    * @returns Folder data
    */
-  async getFolderById(folderId: string): Promise<ApiResponse<FolderItem>> {
+  async getFolderById (folderId: string): Promise<ApiResponse<FolderItem>> {
     try {
       return await this.getById<FolderItem>(folderId)
     } catch (error) {
@@ -277,7 +276,7 @@ export class FileService extends ApiRequest {
    * @param data - Folder data
    * @returns API response with created folder
    */
-  async createFolder(data: Partial<FolderItem>): Promise<ApiResponse<FolderItem>> {
+  async createFolder (data: Partial<FolderItem>): Promise<ApiResponse<FolderItem>> {
     try {
       return await this.create<FolderItem>(data)
     } catch (error) {
@@ -292,9 +291,9 @@ export class FileService extends ApiRequest {
    * @param data - Updated folder data
    * @returns API response with updated folder
    */
-  async updateFolder(
+  async updateFolder (
     folderId: string,
-    data: Partial<FolderItem>
+    data: Partial<FolderItem>,
   ): Promise<ApiResponse<FolderItem>> {
     try {
       return await this.update<FolderItem>(folderId, data)
@@ -309,7 +308,7 @@ export class FileService extends ApiRequest {
    * @param folderId - Folder ID
    * @returns API response
    */
-  async deleteFolder(folderId: string): Promise<ApiResponse<null>> {
+  async deleteFolder (folderId: string): Promise<ApiResponse<null>> {
     try {
       return await this.delete(folderId)
     } catch (error) {

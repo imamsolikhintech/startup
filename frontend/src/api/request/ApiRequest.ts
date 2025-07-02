@@ -3,9 +3,9 @@
 // ============================================================================
 
 import type { AxiosRequestConfig } from 'axios'
-import type { ApiResponse, PaginatedResponse, PaginationParams, BaseFilters } from '../types'
-import { createApiError, validateRequiredFields, createCacheKey, requestCache } from './helpers'
 import { ApiClient } from '../endpoint/axios'
+import type { ApiResponse, BaseFilters, PaginatedResponse, PaginationParams } from '../types'
+import { createApiError, createCacheKey, requestCache, validateRequiredFields } from './helpers'
 
 /**
  * Abstract base class for all API services
@@ -16,7 +16,7 @@ export abstract class ApiRequest {
   protected readonly baseEndpoint: string
   protected readonly serviceName: string
 
-  constructor(apiClient: ApiClient, baseEndpoint: string, serviceName?: string) {
+  constructor (apiClient: ApiClient, baseEndpoint: string, serviceName?: string) {
     this.apiClient = apiClient
     this.baseEndpoint = baseEndpoint.replace(/\/$/, '') // Remove trailing slash
     this.serviceName = serviceName || this.constructor.name
@@ -34,7 +34,7 @@ export abstract class ApiRequest {
    */
   protected async getAll<T>(
     params?: PaginationParams & BaseFilters,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<PaginatedResponse<T[]>> {
     try {
       const cacheKey = createCacheKey(`${this.baseEndpoint}/getAll`, params)
@@ -46,7 +46,7 @@ export abstract class ApiRequest {
 
       const response = await this.apiClient.get<PaginatedResponse<T[]>>(
         this.baseEndpoint,
-        { ...config, params }
+        { ...config, params },
       )
 
       const result = response.data
@@ -77,7 +77,7 @@ export abstract class ApiRequest {
 
       const response = await this.apiClient.get<ApiResponse<T>>(
         `${this.baseEndpoint}/${id}`,
-        config
+        config,
       )
 
       const result = response.data
@@ -97,13 +97,13 @@ export abstract class ApiRequest {
    */
   protected async create<T, U = T>(
     data: Partial<T>,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<ApiResponse<U>> {
     try {
       const response = await this.apiClient.post<ApiResponse<U>>(
         this.baseEndpoint,
         data,
-        config
+        config,
       )
 
       // Invalidate list cache after creation
@@ -125,7 +125,7 @@ export abstract class ApiRequest {
   protected async update<T, U = T>(
     id: string | number,
     data: Partial<T>,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<ApiResponse<U>> {
     try {
       validateRequiredFields({ id }, ['id'])
@@ -133,7 +133,7 @@ export abstract class ApiRequest {
       const response = await this.apiClient.put<ApiResponse<U>>(
         `${this.baseEndpoint}/${id}`,
         data,
-        config
+        config,
       )
 
       // Invalidate caches after update
@@ -156,7 +156,7 @@ export abstract class ApiRequest {
   protected async patch<T, U = T>(
     id: string | number,
     data: Partial<T>,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<ApiResponse<U>> {
     try {
       validateRequiredFields({ id }, ['id'])
@@ -164,7 +164,7 @@ export abstract class ApiRequest {
       const response = await this.apiClient.patch<ApiResponse<U>>(
         `${this.baseEndpoint}/${id}`,
         data,
-        config
+        config,
       )
 
       // Invalidate caches after patch
@@ -183,13 +183,13 @@ export abstract class ApiRequest {
    * @param config - Additional axios configuration
    * @returns API response confirming deletion
    */
-  protected async delete(id: string | number, config?: AxiosRequestConfig): Promise<ApiResponse<void>> {
+  protected async delete (id: string | number, config?: AxiosRequestConfig): Promise<ApiResponse<void>> {
     try {
       validateRequiredFields({ id }, ['id'])
 
       const response = await this.apiClient.delete<ApiResponse<void>>(
         `${this.baseEndpoint}/${id}`,
-        config
+        config,
       )
 
       // Invalidate caches after deletion
@@ -208,16 +208,16 @@ export abstract class ApiRequest {
    * @param config - Additional axios configuration
    * @returns API response with deletion results
    */
-  protected async bulkDelete(
+  protected async bulkDelete (
     ids: (string | number)[],
-    config?: AxiosRequestConfig
-  ): Promise<ApiResponse<{ deleted: number; failed: number }>> {
+    config?: AxiosRequestConfig,
+  ): Promise<ApiResponse<{ deleted: number, failed: number }>> {
     try {
       validateRequiredFields({ ids }, ['ids'])
 
-      const response = await this.apiClient.delete<ApiResponse<{ deleted: number; failed: number }>>(
+      const response = await this.apiClient.delete<ApiResponse<{ deleted: number, failed: number }>>(
         `${this.baseEndpoint}/bulk`,
-        { ...config, data: { ids } }
+        { ...config, data: { ids } },
       )
 
       // Invalidate all caches after bulk deletion
@@ -238,7 +238,7 @@ export abstract class ApiRequest {
    * @param id - Item identifier
    * @protected
    */
-  protected invalidateItemCache(id: string | number): void {
+  protected invalidateItemCache (id: string | number): void {
     const cacheKey = createCacheKey(`${this.baseEndpoint}/${id}`)
     requestCache.delete(cacheKey)
   }
@@ -247,7 +247,7 @@ export abstract class ApiRequest {
    * Invalidates list cache for this service
    * @protected
    */
-  protected invalidateListCache(): void {
+  protected invalidateListCache (): void {
     // Clear all cache entries that start with the base endpoint
     const keys = Array.from((requestCache as any).cache.keys())
     keys.forEach(key => {
@@ -261,7 +261,7 @@ export abstract class ApiRequest {
    * Invalidates all caches for this service
    * @protected
    */
-  protected invalidateAllCaches(): void {
+  protected invalidateAllCaches (): void {
     const keys = Array.from((requestCache as any).cache.keys())
     keys.forEach(key => {
       if (typeof key === 'string' && key.startsWith(this.baseEndpoint)) {
@@ -280,7 +280,7 @@ export abstract class ApiRequest {
    * @returns Full endpoint URL
    * @protected
    */
-  protected getEndpoint(path: string = ''): string {
+  protected getEndpoint (path: string = ''): string {
     const cleanPath = path.replace(/^\//, '') // Remove leading slash
     return cleanPath ? `${this.baseEndpoint}/${cleanPath}` : this.baseEndpoint
   }
@@ -298,7 +298,7 @@ export abstract class ApiRequest {
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     path: string = '',
     data?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<T> {
     try {
       const endpoint = this.getEndpoint(path)
@@ -306,7 +306,7 @@ export abstract class ApiRequest {
         method,
         url: endpoint,
         data,
-        ...config
+        ...config,
       })
 
       return response.data
@@ -321,7 +321,7 @@ export abstract class ApiRequest {
    * @param details - Additional details
    * @protected
    */
-  protected log(action: string, details?: any): void {
+  protected log (action: string, details?: any): void {
     if (process.env.NODE_ENV === 'development') {
       console.log(`[${this.serviceName}] ${action}`, details || '')
     }
@@ -335,17 +335,17 @@ export abstract class ApiRequest {
    */
   protected async search<T>(
     query: string,
-    params: Record<string, any> = {}
+    params: Record<string, any> = {},
   ): Promise<PaginatedResponse<T>> {
     const queryParams = new URLSearchParams({
       q: query,
-      ...this.serializeParams(params)
+      ...this.serializeParams(params),
     })
 
     const response = await this.apiClient.get<PaginatedResponse<T>>(
-      `${this.baseEndpoint}/search?${queryParams}`
+      `${this.baseEndpoint}/search?${queryParams}`,
     )
-    return response.data;
+    return response.data
   }
 
   /**
@@ -356,11 +356,11 @@ export abstract class ApiRequest {
    */
   protected async bulk<T>(
     operation: 'create' | 'update' | 'delete',
-    data: any[]
+    data: any[],
   ): Promise<ApiResponse<T[]>> {
     const response = await this.apiClient.post<ApiResponse<T[]>>(
       `${this.baseEndpoint}/bulk/${operation}`,
-      { items: data }
+      { items: data },
     )
     return response.data
   }
@@ -371,12 +371,12 @@ export abstract class ApiRequest {
    * @returns Statistics data
    */
   protected async getStats<T>(
-    params: Record<string, any> = {}
+    params: Record<string, any> = {},
   ): Promise<ApiResponse<T>> {
     const queryParams = new URLSearchParams(this.serializeParams(params))
 
     const response = await this.apiClient.get<ApiResponse<T>>(
-      `${this.baseEndpoint}/stats?${queryParams}`
+      `${this.baseEndpoint}/stats?${queryParams}`,
     )
     return response.data
   }
@@ -387,17 +387,17 @@ export abstract class ApiRequest {
    * @param params - Filter parameters
    * @returns Export response
    */
-  protected async export(
+  protected async export (
     format: 'csv' | 'xlsx' | 'json' = 'csv',
-    params: Record<string, any> = {}
+    params: Record<string, any> = {},
   ): Promise<Blob> {
     const queryParams = new URLSearchParams({
       format,
-      ...this.serializeParams(params)
+      ...this.serializeParams(params),
     })
 
     return await this.apiClient.get(
-      `${this.baseEndpoint}/export?${queryParams}`
+      `${this.baseEndpoint}/export?${queryParams}`,
     )
   }
 
@@ -409,7 +409,7 @@ export abstract class ApiRequest {
    */
   protected async upload<T>(
     file: File,
-    additionalData: Record<string, any> = {}
+    additionalData: Record<string, any> = {},
   ): Promise<ApiResponse<T>> {
     const formData = new FormData()
     formData.append('file', file)
@@ -423,9 +423,9 @@ export abstract class ApiRequest {
       formData,
       {
         headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      }
+          'Content-Type': 'multipart/form-data',
+        },
+      },
     )
     return response.data
   }
@@ -434,7 +434,7 @@ export abstract class ApiRequest {
    * Helper to serialize parameters for URLSearchParams
    * Handles arrays and objects correctly.
    */
-  protected serializeParams(params: Record<string, any>): Record<string, string> {
+  protected serializeParams (params: Record<string, any>): Record<string, string> {
     const serialized: Record<string, string> = {}
     for (const key in params) {
       if (Object.prototype.hasOwnProperty.call(params, key)) {
@@ -456,7 +456,7 @@ export abstract class ApiRequest {
    * @param error - The error object
    * @returns A rejected promise with a standardized error format
    */
-  protected handleError(error: any): Promise<never> {
+  protected handleError (error: any): Promise<never> {
     console.error('API call failed:', error)
     // You might want to throw a custom error or return a specific error structure
     throw error

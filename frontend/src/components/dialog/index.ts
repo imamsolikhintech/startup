@@ -7,62 +7,58 @@ export { default as CustomDialogDemo } from '../dialog/CustomDialogDemo.vue'
 // Export types and interfaces
 export type {
   DialogAction,
+  DialogColor,
   DialogConfig,
   DialogEmits,
+  DialogSize,
   DialogSlots,
-  DialogColor,
-  DialogVariant,
-  DialogSize
-} from './types'
+  DialogVariant } from './types'
 
 // Export utility functions and presets
 export {
+  createDialogConfig,
+  DialogIcons,
   DialogPresets,
   DialogSizes,
-  DialogIcons,
-  createDialogConfig,
-  useDialogPreset,
   isValidDialogColor,
+  isValidDialogSize,
   isValidDialogVariant,
-  isValidDialogSize
-} from './types'
+  useDialogPreset } from './types'
 
 // Export composables
 export {
-  useDialog,
+  dialogService,
   useConfirmationDialog,
   useDeleteConfirmationDialog,
+  useDialog,
+  useDialogManager,
+  useErrorDialog,
   useFormDialog,
   useInfoDialog,
-  useErrorDialog,
   useSuccessDialog,
-  useWarningDialog,
-  useDialogManager,
-  dialogService
-} from './useDialog'
+  useWarningDialog } from './useDialog'
 
 // Export dialog plugin
 export { default as DialogPlugin } from './useDialog'
 
 // Export other common components
-export { default as ActionButtons } from './ActionButtons.vue'
-export { default as DataTable } from '../datatable/DataTable.vue'
+export { default as StatsCards } from '../base/StatsCard.vue'
 export { default as PageHeader } from '../common/PageHeader.vue'
+export { default as DataTable } from '../datatable/DataTable.vue'
+export { default as ActionButtons } from './ActionButtons.vue'
 export { default as PageLoader } from './PageLoader.vue'
 export { default as SearchFilters } from './SearchFilters.vue'
-export { default as StatsCards } from '../base/StatsCard.vue'
 
 // Re-export types for other common components if needed
 export type {
-  TableHeader,
-  TableAction
-} from '../datatable/DataTable.vue'
+  TableAction,
+  TableHeader } from '../datatable/DataTable.vue'
 
 // Utility function to install all common components
-export function installCommonComponents(app: any) {
+export function installCommonComponents (app: any) {
   // Register CustomDialog globally
   app.component('CustomDialog', () => import('../dialog/CustomDialog.vue'))
-  
+
   // Register other common components
   app.component('ActionButtons', () => import('./ActionButtons.vue'))
   app.component('DataTable', () => import('../datatable/DataTable.vue'))
@@ -70,7 +66,7 @@ export function installCommonComponents(app: any) {
   app.component('PageLoader', () => import('./PageLoader.vue'))
   app.component('SearchFilters', () => import('./SearchFilters.vue'))
   app.component('StatsCards', () => import('../base/StatsCard.vue'))
-  
+
   // Install dialog plugin
   const DialogPlugin = () => import('./useDialog')
   app.use(DialogPlugin)
@@ -78,5 +74,5 @@ export function installCommonComponents(app: any) {
 
 // Default export for easy plugin installation
 export default {
-  install: installCommonComponents
+  install: installCommonComponents,
 }

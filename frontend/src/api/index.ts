@@ -7,34 +7,32 @@
 // ============================================================================
 
 // Export endpoint configurations and utilities
-export { 
-  apiClient, 
-  fileApiClient, 
+export {
+  apiClient,
+  cleanupPendingRequests,
   createApiInstance,
   createCancelToken,
-  isCancel,
-  cleanupPendingRequests
-} from './endpoint/axios'
+  fileApiClient,
+  isCancel } from './endpoint/axios'
 
 // Export request utilities and helpers
 export * from './request/helpers'
-export { 
-  requestCache,
+export {
+  ApiError,
+  buildPaginationParams,
+  buildQueryParams,
+  createApiError,
+  createCacheKey,
+  createDownloadConfig,
   createRequestConfig,
   createUploadConfig,
-  createDownloadConfig,
-  buildQueryParams,
-  buildPaginationParams,
+  debounce,
   handleApiResponse,
   handlePaginatedResponse,
-  ApiError,
-  createApiError,
-  withRetry,
-  debounce,
+  requestCache,
   throttle,
-  createCacheKey,
-  validateRequiredFields
-} from './request/helpers'
+  validateRequiredFields,
+  withRetry } from './request/helpers'
 
 // Export base service class
 export { ApiRequest } from './request/ApiRequest'
@@ -42,25 +40,23 @@ export { ApiRequest } from './request/ApiRequest'
 // Export service instances
 export {
   authService,
-  userService,
+  clinicService,
   fileService,
-  providerService,
+  financeService,
   managementService,
   masterService,
-  clinicService,
+  providerService,
   purchaseService,
   salesService,
-  warehouseService,
-  financeService,
-  serviceRegistry
-} from './service'
+  serviceRegistry,
+  userService,
+  warehouseService } from './service'
 
 // Export service classes for custom instantiation
 export {
   AuthService,
-  UserService,
-  FileService
-} from './service'
+  FileService,
+  UserService } from './service'
 
 // ============================================================================
 // TYPE EXPORTS
@@ -72,25 +68,24 @@ export * from './types'
 // Export commonly used types explicitly for better IDE support
 export type {
   ApiResponse,
-  PaginatedResponse,
-  ErrorResponse,
   BaseEntity,
-  PaginationParams,
   BaseFilters,
-  User,
-  LoginCredentials,
-  RegisterData,
+  BulkUserOperation,
   CreateUserData,
+  ErrorResponse,
+  LoginCredentials,
+  PaginatedResponse,
+  PaginationParams,
+  RegisterData,
   UpdateUserData,
-  UserPreferences,
-  BulkUserOperation
-} from './types'
+  User,
+  UserPreferences } from './types'
 
 // Export axios-related types
 export type {
   ApiClient,
   ApiInstanceConfig,
-  PendingRequest
+  PendingRequest,
 } from './endpoint/axios'
 
 // ============================================================================
@@ -99,6 +94,5 @@ export type {
 
 export {
   DEFAULT_CONFIG,
-  RETRYABLE_STATUS_CODES,
-  ERROR_MESSAGES
-} from './endpoint/axios'
+  ERROR_MESSAGES,
+  RETRYABLE_STATUS_CODES } from './endpoint/axios'
