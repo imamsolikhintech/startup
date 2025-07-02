@@ -103,7 +103,7 @@ router.beforeEach(async (to, _from, next) => {
   // Check if route requires authentication (check both current route and parent route meta)
   const requiresAuth = to.meta.requiresAuth || to.matched.some(record => record.meta.requiresAuth)
   const requiresGuest = to.meta.requiresGuest || to.matched.some(record => record.meta.requiresGuest)
-  
+
   console.log("requiresAuth: " + requiresAuth)
   console.log("isAuthenticated: " + authStore.isAuthenticated)
   if (requiresAuth && !authStore.isAuthenticated) {
