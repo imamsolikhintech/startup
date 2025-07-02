@@ -152,7 +152,6 @@
   import ThemeToggle from '@/components/common/ThemeToggle.vue'
   import UserMenu from '@/components/common/UserMenu.vue'
   import { useAuthStore } from '@/stores/auth'
-  import { useNotificationStore } from '@/stores/notifications'
   import { usePageLoaderStore } from '@/stores/pageLoader'
   import { useThemeStore } from '@/stores/theme'
 
@@ -160,12 +159,10 @@
   const route = useRoute()
 
   const authStore = useAuthStore()
-  const notificationStore = useNotificationStore()
   const pageLoaderStore = usePageLoaderStore()
   const themeStore = useThemeStore()
 
   const drawer = ref(true)
-  const searchQuery = ref('')
   const scrolled = ref(false)
 
   // Mobile detection with reactive window size
