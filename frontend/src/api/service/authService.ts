@@ -55,13 +55,6 @@ export class AuthService extends ApiRequest {
       if (!data.email || !data.password) {
         throw new Error('Email and password are required')
       }
-      // super.validateRequired(data, [
-      //   'email',
-      //   'password',
-      //   'confirmPassword',
-      //   'firstName',
-      //   'lastName'
-      // ])
 
       if (data.password !== data.confirmPassword) {
         throw new Error('Passwords do not match')

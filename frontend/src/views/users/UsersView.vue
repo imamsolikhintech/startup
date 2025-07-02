@@ -43,8 +43,15 @@
       class="mb-6"
     />
     <!-- Users Table -->
-    <DataTable :headers="headers" :items="filteredUsers" :search="search" :loading="loading" :actions="tableActions"
-      @action="handleTableAction" />
+    <DataTable 
+      :headers="headers" 
+      :items="filteredUsers" 
+      :search="search" 
+      :loading="loading" 
+      :actions="tableActions"
+      :show-checkbox="true"
+      @action="handleTableAction"
+      @update:checked-rows="handleCheckedRowsChange" />
 
     <!-- Add/Edit User Dialog -->
     <UserFormDialog :show="showAddDialog" :form-data="userFormData" :is-editing="!!editingUser" :roles="roles"
@@ -495,4 +502,14 @@ onMounted(async () => {
     loadRoles()
   ])
 })
+
+// Tambahkan state untuk menyimpan baris yang dipilih
+const checkedRows = ref<User[]>([])
+const checkedRowKeys = ref<Array<string | number>>([])
+
+// Tambahkan handler untuk menangani perubahan baris yang dipilih
+const handleCheckedRowsChange = (keys: Array<string | number>, rows: User[]) => {
+  checkedRowKeys.value = keys
+  checkedRows.value = rows
+}
 </script>

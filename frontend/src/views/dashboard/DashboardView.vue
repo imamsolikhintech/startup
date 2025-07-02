@@ -349,11 +349,11 @@ const getActionType = (color: string) => {
 
 onMounted(() => {
   // Simulate some periodic updates
-  setInterval(() => {
-    if (Math.random() > 0.7) {
-      notificationStore.showInfo(`New activity detected at ${new Date().toLocaleTimeString()}`, 'System Update')
-    }
-  }, 30000) // Every 30 seconds
+  // setInterval(() => {
+  //   if (Math.random() > 0.7) {
+  //     notificationStore.showInfo(`New activity detected at ${new Date().toLocaleTimeString()}`, 'System Update')
+  //   }
+  // }, 30000) // Every 30 seconds
 })
 </script>
 
@@ -366,8 +366,8 @@ onMounted(() => {
 
 /* Welcome Section */
 .welcome-card {
-  background: linear-gradient(135deg, var(--n-color-primary) 0%, var(--n-color-primary-hover) 100%);
-  color: white;
+  /* background: linear-gradient(135deg, rgb(255, 255, 255) 100%, rgb(255, 255, 255) 100%); */
+  /* color: white; */
 }
 
 .welcome-content {
@@ -378,11 +378,11 @@ onMounted(() => {
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  color: white;
+  /* color: black; */
 }
 
 .welcome-subtitle {
-  color: rgba(255, 255, 255, 0.9);
+  /* color: gray; */
   font-size: 1.125rem;
   margin: 0;
 }

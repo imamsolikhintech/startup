@@ -124,7 +124,7 @@ watch(visibleNotifications, (newNotifications) => {
 .notification-content {
   display: flex;
   align-items: flex-start;
-  padding: 1rem;
+  padding: 0.5rem;
   gap: 0.75rem;
 }
 

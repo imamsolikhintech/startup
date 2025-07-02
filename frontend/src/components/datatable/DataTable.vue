@@ -1,13 +1,20 @@
 <template>
   <n-card class="data-table-card">
-    <n-data-table :columns="tableColumns" :data="filteredItems" :loading="loading" :pagination="paginationConfig"
-      :row-key="rowKeyFunction" striped />
+    <n-data-table 
+      :columns="tableColumns" 
+      :data="filteredItems" 
+      :loading="loading" 
+      :pagination="paginationConfig"
+      :row-key="rowKeyFunction" 
+      :row-props="rowProps"
+      @update:checked-row-keys="handleCheckedRowKeysChange"
+      striped />
   </n-card>
 </template>
 
 <script setup lang="ts">
 import { NCard, NDataTable, NAvatar, NTag, NButton, NIcon } from 'naive-ui'
-import { computed, h } from 'vue'
+import { computed, h, ref } from 'vue'
 import type { DataTableColumns } from 'naive-ui'
 
 interface TableHeader {
@@ -33,6 +40,7 @@ interface Props {
   itemValue?: string
   itemsPerPage?: number
   actions?: TableAction[]
+  showCheckbox?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -40,15 +48,33 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
   itemValue: 'id',
   itemsPerPage: 10,
-  actions: () => []
+  actions: () => [],
+  showCheckbox: true
 })
 
 const emit = defineEmits<{
   action: [payload: { action: string; item: any }]
+  'update:checked-rows': [keys: Array<string | number>, rows: any[]]
 }>()
 
 // Row key function for n-data-table
 const rowKeyFunction = (row: any) => row[props.itemValue]
+
+// Checked rows state
+const checkedRowKeys = ref<Array<string | number>>([])
+
+// Handle checked rows change
+const handleCheckedRowKeysChange = (keys: Array<string | number>, rows: any[]) => {
+  checkedRowKeys.value = keys
+  emit('update:checked-rows', keys, rows)
+}
+
+// Row props for styling
+const rowProps = (row: any) => {
+  return {
+    style: 'cursor: pointer;'
+  }
+}
 
 // Computed properties
 const filteredItems = computed(() => {
@@ -63,7 +89,18 @@ const filteredItems = computed(() => {
 })
 
 const tableColumns = computed((): DataTableColumns => {
-  const columns = props.headers.map(header => ({
+  let columns = []
+  
+  // Add checkbox column if showCheckbox is true
+  if (props.showCheckbox) {
+    columns.push({
+      type: 'selection',
+      disabled: (row: any) => row.disabled === true
+    })
+  }
+  
+  // Add regular columns
+  const dataColumns = props.headers.map(header => ({
     title: header.title,
     key: header.key,
     sortable: header.sortable !== false,
@@ -122,9 +159,10 @@ const tableColumns = computed((): DataTableColumns => {
       return row[header.key]
     }
   }))
-
-  return columns
+  
+  return [...columns, ...dataColumns] as DataTableColumns
 })
+
 const paginationConfig = computed(() => ({
   pageSize: props.itemsPerPage,
   showSizePicker: true,
