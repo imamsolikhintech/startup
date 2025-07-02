@@ -1,0 +1,25 @@
+{
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "prettier.enable": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.stylelint": "explicit"
+  },
+  "eslint.validate": ["vue", "javascript", "typescript"],
+  "[javascript]": {
+    "editor.defaultFormatter": "Vue.volar"
+  },
+  "tailwindCSS.includeLanguages": {
+    "javascript": "javascript",
+    "html": "HTML"
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "files.eol": "\r\n",
+  "[postcss]": {
+    "editor.defaultFormatter": "svipas.prettier-plus"
+  }
+}

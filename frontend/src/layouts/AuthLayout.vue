@@ -4,7 +4,7 @@
     <div class="theme-toggle-wrapper">
       <ThemeToggle size="medium" />
     </div>
-    
+
     <div class="auth-layout">
       <!-- Left Panel - Branding -->
       <div class="auth-brand-panel">
